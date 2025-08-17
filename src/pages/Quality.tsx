@@ -2,9 +2,9 @@ import Navbar from "@/components/Navbar";
 
 const Quality = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="pt-24 pb-16 px-6 md:px-12">
+      <div className="pt-24 pb-16 px-6 md:px-12 flex-grow">
         <div className="max-w-4xl mx-auto">
           <div className="text-center space-y-6 mb-16">
             <h1 className="text-4xl md:text-6xl font-thin text-foreground tracking-tight">

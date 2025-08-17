@@ -8,13 +8,15 @@ import Layout2Footer from "@/components/Layout2Footer";
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <Layout2Hero />
-      <Layout2Products />
-      <Layout2About />
-      <Layout2Testimonials />
-      <Layout2Contact />
+      <div className="flex-grow">
+        <Layout2Hero />
+        <Layout2Products />
+        <Layout2About />
+        <Layout2Testimonials />
+        <Layout2Contact />
+      </div>
       <Layout2Footer />
     </div>
   );

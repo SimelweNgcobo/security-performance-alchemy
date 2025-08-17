@@ -3,9 +3,9 @@ import Navbar from "@/components/Navbar";
 
 const Testimonials = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="pt-16">
+      <div className="pt-16 flex-grow">
         <Layout2Testimonials />
       </div>
     </div>
