@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
+import Layout2Footer from "@/components/Layout2Footer";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -378,6 +379,7 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+      <Layout2Footer />
     </div>
   );
 };

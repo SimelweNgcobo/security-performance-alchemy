@@ -1,4 +1,5 @@
 import Layout2Testimonials from "@/components/Layout2Testimonials";
+import Layout2Footer from "@/components/Layout2Footer";
 import Navbar from "@/components/Navbar";
 
 const Testimonials = () => {
@@ -8,6 +9,7 @@ const Testimonials = () => {
       <div className="pt-16 flex-grow">
         <Layout2Testimonials />
       </div>
+      <Layout2Footer />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import Layout2Footer from "@/components/Layout2Footer";
 
 const FAQ = () => {
   const faqs = [
@@ -49,6 +50,7 @@ const FAQ = () => {
           </div>
         </div>
       </div>
+      <Layout2Footer />
     </div>
   );
 };
