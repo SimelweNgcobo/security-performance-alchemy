@@ -103,3 +103,33 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom animations for fade-in effects */
+@layer utilities {
+  .fade-in {
+    animation: fadeIn 1s ease-in-out;
+  }
+
+  .fade-in-delay-1 {
+    animation: fadeIn 1s ease-in-out 0.2s both;
+  }
+
+  .fade-in-delay-2 {
+    animation: fadeIn 1s ease-in-out 0.4s both;
+  }
+
+  .fade-in-delay-3 {
+    animation: fadeIn 1s ease-in-out 0.6s both;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
