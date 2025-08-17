@@ -37,7 +37,7 @@ const Layout2Contact = () => {
                   </div>
                   <div>
                     <div className="font-medium text-foreground">Email</div>
-                    <div className="text-muted-foreground">hello@myfuze.com</div>
+                    <div className="text-muted-foreground">hello@myfuze.co.za</div>
                   </div>
                 </div>
 
