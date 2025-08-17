@@ -1,10 +1,23 @@
 import { Droplets } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Layout2Footer = () => {
   const links = {
-    products: ["Pure Glass", "Crystal Clear", "Pure Sport"],
-    company: ["About Us", "Sustainability", "Quality"],
-    support: ["Contact", "FAQ", "Shipping"]
+    products: [
+      { name: "Pure Glass", href: "/products" },
+      { name: "Crystal Clear", href: "/products" },
+      { name: "Pure Sport", href: "/products" }
+    ],
+    company: [
+      { name: "About Us", href: "/about" },
+      { name: "Sustainability", href: "/sustainability" },
+      { name: "Quality", href: "/quality" }
+    ],
+    support: [
+      { name: "Contact", href: "/contact" },
+      { name: "FAQ", href: "/faq" },
+      { name: "Shipping", href: "/shipping" }
+    ]
   };
 
   return (
@@ -25,42 +38,42 @@ const Layout2Footer = () => {
             </p>
           </div>
 
-          {/* Minimal navigation */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-2xl mx-auto">
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-foreground">Products</h4>
-              <ul className="space-y-2">
+          {/* Three-column navigation */}
+          <div className="grid md:grid-cols-3 gap-12 max-w-4xl mx-auto">
+            <div className="space-y-4">
+              <h4 className="text-base font-medium text-foreground">Products</h4>
+              <ul className="space-y-3">
                 {links.products.map((link, index) => (
                   <li key={index}>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors font-light">
-                      {link}
-                    </a>
+                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-light">
+                      {link.name}
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
-            
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-foreground">Company</h4>
-              <ul className="space-y-2">
+
+            <div className="space-y-4">
+              <h4 className="text-base font-medium text-foreground">Company</h4>
+              <ul className="space-y-3">
                 {links.company.map((link, index) => (
                   <li key={index}>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors font-light">
-                      {link}
-                    </a>
+                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-light">
+                      {link.name}
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
-            
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-foreground">Support</h4>
-              <ul className="space-y-2">
+
+            <div className="space-y-4">
+              <h4 className="text-base font-medium text-foreground">Support</h4>
+              <ul className="space-y-3">
                 {links.support.map((link, index) => (
                   <li key={index}>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors font-light">
-                      {link}
-                    </a>
+                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-light">
+                      {link.name}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -69,7 +82,7 @@ const Layout2Footer = () => {
 
           {/* Contact info */}
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground font-light">hello@myfuze.com</p>
+            <p className="text-sm text-muted-foreground font-light">hello@myfuze.co.za</p>
             <p className="text-sm text-muted-foreground font-light">1-800-PURE-H2O</p>
           </div>
 
