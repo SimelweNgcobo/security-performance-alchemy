@@ -62,6 +62,7 @@ const Shipping = () => {
           </div>
         </div>
       </div>
+      <Layout2Footer />
     </div>
   );
 };
