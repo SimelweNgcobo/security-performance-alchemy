@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
+import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,24 +12,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Minus, Plus, X, CreditCard, Truck, Shield, Check } from "lucide-react";
 
 const Checkout = () => {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Artisan Glass",
-      size: "500ml",
-      price: 249.99,
-      quantity: 2,
-      image: "https://images.pexels.com/photos/3736302/pexels-photo-3736302.jpeg"
-    },
-    {
-      id: 2,
-      name: "Crystal Reserve",
-      size: "750ml",
-      price: 329.99,
-      quantity: 1,
-      image: "https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg"
-    }
-  ]);
+  const { state: cartState, updateQuantity, removeItem } = useCart();
+  const cartItems = cartState.items;
 
   const [customerInfo, setCustomerInfo] = useState({
     firstName: "",
@@ -44,18 +29,12 @@ const Checkout = () => {
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState("card");
 
-  const updateQuantity = (id: number, newQuantity: number) => {
-    if (newQuantity === 0) {
-      setCartItems(cartItems.filter(item => item.id !== id));
-    } else {
-      setCartItems(cartItems.map(item => 
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      ));
-    }
+  const handleUpdateQuantity = (id: number, newQuantity: number) => {
+    updateQuantity(id, newQuantity);
   };
 
-  const removeItem = (id: number) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
+  const handleRemoveItem = (id: number) => {
+    removeItem(id);
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -300,7 +279,7 @@ const Checkout = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                           className="w-8 h-8 p-0"
                         >
                           <Minus className="w-3 h-3" />
@@ -309,7 +288,7 @@ const Checkout = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                           className="w-8 h-8 p-0"
                         >
                           <Plus className="w-3 h-3" />
@@ -318,7 +297,7 @@ const Checkout = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => handleRemoveItem(item.id)}
                         className="w-8 h-8 p-0 text-muted-foreground hover:text-destructive"
                       >
                         <X className="w-4 h-4" />
