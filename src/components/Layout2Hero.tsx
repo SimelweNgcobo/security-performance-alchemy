@@ -20,7 +20,7 @@ const Layout2Hero = () => {
                 <span className="text-sm font-medium text-primary">Premium Water Collection</span>
               </div>
 
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-light text-foreground tracking-tight leading-none">
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-medium text-foreground tracking-tight leading-none">
                 <span className="block bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
                   MyFuze
                 </span>
