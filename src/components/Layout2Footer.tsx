@@ -2,6 +2,12 @@ import { Droplets } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Layout2Footer = () => {
+  const handleLinkClick = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
   const links = {
     products: [
       { name: "Pure Glass", href: "/products" },
@@ -45,7 +51,11 @@ const Layout2Footer = () => {
               <ul className="space-y-3">
                 {links.products.map((link, index) => (
                   <li key={index}>
-                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-light">
+                    <Link
+                      to={link.href}
+                      onClick={handleLinkClick}
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors font-light"
+                    >
                       {link.name}
                     </Link>
                   </li>
@@ -58,7 +68,11 @@ const Layout2Footer = () => {
               <ul className="space-y-3">
                 {links.company.map((link, index) => (
                   <li key={index}>
-                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-light">
+                    <Link
+                      to={link.href}
+                      onClick={handleLinkClick}
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors font-light"
+                    >
                       {link.name}
                     </Link>
                   </li>
@@ -71,7 +85,11 @@ const Layout2Footer = () => {
               <ul className="space-y-3">
                 {links.support.map((link, index) => (
                   <li key={index}>
-                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-light">
+                    <Link
+                      to={link.href}
+                      onClick={handleLinkClick}
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors font-light"
+                    >
                       {link.name}
                     </Link>
                   </li>
