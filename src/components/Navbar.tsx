@@ -41,12 +41,14 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button
-              size="sm"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6"
-            >
-              Shop Now
-            </Button>
+            <Link to="/checkout">
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6"
+              >
+                Shop Now
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -73,12 +75,15 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="pt-3 border-t border-border/50">
-                <Button
-                  size="sm"
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
-                >
-                  Shop Now
-                </Button>
+                <Link to="/checkout" className="block">
+                  <Button
+                    size="sm"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Shop Now
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
