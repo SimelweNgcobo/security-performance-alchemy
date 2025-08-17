@@ -27,8 +27,8 @@ const Layout2Footer = () => {
   };
 
   return (
-    <footer className="py-24 px-6 md:px-12 bg-gradient-to-t from-primary/3 to-background border-t border-border/30 min-h-[400px]">
-      <div className="max-w-6xl mx-auto">
+    <footer className="w-full py-24 px-6 md:px-12 bg-gradient-to-t from-primary/3 to-background border-t border-border/30 min-h-[400px]">
+      <div className="max-w-7xl mx-auto">
         {/* Simple centered layout */}
         <div className="text-center space-y-12">
           {/* Logo and tagline */}
