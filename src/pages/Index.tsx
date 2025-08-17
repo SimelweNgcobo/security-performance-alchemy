@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar";
 import Layout2Hero from "@/components/Layout2Hero";
 import Layout2Products from "@/components/Layout2Products";
 import Layout2About from "@/components/Layout2About";
@@ -8,6 +9,7 @@ import Layout2Footer from "@/components/Layout2Footer";
 const Index = () => {
   return (
     <div className="min-h-screen">
+      <Navbar />
       <Layout2Hero />
       <Layout2Products />
       <Layout2About />
