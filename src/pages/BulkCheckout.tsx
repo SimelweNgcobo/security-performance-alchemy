@@ -252,10 +252,10 @@ const BulkCheckout = () => {
   };
 
   const steps = [
-    { number: 1, title: "Product & Quantity", icon: "📦" },
-    { number: 2, title: "Shipping Address", icon: "📍" },
-    { number: 3, title: "Payment Details", icon: "💳" },
-    { number: 4, title: "Confirmation", icon: "✅" }
+    { number: 1, title: "Product & Quantity", icon: Package },
+    { number: 2, title: "Shipping Address", icon: Truck },
+    { number: 3, title: "Payment Details", icon: CreditCard },
+    { number: 4, title: "Confirmation", icon: CheckCircle }
   ];
 
   const renderStep1 = () => (
