@@ -442,102 +442,161 @@ const BulkCheckout = () => {
   );
 
   const renderStep2 = () => (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Truck className="h-6 w-6 text-primary" />
-        <h3 className="text-xl font-semibold">Shipping Address</h3>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="text-center space-y-4">
+        <div className="flex items-center justify-center space-x-3 mb-4">
+          <MapPin className="h-8 w-8 text-primary" />
+          <h2 className="text-3xl font-bold text-gray-900">Delivery Details</h2>
+        </div>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          Please provide your delivery address. We'll ensure your bulk order arrives safely at your specified location.
+        </p>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="fullName">Full Name *</Label>
-          <Input
-            id="fullName"
-            value={shippingAddress.fullName}
-            onChange={(e) => handleShippingChange('fullName', e.target.value)}
-            placeholder="Enter full name"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="company">Company (Optional)</Label>
-          <Input
-            id="company"
-            value={shippingAddress.company}
-            onChange={(e) => handleShippingChange('company', e.target.value)}
-            placeholder="Company name"
-          />
-        </div>
-        
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="address1">Address Line 1 *</Label>
-          <Input
-            id="address1"
-            value={shippingAddress.address1}
-            onChange={(e) => handleShippingChange('address1', e.target.value)}
-            placeholder="Street address"
-          />
-        </div>
-        
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="address2">Address Line 2 (Optional)</Label>
-          <Input
-            id="address2"
-            value={shippingAddress.address2}
-            onChange={(e) => handleShippingChange('address2', e.target.value)}
-            placeholder="Apartment, suite, etc."
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="city">City *</Label>
-          <Input
-            id="city"
-            value={shippingAddress.city}
-            onChange={(e) => handleShippingChange('city', e.target.value)}
-            placeholder="City"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="province">Province *</Label>
-          <Select value={shippingAddress.province} onValueChange={(value) => handleShippingChange('province', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select province" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="gauteng">Gauteng</SelectItem>
-              <SelectItem value="western-cape">Western Cape</SelectItem>
-              <SelectItem value="kwazulu-natal">KwaZulu-Natal</SelectItem>
-              <SelectItem value="eastern-cape">Eastern Cape</SelectItem>
-              <SelectItem value="free-state">Free State</SelectItem>
-              <SelectItem value="limpopo">Limpopo</SelectItem>
-              <SelectItem value="mpumalanga">Mpumalanga</SelectItem>
-              <SelectItem value="north-west">North West</SelectItem>
-              <SelectItem value="northern-cape">Northern Cape</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="postalCode">Postal Code *</Label>
-          <Input
-            id="postalCode"
-            value={shippingAddress.postalCode}
-            onChange={(e) => handleShippingChange('postalCode', e.target.value)}
-            placeholder="Postal code"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number *</Label>
-          <Input
-            id="phone"
-            value={shippingAddress.phone}
-            onChange={(e) => handleShippingChange('phone', e.target.value)}
-            placeholder="Phone number"
-          />
-        </div>
+
+      <div className="max-w-4xl mx-auto">
+        <Card className="shadow-lg border-0">
+          <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-t-lg">
+            <CardTitle className="flex items-center space-x-2">
+              <Truck className="h-6 w-6" />
+              <span>Shipping Information</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label htmlFor="fullName" className="text-sm font-semibold text-gray-700">
+                  Full Name *
+                </Label>
+                <Input
+                  id="fullName"
+                  value={shippingAddress.fullName}
+                  onChange={(e) => handleShippingChange('fullName', e.target.value)}
+                  placeholder="Enter full name"
+                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="company" className="text-sm font-semibold text-gray-700">
+                  Company (Optional)
+                </Label>
+                <Input
+                  id="company"
+                  value={shippingAddress.company}
+                  onChange={(e) => handleShippingChange('company', e.target.value)}
+                  placeholder="Company name"
+                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-3 md:col-span-2">
+                <Label htmlFor="address1" className="text-sm font-semibold text-gray-700">
+                  Street Address *
+                </Label>
+                <Input
+                  id="address1"
+                  value={shippingAddress.address1}
+                  onChange={(e) => handleShippingChange('address1', e.target.value)}
+                  placeholder="Enter street address"
+                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-3 md:col-span-2">
+                <Label htmlFor="address2" className="text-sm font-semibold text-gray-700">
+                  Address Line 2 (Optional)
+                </Label>
+                <Input
+                  id="address2"
+                  value={shippingAddress.address2}
+                  onChange={(e) => handleShippingChange('address2', e.target.value)}
+                  placeholder="Apartment, suite, unit, etc."
+                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="city" className="text-sm font-semibold text-gray-700">
+                  City *
+                </Label>
+                <Input
+                  id="city"
+                  value={shippingAddress.city}
+                  onChange={(e) => handleShippingChange('city', e.target.value)}
+                  placeholder="City"
+                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="province" className="text-sm font-semibold text-gray-700">
+                  Province *
+                </Label>
+                <Select value={shippingAddress.province} onValueChange={(value) => handleShippingChange('province', value)}>
+                  <SelectTrigger className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20">
+                    <SelectValue placeholder="Select province" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gauteng">Gauteng</SelectItem>
+                    <SelectItem value="western-cape">Western Cape</SelectItem>
+                    <SelectItem value="kwazulu-natal">KwaZulu-Natal</SelectItem>
+                    <SelectItem value="eastern-cape">Eastern Cape</SelectItem>
+                    <SelectItem value="free-state">Free State</SelectItem>
+                    <SelectItem value="limpopo">Limpopo</SelectItem>
+                    <SelectItem value="mpumalanga">Mpumalanga</SelectItem>
+                    <SelectItem value="north-west">North West</SelectItem>
+                    <SelectItem value="northern-cape">Northern Cape</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="postalCode" className="text-sm font-semibold text-gray-700">
+                  Postal Code *
+                </Label>
+                <Input
+                  id="postalCode"
+                  value={shippingAddress.postalCode}
+                  onChange={(e) => handleShippingChange('postalCode', e.target.value)}
+                  placeholder="Postal code"
+                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="phone" className="text-sm font-semibold text-gray-700">
+                  Phone Number *
+                </Label>
+                <Input
+                  id="phone"
+                  value={shippingAddress.phone}
+                  onChange={(e) => handleShippingChange('phone', e.target.value)}
+                  placeholder="Phone number"
+                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Delivery Information */}
+        <Card className="mt-6 bg-amber-50 border-amber-200">
+          <CardContent className="p-6">
+            <div className="flex items-start space-x-3">
+              <Truck className="h-6 w-6 text-amber-600 mt-1" />
+              <div>
+                <h4 className="font-semibold text-amber-800 mb-2">Delivery Information</h4>
+                <div className="space-y-1 text-sm text-amber-700">
+                  <p>• Bulk orders typically take 3-5 business days for processing</p>
+                  <p>• Free delivery for orders over R1,000</p>
+                  <p>• Signature required upon delivery</p>
+                  <p>• Please ensure someone is available to receive the delivery</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
