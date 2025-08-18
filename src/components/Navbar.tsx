@@ -188,6 +188,19 @@ const Navbar = () => {
                       <div className="font-medium">{user.user_metadata?.full_name || "User"}</div>
                       <div className="text-xs text-muted-foreground">{user.email}</div>
                     </div>
+                    {isAdmin && (
+                      <Link to="/panel-1973" className="block">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full justify-start border-destructive/20 text-destructive hover:bg-destructive/10"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin Panel
+                        </Button>
+                      </Link>
+                    )}
                     <Link to="/profile" className="block">
                       <Button
                         size="sm"
