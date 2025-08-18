@@ -22,6 +22,7 @@ import Enterprise from "./pages/Enterprise";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
 import AdminAuth from "./pages/AdminAuth";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
