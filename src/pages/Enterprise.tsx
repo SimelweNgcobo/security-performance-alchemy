@@ -324,7 +324,7 @@ const Enterprise = () => {
                     <span>Add Text</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4">
                   <div>
                     <Label htmlFor="text">Text</Label>
                     <Input
@@ -336,7 +336,7 @@ const Enterprise = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="fontSize">Font Size</Label>
+                    <Label htmlFor="fontSize">Font Size (8-72px)</Label>
                     <Input
                       id="fontSize"
                       type="number"
@@ -344,6 +344,7 @@ const Enterprise = () => {
                       max="72"
                       value={labelCustomization.fontSize}
                       onChange={(e) => handleCustomizationChange('fontSize', parseInt(e.target.value) || 16)}
+                      className="text-base"
                     />
                   </div>
                   
@@ -374,13 +375,13 @@ const Enterprise = () => {
                         type="color"
                         value={labelCustomization.textColor}
                         onChange={(e) => handleCustomizationChange('textColor', e.target.value)}
-                        className="w-16 h-10 p-1"
+                        className="w-12 sm:w-16 h-10 p-1 rounded-md"
                       />
                       <Input
                         value={labelCustomization.textColor}
                         onChange={(e) => handleCustomizationChange('textColor', e.target.value)}
                         placeholder="#000000"
-                        className="flex-1"
+                        className="flex-1 text-base"
                       />
                     </div>
                   </div>
@@ -404,13 +405,13 @@ const Enterprise = () => {
                         type="color"
                         value={labelCustomization.backgroundColor}
                         onChange={(e) => handleCustomizationChange('backgroundColor', e.target.value)}
-                        className="w-16 h-10 p-1"
+                        className="w-12 sm:w-16 h-10 p-1 rounded-md"
                       />
                       <Input
                         value={labelCustomization.backgroundColor}
                         onChange={(e) => handleCustomizationChange('backgroundColor', e.target.value)}
                         placeholder="#ffffff"
-                        className="flex-1"
+                        className="flex-1 text-base"
                       />
                     </div>
                   </div>
@@ -419,7 +420,7 @@ const Enterprise = () => {
 
               {/* Download */}
               <Card>
-                <CardContent className="pt-6">
+                <CardContent className="pt-4 lg:pt-6">
                   <Button 
                     onClick={downloadLabel}
                     className="w-full"
