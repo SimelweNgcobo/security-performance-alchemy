@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
-import Bottle3D from "@/components/Bottle3D";
+import Bottle3DSimple from "@/components/Bottle3DSimple";
 
 
 interface BottleSize {
