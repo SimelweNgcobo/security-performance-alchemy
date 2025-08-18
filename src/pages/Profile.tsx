@@ -492,7 +492,14 @@ const Profile = () => {
                         <div key={purchase.id} className="border rounded-lg p-6">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h3 className="font-medium text-lg">{purchase.order_number}</h3>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-medium text-lg">{purchase.order_number}</h3>
+                                {purchase.order_number?.startsWith('BLK') && (
+                                  <Badge variant="default" className="bg-blue-600">
+                                    Bulk Order
+                                  </Badge>
+                                )}
+                              </div>
                               <p className="text-sm text-muted-foreground">
                                 Ordered on {new Date(purchase.created_at).toLocaleDateString()}
                               </p>
