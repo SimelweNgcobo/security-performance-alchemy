@@ -180,14 +180,75 @@ const BulkCheckout = () => {
     }
   };
 
-  const handleSubmitOrder = async () => {
+  // Paystack configuration
+  const paystackConfig = {
+    reference: `BLK_${Date.now()}`,
+    email: user?.email || "customer@example.com",
+    amount: Math.round(total * 100), // Paystack expects amount in kobo (multiply by 100)
+    publicKey: "pk_test_your_paystack_public_key", // You should use environment variable for this
+  };
+
+  const handlePaystackSuccess = async (reference: any) => {
     try {
-      // Here you would integrate with Paystack and your backend
-      toast.success("Order placed successfully!");
+      // Generate order number
+      const orderNum = `BLK${Date.now().toString().slice(-6)}`;
+      setOrderNumber(orderNum);
+
+      // Create order in database
+      const orderData = {
+        order_number: orderNum,
+        user_id: user?.id,
+        status: "paid",
+        payment_status: "paid",
+        delivery_status: "processing",
+        total_amount: total,
+        payment_reference: reference.reference,
+        shipping_address: JSON.stringify(shippingAddress),
+        metadata: JSON.stringify({
+          bottle_size: selectedSize,
+          quantity: quantity,
+          unit_price: currentPrice,
+          payment_method: "paystack"
+        })
+      };
+
+      const { error: orderError } = await supabase
+        .from("orders")
+        .insert([orderData]);
+
+      if (orderError) {
+        console.error("Error creating order:", orderError);
+        toast.error("Failed to save order. Please contact support.");
+        return;
+      }
+
+      toast.success("Payment successful! Order created.");
       setCurrentStep(4);
     } catch (error) {
-      toast.error("Failed to process order. Please try again.");
+      console.error("Error processing payment:", error);
+      toast.error("Failed to process order. Please contact support.");
     }
+  };
+
+  const handlePaystackClose = () => {
+    toast.error("Payment was not completed");
+  };
+
+  const handleSubmitOrder = async () => {
+    if (!user) {
+      toast.error("Please log in to place an order");
+      navigate("/auth");
+      return;
+    }
+
+    if (!validatePayment()) {
+      toast.error("Please fill in all payment details");
+      return;
+    }
+
+    // For demo purposes, we'll proceed to confirmation
+    // In production, this would be handled by the PaystackButton
+    setCurrentStep(4);
   };
 
   const steps = [
