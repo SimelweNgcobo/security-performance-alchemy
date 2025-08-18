@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import Bottle3DSimple from "@/components/Bottle3DSimple";
+import BottleFallback from "@/components/BottleFallback";
 
 
 interface BottleSize {
