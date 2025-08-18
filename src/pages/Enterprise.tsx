@@ -41,7 +41,18 @@ const Enterprise = () => {
     imageScale: 100
   });
   const [isDefault, setIsDefault] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle window resize for responsive label sizing
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fontOptions = [
     "Arial",
