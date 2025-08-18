@@ -518,7 +518,7 @@ const LabelEditor: React.FC = () => {
       </div>
 
       {/* Tools Panel */}
-      <div className="space-y-4">
+      <div className="space-y-4 order-1 lg:order-2">
         {/* Add Elements */}
         <Card>
           <CardHeader>
