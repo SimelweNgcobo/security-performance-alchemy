@@ -52,6 +52,7 @@ const Enterprise = () => {
   const [companyName, setCompanyName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [requirements, setRequirements] = useState("");
+  const [has3DError, setHas3DError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const bottleSizes: BottleSize[] = [
