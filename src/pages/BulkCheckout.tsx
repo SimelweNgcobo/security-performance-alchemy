@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Truck, CreditCard, CheckCircle, ArrowLeft } from "lucide-react";
+import { Truck, CreditCard, CheckCircle, ArrowLeft, Package, MapPin, Palette, Droplets } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import { toast } from "sonner";
