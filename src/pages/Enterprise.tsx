@@ -160,7 +160,7 @@ const Enterprise = () => {
       <Navbar />
       <div className="pt-20 pb-12">
         {/* Header */}
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center max-w-4xl mx-auto mb-12">
             <div className="inline-flex items-center space-x-3 mb-4">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
