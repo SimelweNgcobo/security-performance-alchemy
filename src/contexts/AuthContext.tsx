@@ -134,6 +134,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      setIsAdmin(false);
       toast.success("Signed out successfully");
     } catch (error: any) {
       console.error("Sign out error:", error);
