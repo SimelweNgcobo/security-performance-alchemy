@@ -1001,22 +1001,28 @@ const BulkCheckout = () => {
 
           {/* Navigation Buttons */}
           {currentStep < 4 && (
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center max-w-4xl mx-auto mt-8">
               <Button
                 variant="outline"
                 onClick={handlePrevStep}
                 disabled={currentStep === 1}
+                className="px-8 py-3 border-2 font-medium disabled:opacity-50"
               >
+                <ArrowLeft className="h-4 w-4 mr-2" />
                 Previous
               </Button>
               {currentStep < 3 && (
-                <Button onClick={handleNextStep}>
-                  Next
+                <Button
+                  onClick={handleNextStep}
+                  className="px-8 py-3 bg-primary hover:bg-primary/90 font-medium"
+                >
+                  Next Step
+                  <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
                 </Button>
               )}
               {currentStep === 3 && (
-                <div className="text-sm text-muted-foreground text-right">
-                  Use the Paystack button above to complete your payment
+                <div className="text-center text-gray-600 max-w-xs">
+                  <p className="text-sm">Complete your secure payment above to finalize your order</p>
                 </div>
               )}
             </div>
