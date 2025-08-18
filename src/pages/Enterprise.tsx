@@ -196,7 +196,7 @@ const Enterprise = () => {
                       <button
                         key={bottle.id}
                         onClick={() => handleSizeChange(bottle.id)}
-                        className={`relative p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
+                        className={`relative p-2 sm:p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
                           selectedSize === bottle.id
                             ? 'border-primary bg-primary/5 shadow-md'
                             : 'border-border hover:border-primary/50'
