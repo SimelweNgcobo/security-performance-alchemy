@@ -230,7 +230,7 @@ const Enterprise = () => {
             </div>
 
             {/* Customization Controls */}
-            <div className="space-y-6">
+            <div className="space-y-6 order-first lg:order-last">
               {/* Upload Label */}
               <Card>
                 <CardHeader>
