@@ -22,11 +22,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);
 
+  const checkAdminStatus = async (userId: string) => {
+    try {
+      setAdminLoading(true);
+      const { data: adminUser } = await supabase
+        .from("admin_users")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("is_active", true)
+        .single();
+
+      setIsAdmin(!!adminUser);
+    } catch (error) {
+      setIsAdmin(false);
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        await checkAdminStatus(currentUser.id);
+      } else {
+        setIsAdmin(false);
+      }
+
       setLoading(false);
     };
 
@@ -35,7 +61,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          await checkAdminStatus(currentUser.id);
+        } else {
+          setIsAdmin(false);
+        }
+
         setLoading(false);
       }
     );
