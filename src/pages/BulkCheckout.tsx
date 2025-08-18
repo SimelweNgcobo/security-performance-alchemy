@@ -652,7 +652,7 @@ const BulkCheckout = () => {
 
           {/* Navigation Buttons */}
           {currentStep < 4 && (
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <Button
                 variant="outline"
                 onClick={handlePrevStep}
@@ -666,7 +666,7 @@ const BulkCheckout = () => {
                 </Button>
               )}
               {currentStep === 3 && (
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground text-right">
                   Use the Paystack button above to complete your payment
                 </div>
               )}
