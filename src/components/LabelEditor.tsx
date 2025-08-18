@@ -106,7 +106,10 @@ const LabelEditor: React.FC = () => {
     'Comic Sans MS, cursive'
   ];
 
-  const addTextElement = () => {
+  const addTextElement = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     const newElement: TextElement = {
       id: `text-${Date.now()}`,
       type: 'text',
@@ -221,7 +224,10 @@ const LabelEditor: React.FC = () => {
     updateElement(id, { layer: newLayer });
   };
 
-  const resetCanvas = () => {
+  const resetCanvas = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     setDesign({
       elements: [],
       backgroundColor: '#ffffff'
@@ -230,7 +236,10 @@ const LabelEditor: React.FC = () => {
     toast.success("Canvas reset!");
   };
 
-  const useDefaultBranding = () => {
+  const useDefaultBranding = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     // Create a beautiful default brand design
     const logoSvg = `data:image/svg+xml;base64,${btoa(`
       <svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -320,22 +329,25 @@ const LabelEditor: React.FC = () => {
     toast.success("Default branding applied! Customize any element as needed.");
   };
 
-  const exportDesign = () => {
+  const exportDesign = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     // In a real implementation, this would generate a PDF or high-res image
     const designData = {
       ...design,
       dimensions: { width: LABEL_WIDTH_MM, height: LABEL_HEIGHT_MM }
     };
-    
+
     const dataStr = JSON.stringify(designData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = 'label-design.json';
     link.click();
-    
+
     URL.revokeObjectURL(url);
     toast.success("Design exported successfully!");
   };
