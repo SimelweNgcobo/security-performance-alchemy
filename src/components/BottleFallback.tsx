@@ -89,22 +89,31 @@ const BottleFallback = ({ selectedSize, labelTexture }: BottleFallbackProps) => 
             
             {/* Label area - professional application */}
             {labelTexture && (
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-8 rounded-lg overflow-hidden shadow-lg">
-                {/* Label shadow on bottle */}
-                <div className="absolute inset-0 bg-black/5 blur-sm transform translate-x-0.5 translate-y-0.5 rounded-lg"></div>
-                
-                {/* Actual label */}
-                <div className="relative w-full h-full bg-white/90 rounded-lg border border-white/40 overflow-hidden">
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-8 rounded-lg overflow-hidden shadow-xl">
+                {/* Label shadow on bottle surface */}
+                <div className="absolute inset-0 bg-black/8 blur-sm transform translate-x-0.5 translate-y-0.5 rounded-lg"></div>
+
+                {/* Label adhesion effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-200/20 via-transparent to-slate-300/10 rounded-lg"></div>
+
+                {/* Actual label with professional finish */}
+                <div className="relative w-full h-full bg-white/95 rounded-lg border border-slate-100/60 overflow-hidden backdrop-blur-sm">
                   <img
                     src={labelTexture}
                     alt="Label preview"
                     className="w-full h-full object-cover"
                   />
-                  {/* Label gloss effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-transparent"></div>
+                  {/* Premium label coating effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent"></div>
+                  {/* Edge definition */}
+                  <div className="absolute inset-0 border border-white/30 rounded-lg"></div>
                 </div>
               </div>
             )}
+
+            {/* Environmental reflections - premium effect */}
+            <div className="absolute top-3 left-2 w-1 h-8 bg-gradient-to-b from-white/40 via-white/20 to-transparent rounded-full blur-sm"></div>
+            <div className="absolute top-8 right-3 w-0.5 h-4 bg-gradient-to-b from-white/30 to-transparent rounded-full"></div>
             
             {/* Bottle base ring */}
             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-2 bg-gradient-to-t from-slate-300/30 to-transparent rounded-full"></div>
