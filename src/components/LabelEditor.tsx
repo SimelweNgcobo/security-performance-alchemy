@@ -231,29 +231,37 @@ const LabelEditor: React.FC = () => {
   };
 
   const useDefaultBranding = () => {
-    // Add default branding elements
+    // Create a beautiful default brand design
+    const logoSvg = `data:image/svg+xml;base64,${btoa(`
+      <svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 8c-4 6-8 12-8 16 0 4.418 3.582 8 8 8s8-3.582 8-8c0-4-4-10-8-16z" fill="#0066cc"/>
+        <text x="35" y="16" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0066cc">MyFuze</text>
+        <text x="35" y="28" font-family="Arial, sans-serif" font-size="8" fill="#666666">Premium Water</text>
+      </svg>
+    `)}`;
+
     const logoElement: ImageElement = {
       id: `logo-${Date.now()}`,
       type: 'image',
-      src: '/placeholder.svg', // Will be replaced with actual default logo
+      src: logoSvg,
       x: 20,
       y: 10,
-      width: 60,
+      width: 120,
       height: 40,
       rotation: 0,
       visible: true,
       layer: 0
     };
 
-    const brandTextElement: TextElement = {
-      id: `brand-text-${Date.now()}`,
+    const mainTextElement: TextElement = {
+      id: `main-text-${Date.now()}`,
       type: 'text',
-      content: 'MyFuze Premium Water',
-      x: LABEL_WIDTH_PX / 2 - 100,
-      y: LABEL_HEIGHT_PX / 2 - 10,
-      width: 200,
-      height: 20,
-      fontSize: 18,
+      content: 'Premium Natural Water',
+      x: LABEL_WIDTH_PX / 2 - 120,
+      y: LABEL_HEIGHT_PX / 2 - 8,
+      width: 240,
+      height: 16,
+      fontSize: 20,
       fontFamily: 'Arial, sans-serif',
       color: '#0066cc',
       fontWeight: 'bold',
@@ -265,11 +273,51 @@ const LabelEditor: React.FC = () => {
       layer: 1
     };
 
+    const taglineElement: TextElement = {
+      id: `tagline-${Date.now()}`,
+      type: 'text',
+      content: 'Refreshing • Pure • Sustainable',
+      x: LABEL_WIDTH_PX / 2 - 100,
+      y: LABEL_HEIGHT_PX / 2 + 15,
+      width: 200,
+      height: 12,
+      fontSize: 12,
+      fontFamily: 'Arial, sans-serif',
+      color: '#666666',
+      fontWeight: 'normal',
+      fontStyle: 'italic',
+      textDecoration: 'none',
+      textAlign: 'center',
+      rotation: 0,
+      visible: true,
+      layer: 2
+    };
+
+    const websiteElement: TextElement = {
+      id: `website-${Date.now()}`,
+      type: 'text',
+      content: 'www.myfuze.com',
+      x: LABEL_WIDTH_PX - 120,
+      y: LABEL_HEIGHT_PX - 20,
+      width: 100,
+      height: 10,
+      fontSize: 10,
+      fontFamily: 'Arial, sans-serif',
+      color: '#999999',
+      fontWeight: 'normal',
+      fontStyle: 'normal',
+      textDecoration: 'none',
+      textAlign: 'right',
+      rotation: 0,
+      visible: true,
+      layer: 3
+    };
+
     setDesign({
-      elements: [logoElement, brandTextElement],
-      backgroundColor: '#f0f9ff'
+      elements: [logoElement, mainTextElement, taglineElement, websiteElement],
+      backgroundColor: '#ffffff'
     });
-    toast.success("Default branding applied!");
+    toast.success("Default branding applied! Customize any element as needed.");
   };
 
   const exportDesign = () => {
