@@ -247,8 +247,8 @@ const Enterprise = () => {
                     className="border-2 border-dashed border-border rounded-lg p-4 sm:p-6 text-center cursor-pointer hover:border-primary transition-colors"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
+                    <Upload className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Click to upload or drag & drop
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
