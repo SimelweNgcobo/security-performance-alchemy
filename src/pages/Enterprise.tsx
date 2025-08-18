@@ -1,107 +1,58 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Upload,
-  RotateCcw,
-  ZoomIn,
-  ZoomOut,
-  Move,
-  Send,
+  Type,
+  Palette,
+  RefreshCw,
+  Download,
   Building2,
-  Droplets,
   CheckCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
-import Bottle3DSimple from "@/components/Bottle3DSimple";
-import BottleFallback from "@/components/BottleFallback";
 
-
-interface BottleSize {
-  id: string;
-  size: string;
-  volume: string;
-  dimensions: { diameter: number; height: number };
-  popular?: boolean;
-}
-
-interface LabelSettings {
-  x: number;
-  y: number;
-  scale: number;
-  rotation: number;
+interface LabelCustomization {
+  text: string;
+  fontSize: number;
+  fontFamily: string;
+  textColor: string;
+  backgroundColor: string;
+  uploadedImage: string | null;
+  imagePosition: { x: number; y: number };
+  imageScale: number;
 }
 
 const Enterprise = () => {
-  const [selectedSize, setSelectedSize] = useState<string>("500ml");
-  const [uploadedLabel, setUploadedLabel] = useState<string | null>(null);
-  const [labelSettings, setLabelSettings] = useState<LabelSettings>({
-    x: 50,
-    y: 40,
-    scale: 100,
-    rotation: 0
+  const [labelCustomization, setLabelCustomization] = useState<LabelCustomization>({
+    text: "",
+    fontSize: 16,
+    fontFamily: "Arial",
+    textColor: "#000000",
+    backgroundColor: "#ffffff",
+    uploadedImage: null,
+    imagePosition: { x: 10, y: 10 },
+    imageScale: 100
   });
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [companyName, setCompanyName] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [requirements, setRequirements] = useState("");
-  const [has3DError, setHas3DError] = useState(false);
+  const [isDefault, setIsDefault] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check for 3D support with working fallback
-  useEffect(() => {
-    try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!gl) {
-        console.log('WebGL not supported, using fallback visualization');
-        setHas3DError(true);
-      } else {
-        console.log('WebGL supported, attempting 3D visualization');
-        // Test if Three.js works properly
-        try {
-          // Small delay to ensure proper initialization, then try 3D
-          setTimeout(() => {
-            setHas3DError(false);
-          }, 200);
-        } catch (threeError) {
-          console.error('Three.js error, using fallback:', threeError);
-          setHas3DError(true);
-        }
-      }
-    } catch (error) {
-      console.error('WebGL detection error, using fallback:', error);
-      setHas3DError(true);
-    }
-  }, []);
-
-  const bottleSizes: BottleSize[] = [
-    { id: "250ml", size: "250ml", volume: "Small", dimensions: { diameter: 56, height: 165 } },
-    { id: "500ml", size: "500ml", volume: "Regular", dimensions: { diameter: 66, height: 210 }, popular: true },
-    { id: "1L", size: "1L", volume: "Large", dimensions: { diameter: 84, height: 260 } },
-    { id: "1.5L", size: "1.5L", volume: "Family", dimensions: { diameter: 100, height: 300 } },
-    { id: "2L", size: "2L", volume: "XL", dimensions: { diameter: 110, height: 320 }, popular: true },
-    { id: "5L", size: "5L", volume: "Bulk", dimensions: { diameter: 160, height: 380 } }
+  const fontOptions = [
+    "Arial",
+    "Helvetica",
+    "Times New Roman",
+    "Georgia",
+    "Verdana",
+    "Trebuchet MS",
+    "Impact",
+    "Comic Sans MS"
   ];
-
-  const currentBottle = bottleSizes.find(bottle => bottle.id === selectedSize) || bottleSizes[1];
-
-  const handleSizeChange = (newSize: string) => {
-    if (newSize === selectedSize) return;
-    
-    setIsAnimating(true);
-    setTimeout(() => {
-      setSelectedSize(newSize);
-      setIsAnimating(false);
-    }, 150);
-  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -114,86 +65,79 @@ const Enterprise = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
-        setUploadedLabel(result);
-        toast.success("Label uploaded successfully!");
+        setLabelCustomization(prev => ({
+          ...prev,
+          uploadedImage: result
+        }));
+        setIsDefault(false);
+        toast.success("Image uploaded successfully!");
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleLabelSettingChange = (setting: keyof LabelSettings, value: number) => {
-    setLabelSettings(prev => ({
+  const handleCustomizationChange = (key: keyof LabelCustomization, value: any) => {
+    setLabelCustomization(prev => ({
       ...prev,
-      [setting]: value
+      [key]: value
     }));
+    setIsDefault(false);
   };
 
-  const resetLabel = () => {
-    setLabelSettings({
-      x: 50,
-      y: 40,
-      scale: 100,
-      rotation: 0
+  const resetToDefault = () => {
+    setLabelCustomization({
+      text: "",
+      fontSize: 16,
+      fontFamily: "Arial",
+      textColor: "#000000",
+      backgroundColor: "#ffffff",
+      uploadedImage: null,
+      imagePosition: { x: 10, y: 10 },
+      imageScale: 100
     });
-    toast.success("Label position reset");
-  };
-
-  const removeLabel = () => {
-    setUploadedLabel(null);
-    setLabelSettings({
-      x: 50,
-      y: 40,
-      scale: 100,
-      rotation: 0
-    });
+    setIsDefault(true);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    toast.success("Label removed");
+    toast.success("Reset to default branding");
   };
 
-  const handleEnterpriseRequest = () => {
-    if (!companyName || !contactEmail) {
-      toast.error("Please fill in company name and contact email");
-      return;
+  const downloadLabel = () => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Set canvas size for 224mm x 60mm at 300 DPI
+    const width = Math.round((224 / 25.4) * 300); // Convert mm to pixels
+    const height = Math.round((60 / 25.4) * 300);
+    canvas.width = width;
+    canvas.height = height;
+
+    // Fill background
+    ctx.fillStyle = labelCustomization.backgroundColor;
+    ctx.fillRect(0, 0, width, height);
+
+    // Add text if present
+    if (labelCustomization.text) {
+      ctx.fillStyle = labelCustomization.textColor;
+      ctx.font = `${labelCustomization.fontSize * 4}px ${labelCustomization.fontFamily}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(labelCustomization.text, width / 2, height / 2);
     }
 
-    // Simulate sending enterprise request
-    toast.success("Enterprise request sent successfully! We'll contact you within 24 hours.");
+    // Download the canvas as image
+    const link = document.createElement('a');
+    link.download = 'custom-label.png';
+    link.href = canvas.toDataURL();
+    link.click();
     
-    // Reset form
-    setCompanyName("");
-    setContactEmail("");
-    setRequirements("");
+    toast.success("Label downloaded successfully!");
   };
 
-  const BottleVisualization = () => {
-    if (has3DError) {
-      return (
-        <BottleFallback
-          selectedSize={selectedSize}
-          labelTexture={uploadedLabel}
-        />
-      );
-    }
-
-    return (
-      <div className="relative">
-        <Bottle3DSimple
-          selectedSize={selectedSize}
-          labelTexture={uploadedLabel}
-          labelSettings={labelSettings}
-        />
-
-        {/* Size indicator */}
-        <div className="absolute bottom-4 left-4 z-30">
-          <Badge variant="secondary" className="text-sm font-medium bg-white/90 backdrop-blur-sm">
-            {currentBottle.size} - {currentBottle.volume}
-          </Badge>
-        </div>
-      </div>
-    );
-  };
+  // Convert mm to pixels for display (using 96 DPI for screen)
+  const labelWidthPx = Math.round((224 / 25.4) * 96);
+  const labelHeightPx = Math.round((60 / 25.4) * 96);
 
   return (
     <div className="min-h-screen bg-background">
@@ -207,79 +151,116 @@ const Enterprise = () => {
                 <Building2 className="w-6 h-6 text-primary" />
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground">
-                Enterprise Solutions
+                Label Customization
               </h1>
             </div>
             <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
-              Customize bottles with your brand logo in real-time. Perfect for corporate events, 
-              promotional campaigns, and business partnerships.
+              Design your custom labels with our easy-to-use label designer. 
+              Upload images, add text, and customize colors to create the perfect label.
             </p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
-            {/* Bottle Customization */}
+            {/* Label Preview */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Bottle Sizes */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Droplets className="w-5 h-5 text-primary" />
-                    <span>Choose Bottle Size</span>
-                  </CardTitle>
+                  <CardTitle>Label Preview</CardTitle>
                   <CardDescription>
-                    Select from our range of bottle sizes. Changes are applied in real-time.
+                    Live preview of your label - Dimensions: 224mm × 60mm
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
-                    {bottleSizes.map((bottle) => (
-                      <button
-                        key={bottle.id}
-                        onClick={() => handleSizeChange(bottle.id)}
-                        className={`relative p-2 sm:p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
-                          selectedSize === bottle.id
-                            ? 'border-primary bg-primary/5 shadow-md'
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="text-center space-y-1">
-                          <div className="text-xs sm:text-sm font-semibold">{bottle.size}</div>
-                          <div className="text-xs text-muted-foreground hidden sm:block">{bottle.volume}</div>
+                  <div className="flex justify-center">
+                    <div 
+                      className="border-2 border-dashed border-gray-300 relative overflow-hidden"
+                      style={{
+                        width: `${labelWidthPx}px`,
+                        height: `${labelHeightPx}px`,
+                        backgroundColor: labelCustomization.backgroundColor,
+                        maxWidth: '100%'
+                      }}
+                    >
+                      {/* Background Image */}
+                      {labelCustomization.uploadedImage && (
+                        <img
+                          src={labelCustomization.uploadedImage}
+                          alt="Uploaded"
+                          className="absolute object-contain"
+                          style={{
+                            left: `${labelCustomization.imagePosition.x}px`,
+                            top: `${labelCustomization.imagePosition.y}px`,
+                            width: `${(labelWidthPx * labelCustomization.imageScale) / 100}px`,
+                            height: 'auto'
+                          }}
+                        />
+                      )}
+                      
+                      {/* Default Branding */}
+                      {isDefault && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-primary mb-1">Your Brand</div>
+                            <div className="text-sm text-muted-foreground">Default Branding</div>
+                          </div>
                         </div>
-                        {bottle.popular && (
-                          <Badge className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 text-xs px-1 py-0.5">Popular</Badge>
-                        )}
-                      </button>
-                    ))}
+                      )}
+                      
+                      {/* Custom Text */}
+                      {labelCustomization.text && !isDefault && (
+                        <div 
+                          className="absolute inset-0 flex items-center justify-center"
+                          style={{
+                            color: labelCustomization.textColor,
+                            fontSize: `${labelCustomization.fontSize}px`,
+                            fontFamily: labelCustomization.fontFamily
+                          }}
+                        >
+                          {labelCustomization.text}
+                        </div>
+                      )}
+                      
+                      {/* Dimension Labels */}
+                      <div className="absolute -bottom-6 left-0 right-0 text-xs text-muted-foreground text-center">
+                        224mm × 60mm
+                      </div>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Bottle Preview */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Live Preview</CardTitle>
-                  <CardDescription>
-                    See your customized bottle in real-time
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <BottleVisualization />
                 </CardContent>
               </Card>
             </div>
 
             {/* Customization Controls */}
-            <div className="space-y-6 order-first lg:order-last">
-              {/* Upload Label */}
+            <div className="space-y-6">
+              {/* Default Button */}
+              <Card>
+                <CardContent className="pt-6">
+                  <Button 
+                    onClick={resetToDefault}
+                    variant={isDefault ? "default" : "outline"}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Default Branding
+                  </Button>
+                  {isDefault && (
+                    <p className="text-sm text-muted-foreground mt-2 text-center">
+                      Using our default branding
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Upload Image */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Upload className="w-5 h-5 text-primary" />
-                    <span>Upload Label</span>
+                    <span>Upload Image</span>
                   </CardTitle>
                   <CardDescription>
-                    Upload your logo or label (max 5MB)
+                    Upload your logo or image (max 5MB)
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -302,140 +283,124 @@ const Enterprise = () => {
                     onChange={handleImageUpload}
                     className="hidden"
                   />
-                  {uploadedLabel && (
-                    <div className="flex space-x-2">
-                      <Button
-                        onClick={resetLabel}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <RotateCcw className="w-4 h-4 mr-2" />
-                        Reset
-                      </Button>
-                      <Button
-                        onClick={removeLabel}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
 
-              {/* Label Controls */}
-              {uploadedLabel && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Move className="w-5 h-5 text-primary" />
-                      <span>Adjust Label</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      <div>
-                        <Label className="text-sm font-medium">Position X</Label>
-                        <Slider
-                          value={[labelSettings.x]}
-                          onValueChange={(value) => handleLabelSettingChange('x', value[0])}
-                          max={100}
-                          step={1}
-                          className="mt-2"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Position Y</Label>
-                        <Slider
-                          value={[labelSettings.y]}
-                          onValueChange={(value) => handleLabelSettingChange('y', value[0])}
-                          max={100}
-                          step={1}
-                          className="mt-2"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Scale ({labelSettings.scale}%)</Label>
-                        <Slider
-                          value={[labelSettings.scale]}
-                          onValueChange={(value) => handleLabelSettingChange('scale', value[0])}
-                          min={50}
-                          max={200}
-                          step={5}
-                          className="mt-2"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Rotation ({labelSettings.rotation}°)</Label>
-                        <Slider
-                          value={[labelSettings.rotation]}
-                          onValueChange={(value) => handleLabelSettingChange('rotation', value[0])}
-                          min={-180}
-                          max={180}
-                          step={5}
-                          className="mt-2"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Enterprise Request */}
+              {/* Text Customization */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
-                    <Send className="w-5 h-5 text-primary" />
-                    <span>Request Quote</span>
+                    <Type className="w-5 h-5 text-primary" />
+                    <span>Add Text</span>
                   </CardTitle>
-                  <CardDescription>
-                    Get a custom quote for your enterprise order
-                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="company">Company Name *</Label>
+                    <Label htmlFor="text">Text</Label>
                     <Input
-                      id="company"
-                      placeholder="Your company name"
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
+                      id="text"
+                      placeholder="Enter your text"
+                      value={labelCustomization.text}
+                      onChange={(e) => handleCustomizationChange('text', e.target.value)}
                     />
                   </div>
+                  
                   <div>
-                    <Label htmlFor="email">Contact Email *</Label>
+                    <Label htmlFor="fontSize">Font Size</Label>
                     <Input
-                      id="email"
-                      type="email"
-                      placeholder="your@company.com"
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
+                      id="fontSize"
+                      type="number"
+                      min="8"
+                      max="72"
+                      value={labelCustomization.fontSize}
+                      onChange={(e) => handleCustomizationChange('fontSize', parseInt(e.target.value) || 16)}
                     />
                   </div>
+                  
                   <div>
-                    <Label htmlFor="requirements">Requirements</Label>
-                    <Textarea
-                      id="requirements"
-                      placeholder="Quantity needed, timeline, special requirements..."
-                      value={requirements}
-                      onChange={(e) => setRequirements(e.target.value)}
-                      rows={3}
-                    />
+                    <Label htmlFor="fontFamily">Font Family</Label>
+                    <Select
+                      value={labelCustomization.fontFamily}
+                      onValueChange={(value) => handleCustomizationChange('fontFamily', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fontOptions.map((font) => (
+                          <SelectItem key={font} value={font}>
+                            <span style={{ fontFamily: font }}>{font}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                  
+                  <div>
+                    <Label htmlFor="textColor">Text Color</Label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="textColor"
+                        type="color"
+                        value={labelCustomization.textColor}
+                        onChange={(e) => handleCustomizationChange('textColor', e.target.value)}
+                        className="w-16 h-10 p-1"
+                      />
+                      <Input
+                        value={labelCustomization.textColor}
+                        onChange={(e) => handleCustomizationChange('textColor', e.target.value)}
+                        placeholder="#000000"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Background Color */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Palette className="w-5 h-5 text-primary" />
+                    <span>Background Color</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div>
+                    <Label htmlFor="backgroundColor">Background Color</Label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="backgroundColor"
+                        type="color"
+                        value={labelCustomization.backgroundColor}
+                        onChange={(e) => handleCustomizationChange('backgroundColor', e.target.value)}
+                        className="w-16 h-10 p-1"
+                      />
+                      <Input
+                        value={labelCustomization.backgroundColor}
+                        onChange={(e) => handleCustomizationChange('backgroundColor', e.target.value)}
+                        placeholder="#ffffff"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Download */}
+              <Card>
+                <CardContent className="pt-6">
                   <Button 
-                    onClick={handleEnterpriseRequest}
+                    onClick={downloadLabel}
                     className="w-full"
                     size="lg"
                   >
-                    <Send className="w-4 h-4 mr-2" />
-                    Send Enterprise Request
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Label
                   </Button>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span>We'll respond within 24 hours</span>
+                    <span>High-resolution PNG format</span>
                   </div>
                 </CardContent>
               </Card>
