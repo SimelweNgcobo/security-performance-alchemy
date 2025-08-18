@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ArrowRight, Play, Circle } from "lucide-react";
 
 const Layout2Hero = () => {
+  const [showOurStory, setShowOurStory] = useState(false);
+
   return (
     <section id="home" className="min-h-screen relative overflow-hidden">
       {/* Sophisticated background with gradients */}
