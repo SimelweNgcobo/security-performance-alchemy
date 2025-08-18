@@ -194,7 +194,7 @@ ${invoice.orders.customers.name}
 ${invoice.orders.customers.email}
 
 Order: ${invoice.orders.order_number}
-Amount: R${parseFloat(invoice.amount).toFixed(2)}
+Amount: R${parseFloat(invoice.amount.toString()).toFixed(2)}
 Status: ${invoice.status.toUpperCase()}
     `;
 
@@ -245,7 +245,7 @@ Status: ${invoice.status.toUpperCase()}
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              R{invoices.filter(i => i.status === "paid").reduce((sum, i) => sum + parseFloat(i.amount), 0).toFixed(2)}
+              R{invoices.filter(i => i.status === "paid").reduce((sum, i) => sum + parseFloat(i.amount.toString()), 0).toFixed(2)}
             </div>
           </CardContent>
         </Card>

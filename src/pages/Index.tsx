@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Layout2Hero from "@/components/Layout2Hero";
 import Layout2Products from "@/components/Layout2Products";
@@ -18,6 +19,13 @@ const Index = () => {
         <Layout2Contact />
       </div>
       <Layout2Footer />
+      
+      {/* Admin Access Link - Hidden at bottom */}
+      <div className="p-4 text-center bg-muted">
+        <Link to="/admin-auth" className="text-sm text-muted-foreground hover:text-primary">
+          Admin Access
+        </Link>
+      </div>
     </div>
   );
 };

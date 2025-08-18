@@ -324,7 +324,7 @@ export function ProductsManagement() {
                     </div>
                   </TableCell>
                   <TableCell>{product.size}</TableCell>
-                  <TableCell>R{parseFloat(product.price).toFixed(2)}</TableCell>
+                  <TableCell>R{parseFloat(product.price.toString()).toFixed(2)}</TableCell>
                   <TableCell>
                     <span className={product.stock < 10 ? "text-destructive font-medium" : ""}>
                       {product.stock}

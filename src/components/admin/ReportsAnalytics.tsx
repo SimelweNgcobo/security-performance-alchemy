@@ -84,7 +84,7 @@ export function ReportsAnalytics() {
 
       orders?.forEach(order => {
         const date = new Date(order.created_at).toISOString().split('T')[0];
-        const revenue = parseFloat(order.total_amount);
+        const revenue = parseFloat(order.total_amount.toString());
         totalRevenue += revenue;
 
         if (!salesByDate[date]) {
@@ -112,7 +112,7 @@ export function ReportsAnalytics() {
             };
           }
           productStatsMap[key].totalSold += item.quantity;
-          productStatsMap[key].revenue += parseFloat(item.total_price);
+          productStatsMap[key].revenue += parseFloat(item.total_price.toString());
         });
       });
 
@@ -126,7 +126,7 @@ export function ReportsAnalytics() {
         .gte("created_at", startDate.toISOString())
         .lte("created_at", now.toISOString());
 
-      const totalRefunds = refunds?.reduce((sum, refund) => sum + parseFloat(refund.amount), 0) || 0;
+      const totalRefunds = refunds?.reduce((sum, refund) => sum + parseFloat(refund.amount.toString()), 0) || 0;
 
       setTotals({
         totalRevenue,

@@ -271,7 +271,7 @@ export function CustomersManagement() {
                                             </p>
                                           </div>
                                           <div className="text-right">
-                                            <p className="font-medium">R{parseFloat(order.total_amount).toFixed(2)}</p>
+                                            <p className="font-medium">R{parseFloat(order.total_amount.toString()).toFixed(2)}</p>
                                             <p className="text-sm text-muted-foreground capitalize">
                                               {order.status.replace(/_/g, " ")}
                                             </p>

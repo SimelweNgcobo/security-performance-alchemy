@@ -202,8 +202,8 @@ export function DeliveryManagement() {
             <div className="text-2xl font-bold">
               {orders.filter(o => 
                 o.delivery_status === "delivered" && 
-                o.delivery_assignments?.delivered_at &&
-                new Date(o.delivery_assignments.delivered_at).toDateString() === new Date().toDateString()
+                o.delivery_assignments?.[0]?.delivered_at &&
+                new Date(o.delivery_assignments[0].delivered_at).toDateString() === new Date().toDateString()
               ).length}
             </div>
           </CardContent>
@@ -279,17 +279,17 @@ export function DeliveryManagement() {
                     </Select>
                   </TableCell>
                   <TableCell>
-                    {order.delivery_assignments ? (
+                    {order.delivery_assignments && order.delivery_assignments.length > 0 ? (
                       <div>
-                        <div className="font-medium">{order.delivery_assignments.driver_name}</div>
-                        {order.delivery_assignments.driver_phone && (
+                        <div className="font-medium">{order.delivery_assignments[0].driver_name}</div>
+                        {order.delivery_assignments[0].driver_phone && (
                           <div className="text-sm text-muted-foreground">
-                            {order.delivery_assignments.driver_phone}
+                            {order.delivery_assignments[0].driver_phone}
                           </div>
                         )}
-                        {order.delivery_assignments.delivered_at && (
+                        {order.delivery_assignments[0].delivered_at && (
                           <div className="text-xs text-green-600">
-                            Delivered: {new Date(order.delivery_assignments.delivered_at).toLocaleDateString()}
+                            Delivered: {new Date(order.delivery_assignments[0].delivered_at).toLocaleDateString()}
                           </div>
                         )}
                       </div>
@@ -299,7 +299,7 @@ export function DeliveryManagement() {
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                      {!order.delivery_assignments && (
+                      {!order.delivery_assignments || order.delivery_assignments.length === 0 ? (
                         <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
                           <DialogTrigger asChild>
                             <Button 
@@ -354,13 +354,13 @@ export function DeliveryManagement() {
                             </form>
                           </DialogContent>
                         </Dialog>
-                      )}
+                      ) : null}
                       
-                      {order.delivery_assignments && order.delivery_status === "out_for_delivery" && (
+                      {order.delivery_assignments && order.delivery_assignments.length > 0 && order.delivery_status === "out_for_delivery" && (
                         <Button 
                           variant="default" 
                           size="sm"
-                          onClick={() => markAsDelivered(order.id, order.delivery_assignments!.id)}
+                          onClick={() => markAsDelivered(order.id, order.delivery_assignments?.[0]?.id || '')}
                         >
                           Mark Delivered
                         </Button>

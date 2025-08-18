@@ -255,7 +255,7 @@ export function OrdersManagement() {
                                         <div>
                                           <p className="font-medium">{item.products.name}</p>
                                           <p className="text-sm text-muted-foreground">
-                                            Quantity: {item.quantity} × R{parseFloat(item.unit_price).toFixed(2)}
+                                            Quantity: {item.quantity} × R{parseFloat(item.unit_price.toString()).toFixed(2)}
                                           </p>
                                           {item.custom_branding_data && (
                                             <div className="mt-2 p-2 bg-muted rounded">
