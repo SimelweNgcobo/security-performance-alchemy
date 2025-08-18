@@ -790,54 +790,126 @@ const BulkCheckout = () => {
   );
 
   const renderStep4 = () => (
-    <div className="text-center space-y-6">
+    <div className="text-center space-y-8">
+      {/* Success Animation */}
       <div className="flex justify-center">
-        <CheckCircle className="h-16 w-16 text-green-500" />
+        <div className="relative">
+          <div className="w-32 h-32 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-2xl">
+            <CheckCircle className="h-16 w-16 text-white" />
+          </div>
+          <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+            <span className="text-yellow-800 text-xl">✨</span>
+          </div>
+        </div>
       </div>
-      
-      <h3 className="text-2xl font-bold text-green-600">Order Confirmed!</h3>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Order Receipt</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex justify-between">
-            <span>Order Number:</span>
-            <span className="font-mono">#{orderNumber || `BLK${Date.now().toString().slice(-6)}`}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Product:</span>
-            <span>{selectedSize} Bottles</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Quantity:</span>
-            <span>{quantity} bottles</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Unit Price:</span>
-            <span>R{currentPrice.toFixed(2)}</span>
-          </div>
-          <Separator />
-          <div className="flex justify-between font-bold text-lg">
-            <span>Total Paid:</span>
-            <span>R{total.toFixed(2)}</span>
-          </div>
-          <Separator />
-          <div className="text-sm text-muted-foreground">
-            <p>Shipping to:</p>
-            <p>{shippingAddress.fullName}</p>
-            <p>{shippingAddress.address1}</p>
-            <p>{shippingAddress.city}, {shippingAddress.province}</p>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <div className="space-y-3">
-        <Button onClick={() => navigate('/profile')} className="w-full">
-          View Order in Profile
+
+      {/* Success Message */}
+      <div className="space-y-4">
+        <h2 className="text-4xl font-bold text-gray-900">Order Confirmed!</h2>
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          Thank you for your bulk order. We've received your payment and will begin processing your order immediately.
+        </p>
+      </div>
+
+      {/* Order Details */}
+      <div className="max-w-2xl mx-auto">
+        <Card className="shadow-xl border-0 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+            <CardTitle className="text-2xl">Order Receipt</CardTitle>
+            <p className="opacity-90">Order #{orderNumber || `BLK${Date.now().toString().slice(-6)}`}</p>
+          </CardHeader>
+          <CardContent className="p-8">
+            <div className="space-y-6">
+              {/* Product Info */}
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Droplets className="h-8 w-8 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-lg">{selectedSize} Water Bottles</h4>
+                  <p className="text-gray-600">{quantity} bottles × R{currentPrice.toFixed(2)} each</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-green-600">R{total.toFixed(2)}</p>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Order Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h5 className="font-semibold text-gray-800 mb-3">Order Information</h5>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Order Date:</span>
+                      <span>{new Date().toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Payment Status:</span>
+                      <Badge className="bg-green-100 text-green-800">Paid</Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Order Status:</span>
+                      <Badge className="bg-blue-100 text-blue-800">Processing</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h5 className="font-semibold text-gray-800 mb-3">Delivery Address</h5>
+                  <div className="text-sm text-gray-600">
+                    <p className="font-medium text-gray-800">{shippingAddress.fullName}</p>
+                    {shippingAddress.company && <p>{shippingAddress.company}</p>}
+                    <p>{shippingAddress.address1}</p>
+                    {shippingAddress.address2 && <p>{shippingAddress.address2}</p>}
+                    <p>{shippingAddress.city}, {shippingAddress.province} {shippingAddress.postalCode}</p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Next Steps */}
+              <div className="bg-blue-50 p-6 rounded-lg">
+                <h5 className="font-semibold text-blue-800 mb-3">What happens next?</h5>
+                <div className="space-y-2 text-sm text-blue-700">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <span>Order confirmation email sent to your inbox</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <span>Processing begins within 2 business hours</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <span>Tracking information will be provided</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <span>Delivery in 3-5 business days</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="space-y-4 max-w-md mx-auto">
+        <Button
+          onClick={() => navigate('/profile')}
+          className="w-full py-3 text-lg bg-primary hover:bg-primary/90"
+        >
+          Track Your Order
         </Button>
-        <Button variant="outline" onClick={() => navigate('/products')} className="w-full">
+        <Button
+          variant="outline"
+          onClick={() => navigate('/products')}
+          className="w-full py-3 text-lg border-2"
+        >
           Continue Shopping
         </Button>
       </div>
