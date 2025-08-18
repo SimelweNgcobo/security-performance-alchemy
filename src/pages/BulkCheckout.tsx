@@ -614,30 +614,56 @@ const BulkCheckout = () => {
           </div>
 
           {/* Progress Steps */}
-          <div className="flex justify-between items-center mb-8">
-            {steps.map((step, index) => (
-              <div key={step.number} className="flex items-center">
-                <div className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
-                  currentStep >= step.number 
-                    ? "bg-primary text-primary-foreground border-primary" 
-                    : "bg-background border-muted-foreground"
-                }`}>
-                  {currentStep > step.number ? (
-                    <CheckCircle className="h-6 w-6" />
-                  ) : (
-                    <span className="text-lg">{step.icon}</span>
-                  )}
-                </div>
-                <div className="ml-3 hidden sm:block">
-                  <p className="text-sm font-medium">{step.title}</p>
-                </div>
-                {index < steps.length - 1 && (
-                  <div className={`w-16 h-0.5 mx-4 ${
-                    currentStep > step.number ? "bg-primary" : "bg-muted"
-                  }`} />
-                )}
-              </div>
-            ))}
+          <div className="relative mb-12">
+            <div className="flex justify-between items-center">
+              {steps.map((step, index) => {
+                const StepIcon = step.icon;
+                const isCompleted = currentStep > step.number;
+                const isCurrent = currentStep === step.number;
+                const isUpcoming = currentStep < step.number;
+
+                return (
+                  <div key={step.number} className="flex flex-col items-center relative z-10">
+                    <div className={`
+                      flex items-center justify-center w-16 h-16 rounded-full border-4 transition-all duration-300 mb-3
+                      ${isCompleted
+                        ? "bg-green-500 border-green-500 text-white shadow-lg"
+                        : isCurrent
+                        ? "bg-primary border-primary text-white shadow-lg scale-110"
+                        : "bg-white border-gray-300 text-gray-400"
+                      }
+                    `}>
+                      {isCompleted ? (
+                        <CheckCircle className="h-8 w-8" />
+                      ) : (
+                        <StepIcon className="h-8 w-8" />
+                      )}
+                    </div>
+                    <div className="text-center">
+                      <p className={`text-sm font-semibold mb-1 ${
+                        isCurrent ? "text-primary" : isCompleted ? "text-green-600" : "text-gray-500"
+                      }`}>
+                        Step {step.number}
+                      </p>
+                      <p className={`text-xs font-medium ${
+                        isCurrent ? "text-foreground" : isCompleted ? "text-green-700" : "text-muted-foreground"
+                      }`}>
+                        {step.title}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {/* Progress Line */}
+            <div className="absolute top-8 left-8 right-8 h-1 bg-gray-200 -z-10">
+              <div
+                className="h-full bg-gradient-to-r from-green-500 to-primary transition-all duration-500"
+                style={{
+                  width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`
+                }}
+              />
+            </div>
           </div>
 
           {/* Step Content */}
