@@ -194,6 +194,11 @@ export default function AdminAuth() {
                 🔒 Restricted Access: Panel-1973
               </p>
             </div>
+            <div className="mt-3 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-800 font-medium mb-1">Test Admin Credentials:</p>
+              <p className="text-xs text-blue-700">Email: mq.ngcobo@myfuze.co.za</p>
+              <p className="text-xs text-blue-700">Password: MQ1973</p>
+            </div>
           </CardHeader>
           <CardContent>
             <Tabs value={isLogin ? "login" : "signup"} className="w-full">
