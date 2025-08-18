@@ -172,23 +172,43 @@ const Profile = () => {
 
       setActivityItems(allActivities);
 
-      // Load purchases (orders)
-      if (customer) {
-        const { data: orders } = await supabase
-          .from("orders")
-          .select(`
+      // Load purchases (orders) - including bulk orders
+      const { data: orders } = await supabase
+        .from("orders")
+        .select(`
+          *,
+          order_items (
             *,
-            order_items (
-              *,
-              products (name, size, type)
-            ),
-            invoices (id, invoice_number)
-          `)
-          .eq("customer_id", customer.id)
-          .order("created_at", { ascending: false });
+            products (name, size, type)
+          ),
+          invoices (id, invoice_number)
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
-        if (orders) {
-          setPurchases(orders.map(order => ({
+      if (orders) {
+        setPurchases(orders.map(order => {
+          let items = order.order_items || [];
+
+          // For bulk orders, create virtual items from metadata
+          if (order.metadata && order.order_number?.startsWith('BLK')) {
+            try {
+              const metadata = JSON.parse(order.metadata);
+              items = [{
+                quantity: metadata.quantity,
+                unit_price: metadata.unit_price,
+                products: {
+                  name: `${metadata.bottle_size} Water Bottle`,
+                  size: metadata.bottle_size,
+                  type: 'bulk'
+                }
+              }];
+            } catch (e) {
+              console.log('Could not parse bulk order metadata');
+            }
+          }
+
+          return {
             id: order.id,
             order_number: order.order_number,
             total_amount: order.total_amount,
@@ -196,10 +216,12 @@ const Profile = () => {
             payment_status: order.payment_status,
             delivery_status: order.delivery_status,
             created_at: order.created_at,
-            items: order.order_items || [],
-            invoice_id: order.invoices?.[0]?.id
-          })));
-        }
+            items: items,
+            invoice_id: order.invoices?.[0]?.id,
+            metadata: order.metadata,
+            shipping_address: order.shipping_address
+          };
+        }));
       }
 
     } catch (error) {
