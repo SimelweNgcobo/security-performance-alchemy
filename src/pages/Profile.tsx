@@ -59,6 +59,8 @@ interface Purchase {
   created_at: string;
   items: any[];
   invoice_id?: string;
+  metadata?: string;
+  shipping_address?: string;
 }
 
 const Profile = () => {
