@@ -225,14 +225,14 @@ const Navbar = () => {
                         My Orders
                       </Button>
                     </Link>
-                    <Link to="/checkout" className="block">
+                    <Link to="/products" className="block">
                       <Button
                         size="sm"
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
                         onClick={() => setIsOpen(false)}
                       >
                         <ShoppingBag className="mr-2 h-4 w-4" />
-                        Cart & Checkout
+                        Shop Products
                       </Button>
                     </Link>
                     <Button
