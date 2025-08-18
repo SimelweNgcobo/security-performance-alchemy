@@ -557,6 +557,15 @@ const LabelEditor: React.FC = () => {
                 <Button variant="outline" size="sm" onClick={useDefaultBranding} className="text-xs sm:text-sm no-scroll">
                   Use Default Branding
                 </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={addToQuoteRequest}
+                  className="text-xs sm:text-sm no-scroll bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Add to Request Custom Quote
+                </Button>
                 <Button variant="outline" size="sm" onClick={resetCanvas} className="text-xs sm:text-sm no-scroll">
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Reset Canvas
