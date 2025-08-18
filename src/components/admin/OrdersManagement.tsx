@@ -193,7 +193,7 @@ export function OrdersManagement() {
                 <TableHead>Status</TableHead>
                 <TableHead>Payment</TableHead>
                 <TableHead>Delivery</TableHead>
-                <TableHead>Custom</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
