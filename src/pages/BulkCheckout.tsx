@@ -559,7 +559,7 @@ const BulkCheckout = () => {
         <CardContent className="space-y-4">
           <div className="flex justify-between">
             <span>Order Number:</span>
-            <span className="font-mono">#BLK{Date.now().toString().slice(-6)}</span>
+            <span className="font-mono">#{orderNumber || `BLK${Date.now().toString().slice(-6)}`}</span>
           </div>
           <div className="flex justify-between">
             <span>Product:</span>
