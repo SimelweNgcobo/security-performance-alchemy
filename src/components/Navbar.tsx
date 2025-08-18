@@ -148,7 +148,7 @@ const Navbar = () => {
                     Sign In
                   </Button>
                 </Link>
-                <Link to="/checkout">
+                <Link to="/products">
                   <Button
                     size="sm"
                     className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6"
