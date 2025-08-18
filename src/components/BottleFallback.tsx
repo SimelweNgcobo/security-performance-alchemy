@@ -118,7 +118,7 @@ const BottleFallback = ({ selectedSize, labelTexture }: BottleFallbackProps) => 
             <div className="absolute top-8 right-3 w-0.5 h-4 bg-gradient-to-b from-white/30 to-transparent rounded-full"></div>
             
             {/* Bottle base ring */}
-            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-2 bg-gradient-to-t from-slate-300/30 to-transparent rounded-full"></div>
+            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-20 h-2 bg-gradient-to-t from-slate-300/30 to-transparent rounded-full"></div>
           </div>
         </div>
         
