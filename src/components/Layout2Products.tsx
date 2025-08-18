@@ -1,5 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Layout2Products = () => {
   const products = [
