@@ -69,6 +69,7 @@ const Profile = () => {
   const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [customerData, setCustomerData] = useState<any>(null);
+  const [orderTrackingData, setOrderTrackingData] = useState<OrderTracking[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
