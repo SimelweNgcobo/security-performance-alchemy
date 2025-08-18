@@ -259,88 +259,184 @@ const BulkCheckout = () => {
   ];
 
   const renderStep1 = () => (
-    <div className="space-y-8">
-      {/* Product Image */}
-      <div className="flex justify-center">
-        <div className="w-48 h-64 rounded-lg overflow-hidden border-2 border-primary/20 shadow-lg">
-          <img
-            src="https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg"
-            alt="Water Bottle"
-            className="w-full h-full object-cover"
-          />
+    <div className="space-y-10">
+      {/* Header Section */}
+      <div className="text-center space-y-4">
+        <div className="flex items-center justify-center space-x-3 mb-4">
+          <Droplets className="h-8 w-8 text-primary" />
+          <h2 className="text-3xl font-bold text-gray-900">Choose Your Bottles</h2>
         </div>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          Select your preferred bottle size and quantity. Our bulk pricing tiers offer significant savings for larger orders.
+        </p>
       </div>
 
-      {/* Size Selection */}
-      <div className="space-y-4">
-        <Label className="text-lg font-medium">Select Bottle Size</Label>
-        <div className="grid grid-cols-5 gap-3">
-          {Object.keys(pricingData).map((size) => (
-            <Button
-              key={size}
-              variant={selectedSize === size ? "default" : "outline"}
-              onClick={() => handleSizeChange(size as BottleSize)}
-              className="h-16 flex flex-col"
-            >
-              <span className="font-bold">{size}</span>
-              <span className="text-xs">Bottles</span>
-            </Button>
-          ))}
-        </div>
-      </div>
+      <div className="grid lg:grid-cols-2 gap-10">
+        {/* Left Column - Product & Selection */}
+        <div className="space-y-8">
+          {/* Product Showcase */}
+          <Card className="border-none shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50">
+            <CardContent className="p-8">
+              <div className="flex justify-center mb-6">
+                <div className="relative">
+                  <div className="w-48 h-64 rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+                    <img
+                      src="https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg"
+                      alt="Premium Water Bottle"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute -top-2 -right-2 bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
+                    {selectedSize}
+                  </div>
+                </div>
+              </div>
+              <div className="text-center">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Premium Water Bottles</h3>
+                <p className="text-gray-600">BPA-free, food-grade, eco-friendly materials</p>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Pricing Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{selectedSize} Bottles - Pricing Tiers</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Quantity Range</TableHead>
-                <TableHead>Price per Bottle</TableHead>
-                <TableHead>Notes</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pricingData[selectedSize].map((tier, index) => (
-                <TableRow 
-                  key={index}
-                  className={quantity >= tier.min && quantity <= tier.max ? "bg-primary/10" : ""}
+          {/* Size Selection */}
+          <div className="space-y-6">
+            <div className="flex items-center space-x-2">
+              <Palette className="h-5 w-5 text-primary" />
+              <Label className="text-xl font-semibold text-gray-800">Bottle Size</Label>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              {Object.keys(pricingData).map((size) => (
+                <Button
+                  key={size}
+                  variant={selectedSize === size ? "default" : "outline"}
+                  onClick={() => handleSizeChange(size as BottleSize)}
+                  className={`h-20 flex flex-col space-y-1 transition-all duration-200 ${
+                    selectedSize === size
+                      ? "bg-primary text-white shadow-lg scale-105"
+                      : "hover:shadow-md hover:scale-102"
+                  }`}
                 >
-                  <TableCell className="font-medium">
-                    {tier.min} - {tier.max}
-                  </TableCell>
-                  <TableCell>R{tier.price.toFixed(2)}</TableCell>
-                  <TableCell>{tier.notes}</TableCell>
-                </TableRow>
+                  <span className="font-bold text-lg">{size}</span>
+                  <span className="text-xs opacity-80">Bottles</span>
+                </Button>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Quantity Input */}
-      <div className="space-y-4">
-        <Label htmlFor="quantity" className="text-lg font-medium">Number of Bottles</Label>
-        <Input
-          id="quantity"
-          type="number"
-          min="1"
-          max="10000"
-          value={quantity}
-          onChange={(e) => handleQuantityChange(e.target.value)}
-          className="text-lg p-4"
-          placeholder="Enter quantity"
-        />
-        {getCurrentPriceTier() && (
-          <div className="p-4 bg-primary/10 rounded-lg">
-            <p className="text-sm text-muted-foreground">Current tier: {getCurrentPriceTier()?.notes || "Standard pricing"}</p>
-            <p className="text-lg font-medium">Price per bottle: R{currentPrice.toFixed(2)}</p>
-            <p className="text-xl font-bold text-primary">Total: R{total.toFixed(2)}</p>
+            </div>
           </div>
-        )}
+
+          {/* Quantity Input */}
+          <div className="space-y-6">
+            <div className="flex items-center space-x-2">
+              <Package className="h-5 w-5 text-primary" />
+              <Label htmlFor="quantity" className="text-xl font-semibold text-gray-800">Quantity</Label>
+            </div>
+            <div className="space-y-4">
+              <Input
+                id="quantity"
+                type="number"
+                min="1"
+                max="10000"
+                value={quantity}
+                onChange={(e) => handleQuantityChange(e.target.value)}
+                className="text-xl p-6 border-2 rounded-xl focus:ring-2 focus:ring-primary/20"
+                placeholder="Enter number of bottles"
+              />
+              {getCurrentPriceTier() && (
+                <Card className="border-l-4 border-l-primary bg-primary/5">
+                  <CardContent className="p-6">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-600">Pricing Tier</span>
+                        <Badge variant="secondary">{getCurrentPriceTier()?.notes || "Standard"}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-medium">Price per bottle</span>
+                        <span className="text-lg font-bold text-primary">R{currentPrice.toFixed(2)}</span>
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between items-center">
+                        <span className="text-xl font-semibold">Total Amount</span>
+                        <span className="text-2xl font-bold text-green-600">R{total.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Pricing Table */}
+        <div className="space-y-6">
+          <div className="flex items-center space-x-2">
+            <CreditCard className="h-5 w-5 text-primary" />
+            <h3 className="text-xl font-semibold text-gray-800">{selectedSize} Pricing Tiers</h3>
+          </div>
+
+          <Card className="shadow-lg">
+            <CardContent className="p-0">
+              <div className="bg-gradient-to-r from-primary to-blue-600 text-white p-4 rounded-t-lg">
+                <h4 className="font-semibold">Volume Discounts Available</h4>
+                <p className="text-sm opacity-90">Save more with larger quantities</p>
+              </div>
+              <div className="p-6">
+                <div className="space-y-3">
+                  {pricingData[selectedSize].map((tier, index) => (
+                    <div
+                      key={index}
+                      className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                        quantity >= tier.min && quantity <= tier.max
+                          ? "border-primary bg-primary/10 shadow-md"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="font-semibold text-gray-800">
+                            {tier.min} - {tier.max} bottles
+                          </div>
+                          {tier.notes && (
+                            <div className="text-sm text-gray-600">{tier.notes}</div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-primary">
+                            R{tier.price.toFixed(2)}
+                          </div>
+                          <div className="text-xs text-gray-500">per bottle</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Features */}
+          <Card className="bg-green-50 border-green-200">
+            <CardContent className="p-6">
+              <h4 className="font-semibold text-green-800 mb-3">Why Choose Our Bottles?</h4>
+              <div className="space-y-2 text-sm text-green-700">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>100% BPA-free materials</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Food-grade certified</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Eco-friendly & recyclable</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Custom branding available</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
