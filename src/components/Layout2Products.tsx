@@ -5,6 +5,12 @@ import { ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Layout2Products = () => {
+  const navigate = useNavigate();
+
+  const handleBulkPurchase = () => {
+    navigate('/bulk-checkout');
+  };
+
   const products = [
     {
       name: "Mini Bottle",
