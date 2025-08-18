@@ -519,14 +519,44 @@ const Profile = () => {
 
                           <Separator className="my-4" />
 
-                          <div className="space-y-2">
-                            <h4 className="font-medium">Items:</h4>
-                            {purchase.items.map((item: any, index: number) => (
-                              <div key={index} className="flex justify-between text-sm">
-                                <span>{item.quantity}x {item.products?.name} ({item.products?.size})</span>
-                                <span>R{(item.unit_price * item.quantity).toFixed(2)}</span>
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className="font-medium">Items:</h4>
+                              <div className="space-y-1 mt-2">
+                                {purchase.items.map((item: any, index: number) => (
+                                  <div key={index} className="flex justify-between text-sm">
+                                    <span>{item.quantity}x {item.products?.name} {item.products?.size && `(${item.products.size})`}</span>
+                                    <span>R{(item.unit_price * item.quantity).toFixed(2)}</span>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            </div>
+
+                            {/* Shipping Address for Bulk Orders */}
+                            {purchase.shipping_address && (
+                              <div>
+                                <h4 className="font-medium">Shipping Address:</h4>
+                                <div className="text-sm text-muted-foreground mt-1">
+                                  {(() => {
+                                    try {
+                                      const address = JSON.parse(purchase.shipping_address);
+                                      return (
+                                        <div>
+                                          <p className="font-medium text-foreground">{address.fullName}</p>
+                                          {address.company && <p>{address.company}</p>}
+                                          <p>{address.address1}</p>
+                                          {address.address2 && <p>{address.address2}</p>}
+                                          <p>{address.city}, {address.province} {address.postalCode}</p>
+                                          <p>{address.phone}</p>
+                                        </div>
+                                      );
+                                    } catch {
+                                      return <p>Address information available</p>;
+                                    }
+                                  })()}
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           <Separator className="my-4" />
