@@ -29,18 +29,11 @@ const BottleFallback = ({ selectedSize, labelTexture }: BottleFallbackProps) => 
       {/* Professional PET bottle design */}
       <div className="relative flex flex-col items-center drop-shadow-2xl">
         <div
-          className="relative transition-all duration-700 ease-in-out filter drop-shadow-lg hover:drop-shadow-xl group"
+          className="relative transition-all duration-700 ease-in-out filter drop-shadow-lg hover:drop-shadow-xl group animate-pulse"
           style={{
-            transform: `scale(${scale})`,
-            animation: 'subtle-float 4s ease-in-out infinite'
+            transform: `scale(${scale})`
           }}
         >
-          <style jsx>{`
-            @keyframes subtle-float {
-              0%, 100% { transform: scale(${scale}) translateY(0px); }
-              50% { transform: scale(${scale}) translateY(-2px); }
-            }
-          `}</style>
           {/* Bottle Cap - Professional threading and texture */}
           <div className="w-9 h-4 mx-auto relative mb-1">
             {/* Cap body with professional ridges */}
