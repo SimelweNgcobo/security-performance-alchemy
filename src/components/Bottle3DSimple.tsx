@@ -171,13 +171,15 @@ const Bottle3DSimple = ({ selectedSize, labelTexture, labelSettings }: Bottle3DS
       directionalLight2.position.set(-5, 5, -5);
       scene.add(directionalLight2);
 
-      // Create bottle
+      // Create bottle - Professional PET material
       const bottleGeometry = createBottleGeometry();
       const bottleMaterial = new THREE.MeshPhongMaterial({
-        color: 0xe6f3ff,
+        color: 0xf8fafc,
         transparent: true,
-        opacity: 0.4,
-        shininess: 100,
+        opacity: 0.15,
+        shininess: 200,
+        specular: 0xffffff,
+        reflectivity: 0.3,
       });
       const bottle = new THREE.Mesh(bottleGeometry, bottleMaterial);
       bottle.castShadow = true;
@@ -185,24 +187,26 @@ const Bottle3DSimple = ({ selectedSize, labelTexture, labelSettings }: Bottle3DS
       scene.add(bottle);
       bottleRef.current = bottle;
 
-      // Create water
+      // Create water - More realistic water
       const waterGeometry = createWaterGeometry();
       const waterMaterial = new THREE.MeshPhongMaterial({
-        color: 0x4a90e2,
+        color: 0x87ceeb,
         transparent: true,
-        opacity: 0.7,
-        shininess: 100,
+        opacity: 0.6,
+        shininess: 300,
+        specular: 0xffffff,
       });
       const water = new THREE.Mesh(waterGeometry, waterMaterial);
       water.position.y = -0.01;
       scene.add(water);
       waterRef.current = water;
 
-      // Create cap
+      // Create cap - Professional plastic cap
       const capGeometry = new THREE.CylinderGeometry(0.014, 0.014, 0.02, 16);
       const capMaterial = new THREE.MeshPhongMaterial({
-        color: 0x2563eb,
-        shininess: 50,
+        color: 0x475569,
+        shininess: 80,
+        specular: 0x94a3b8,
       });
       const cap = new THREE.Mesh(capGeometry, capMaterial);
       cap.position.y = 0.12;
