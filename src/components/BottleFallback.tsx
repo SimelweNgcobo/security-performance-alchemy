@@ -80,7 +80,7 @@ const BottleFallback = ({ selectedSize, labelTexture }: BottleFallbackProps) => 
             </div>
             
             {/* Water inside - realistic fluid effect */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-16 h-20 bg-gradient-to-t from-blue-400/40 via-blue-300/30 to-blue-200/20 rounded-2xl overflow-hidden">
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-20 h-24 bg-gradient-to-t from-blue-400/40 via-blue-300/30 to-blue-200/20 rounded-2xl overflow-hidden">
               {/* Water surface */}
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-100/60 via-white/40 to-blue-100/60"></div>
               {/* Water depth */}
