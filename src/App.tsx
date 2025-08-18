@@ -18,6 +18,7 @@ import Shipping from "./pages/Shipping";
 import Sustainability from "./pages/Sustainability";
 import Quality from "./pages/Quality";
 import Checkout from "./pages/Checkout";
+import Enterprise from "./pages/Enterprise";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
 import AdminAuth from "./pages/AdminAuth";
