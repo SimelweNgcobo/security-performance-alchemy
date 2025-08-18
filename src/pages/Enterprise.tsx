@@ -153,20 +153,16 @@ const Enterprise = () => {
 
   // Calculate responsive dimensions
   const getResponsiveDimensions = () => {
-    if (typeof window !== 'undefined') {
-      const screenWidth = window.innerWidth;
-      const maxWidth = screenWidth < 640 ? screenWidth - 80 : // Mobile with padding
-                     screenWidth < 1024 ? screenWidth * 0.8 : // Tablet
-                     baseLabelWidthPx; // Desktop
+    const maxWidth = windowWidth < 640 ? windowWidth - 80 : // Mobile with padding
+                   windowWidth < 1024 ? windowWidth * 0.8 : // Tablet
+                   baseLabelWidthPx; // Desktop
 
-      const scale = Math.min(maxWidth / baseLabelWidthPx, 1);
-      return {
-        width: Math.round(baseLabelWidthPx * scale),
-        height: Math.round(baseLabelHeightPx * scale),
-        scale
-      };
-    }
-    return { width: baseLabelWidthPx, height: baseLabelHeightPx, scale: 1 };
+    const scale = Math.min(maxWidth / baseLabelWidthPx, 1);
+    return {
+      width: Math.round(baseLabelWidthPx * scale),
+      height: Math.round(baseLabelHeightPx * scale),
+      scale
+    };
   };
 
   const { width: labelWidthPx, height: labelHeightPx, scale: labelScale } = getResponsiveDimensions();
