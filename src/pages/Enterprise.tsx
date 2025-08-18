@@ -55,25 +55,10 @@ const Enterprise = () => {
   const [has3DError, setHas3DError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check for 3D support with fallback for better compatibility
+  // Force fallback for debugging
   useEffect(() => {
-    try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!gl) {
-        console.log('WebGL not supported, using fallback visualization');
-        setHas3DError(true);
-      } else {
-        console.log('WebGL supported, attempting 3D visualization');
-        // Small delay to ensure proper initialization
-        setTimeout(() => {
-          setHas3DError(false);
-        }, 100);
-      }
-    } catch (error) {
-      console.error('WebGL detection error:', error);
-      setHas3DError(true);
-    }
+    console.log('Forcing fallback component for debugging');
+    setHas3DError(true);
   }, []);
 
   const bottleSizes: BottleSize[] = [
