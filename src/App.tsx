@@ -31,6 +31,9 @@ const App = () => {
   useEffect(() => {
     // Initialize global scroll to top for all button clicks
     initializeGlobalScrollToTop();
+
+    // Initialize demo order tracking data
+    orderTrackingService.initializeDemoData().catch(console.error);
   }, []);
 
   return (
