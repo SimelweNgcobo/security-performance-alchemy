@@ -108,6 +108,64 @@ const Layout2Hero = () => {
           </div>
         </div>
       </div>
+
+      {/* Our Story Modal */}
+      <Dialog open={showOurStory} onOpenChange={setShowOurStory}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center mb-4">Our Story</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="text-center">
+              <img
+                src="https://images.pexels.com/photos/3736302/pexels-photo-3736302.jpeg"
+                alt="MyFuze Story"
+                className="w-full max-w-md mx-auto rounded-lg shadow-lg mb-6"
+              />
+            </div>
+
+            <div className="prose prose-lg max-w-none">
+              <h3 className="text-xl font-semibold text-primary mb-4">The Journey Begins</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                MyFuze was born from a simple belief: everyone deserves access to pure, premium water
+                that not only hydrates but elevates their daily experience. Founded in 2020, our journey
+                started with a mission to revolutionize the bottled water industry through innovation,
+                sustainability, and uncompromising quality.
+              </p>
+
+              <h3 className="text-xl font-semibold text-primary mb-4 mt-6">Our Mission</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                We source our water from pristine natural springs, ensuring every drop meets the highest
+                standards of purity and taste. Our state-of-the-art filtration process preserves essential
+                minerals while removing impurities, delivering water that's not just clean, but truly premium.
+              </p>
+
+              <h3 className="text-xl font-semibold text-primary mb-4 mt-6">Sustainability First</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Environmental responsibility is at the heart of everything we do. Our bottles are made from
+                100% recyclable materials, and we're committed to carbon-neutral operations. We believe in
+                protecting the planet that provides us with this precious resource.
+              </p>
+
+              <h3 className="text-xl font-semibold text-primary mb-4 mt-6">Innovation & Quality</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                From our enterprise solutions that help businesses create custom branded bottles to our
+                premium consumer line, we continuously innovate to meet the evolving needs of our customers.
+                Every bottle is a testament to our commitment to excellence.
+              </p>
+
+              <div className="bg-primary/5 p-6 rounded-lg mt-6">
+                <h4 className="text-lg font-semibold text-primary mb-3">Join Our Journey</h4>
+                <p className="text-muted-foreground">
+                  Today, MyFuze serves thousands of satisfied customers across South Africa, and we're just
+                  getting started. Whether you're an individual seeking premium hydration or a business
+                  looking for custom solutions, we're here to exceed your expectations.
+                </p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
