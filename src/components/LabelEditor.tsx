@@ -418,15 +418,25 @@ const LabelEditor: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setZoom(prev => Math.max(50, prev - 25))}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setZoom(prev => Math.max(50, prev - 25));
+                  }}
+                  className="no-scroll"
                 >
                   <ZoomOut className="w-4 h-4" />
                 </Button>
-                <span className="text-sm font-medium">{zoom}%</span>
+                <span className="text-sm font-medium min-w-[3rem] text-center">{zoom}%</span>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setZoom(prev => Math.min(200, prev + 25))}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setZoom(prev => Math.min(200, prev + 25));
+                  }}
+                  className="no-scroll"
                 >
                   <ZoomIn className="w-4 h-4" />
                 </Button>
