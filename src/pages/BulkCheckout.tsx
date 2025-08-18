@@ -602,99 +602,189 @@ const BulkCheckout = () => {
   );
 
   const renderStep3 = () => (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <CreditCard className="h-6 w-6 text-primary" />
-        <h3 className="text-xl font-semibold">Payment Details</h3>
-      </div>
-      
-      {/* Order Summary */}
-      <Card className="bg-primary/5">
-        <CardHeader>
-          <CardTitle>Order Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span>{selectedSize} Bottles × {quantity}</span>
-              <span>R{total.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Price per bottle</span>
-              <span>R{currentPrice.toFixed(2)}</span>
-            </div>
-            <Separator />
-            <div className="flex justify-between font-bold text-lg">
-              <span>Total</span>
-              <span>R{total.toFixed(2)}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Payment Form */}
-      <div className="grid grid-cols-1 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="cardholderName">Cardholder Name *</Label>
-          <Input
-            id="cardholderName"
-            value={paymentDetails.cardholderName}
-            onChange={(e) => handlePaymentChange('cardholderName', e.target.value)}
-            placeholder="Name on card"
-          />
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="text-center space-y-4">
+        <div className="flex items-center justify-center space-x-3 mb-4">
+          <CreditCard className="h-8 w-8 text-primary" />
+          <h2 className="text-3xl font-bold text-gray-900">Secure Payment</h2>
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="cardNumber">Card Number *</Label>
-          <Input
-            id="cardNumber"
-            value={paymentDetails.cardNumber}
-            onChange={(e) => handlePaymentChange('cardNumber', e.target.value)}
-            placeholder="1234 5678 9012 3456"
-            maxLength={19}
-          />
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="expiryDate">Expiry Date *</Label>
-            <Input
-              id="expiryDate"
-              value={paymentDetails.expiryDate}
-              onChange={(e) => handlePaymentChange('expiryDate', e.target.value)}
-              placeholder="MM/YY"
-              maxLength={5}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="cvv">CVV *</Label>
-            <Input
-              id="cvv"
-              value={paymentDetails.cvv}
-              onChange={(e) => handlePaymentChange('cvv', e.target.value)}
-              placeholder="123"
-              maxLength={4}
-            />
-          </div>
-        </div>
-      </div>
-      
-      <div className="p-4 bg-blue-50 rounded-lg">
-        <p className="text-sm text-blue-800">
-          🔒 Your payment is secured by Paystack. We never store your card details.
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          Review your order and complete your payment securely through our trusted payment partner.
         </p>
       </div>
 
-      {/* Paystack Payment Button */}
-      <div className="pt-4">
-        <PaystackButton
-          {...paystackConfig}
-          text={`Pay R${total.toFixed(2)} with Paystack`}
-          onSuccess={handlePaystackSuccess}
-          onClose={handlePaystackClose}
-          className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-medium transition-colors"
-        />
+      <div className="max-w-4xl mx-auto grid lg:grid-cols-2 gap-8">
+        {/* Order Summary */}
+        <div className="space-y-6">
+          <Card className="shadow-lg border-0 overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+              <CardTitle className="flex items-center space-x-2">
+                <Package className="h-6 w-6" />
+                <span>Order Summary</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Droplets className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-lg">{selectedSize} Water Bottles</h4>
+                    <p className="text-gray-600">Premium grade, BPA-free</p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Quantity</span>
+                    <span className="font-medium">{quantity} bottles</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Price per bottle</span>
+                    <span className="font-medium">R{currentPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-medium">R{total.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>Delivery</span>
+                    <span>{total >= 1000 ? "FREE" : "R150"}</span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex justify-between text-xl font-bold">
+                  <span>Total</span>
+                  <span className="text-green-600">R{(total >= 1000 ? total : total + 150).toFixed(2)}</span>
+                </div>
+
+                {total >= 1000 && (
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <p className="text-green-700 text-sm font-medium">
+                      ✨ Free delivery applied! You saved R150
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Delivery Summary */}
+          <Card className="bg-blue-50 border-blue-200">
+            <CardContent className="p-6">
+              <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
+                <MapPin className="h-5 w-5 mr-2" />
+                Delivery Address
+              </h4>
+              <div className="text-sm text-blue-700">
+                <p className="font-medium">{shippingAddress.fullName}</p>
+                <p>{shippingAddress.address1}</p>
+                {shippingAddress.address2 && <p>{shippingAddress.address2}</p>}
+                <p>{shippingAddress.city}, {shippingAddress.province} {shippingAddress.postalCode}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Payment Form */}
+        <div className="space-y-6">
+          <Card className="shadow-lg border-0">
+            <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+              <CardTitle>Payment Information</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div className="space-y-3">
+                <Label htmlFor="cardholderName" className="text-sm font-semibold text-gray-700">
+                  Cardholder Name *
+                </Label>
+                <Input
+                  id="cardholderName"
+                  value={paymentDetails.cardholderName}
+                  onChange={(e) => handlePaymentChange('cardholderName', e.target.value)}
+                  placeholder="Name as it appears on card"
+                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="cardNumber" className="text-sm font-semibold text-gray-700">
+                  Card Number *
+                </Label>
+                <Input
+                  id="cardNumber"
+                  value={paymentDetails.cardNumber}
+                  onChange={(e) => handlePaymentChange('cardNumber', e.target.value)}
+                  placeholder="1234 5678 9012 3456"
+                  maxLength={19}
+                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <Label htmlFor="expiryDate" className="text-sm font-semibold text-gray-700">
+                    Expiry Date *
+                  </Label>
+                  <Input
+                    id="expiryDate"
+                    value={paymentDetails.expiryDate}
+                    onChange={(e) => handlePaymentChange('expiryDate', e.target.value)}
+                    placeholder="MM/YY"
+                    maxLength={5}
+                    className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="cvv" className="text-sm font-semibold text-gray-700">
+                    CVV *
+                  </Label>
+                  <Input
+                    id="cvv"
+                    value={paymentDetails.cvv}
+                    onChange={(e) => handlePaymentChange('cvv', e.target.value)}
+                    placeholder="123"
+                    maxLength={4}
+                    className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Security Info */}
+          <Card className="bg-green-50 border-green-200">
+            <CardContent className="p-6">
+              <div className="flex items-start space-x-3">
+                <CheckCircle className="h-6 w-6 text-green-600 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-green-800 mb-2">Secure Payment</h4>
+                  <div className="space-y-1 text-sm text-green-700">
+                    <p>• Your payment is secured by Paystack</p>
+                    <p>• We never store your card details</p>
+                    <p>• 256-bit SSL encryption</p>
+                    <p>• PCI DSS compliant</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Paystack Payment Button */}
+          <PaystackButton
+            {...paystackConfig}
+            text={`Complete Payment - R${(total >= 1000 ? total : total + 150).toFixed(2)}`}
+            onSuccess={handlePaystackSuccess}
+            onClose={handlePaystackClose}
+            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          />
+        </div>
       </div>
     </div>
   );
