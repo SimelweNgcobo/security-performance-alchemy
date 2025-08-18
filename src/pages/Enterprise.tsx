@@ -140,22 +140,33 @@ const Enterprise = () => {
     setRequirements("");
   };
 
-  const BottleVisualization = () => (
-    <div className="relative">
-      <Bottle3DSimple
-        selectedSize={selectedSize}
-        labelTexture={uploadedLabel}
-        labelSettings={labelSettings}
-      />
+  const BottleVisualization = () => {
+    if (has3DError) {
+      return (
+        <BottleFallback
+          selectedSize={selectedSize}
+          labelTexture={uploadedLabel}
+        />
+      );
+    }
 
-      {/* Size indicator */}
-      <div className="absolute bottom-4 left-4 z-30">
-        <Badge variant="secondary" className="text-sm font-medium bg-white/90 backdrop-blur-sm">
-          {currentBottle.size} - {currentBottle.volume}
-        </Badge>
+    return (
+      <div className="relative">
+        <Bottle3DSimple
+          selectedSize={selectedSize}
+          labelTexture={uploadedLabel}
+          labelSettings={labelSettings}
+        />
+
+        {/* Size indicator */}
+        <div className="absolute bottom-4 left-4 z-30">
+          <Badge variant="secondary" className="text-sm font-medium bg-white/90 backdrop-blur-sm">
+            {currentBottle.size} - {currentBottle.volume}
+          </Badge>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
