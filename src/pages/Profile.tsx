@@ -125,18 +125,30 @@ const Profile = () => {
       ];
       setRecentItems(mockRecents);
 
-      // Load activity timeline
-      const mockActivity: ActivityItem[] = [
+      // Load order tracking data
+      const trackingData = orderTrackingService.getCustomerOrders(user?.email || "");
+      setOrderTrackingData(trackingData);
+
+      // Generate activity timeline from order tracking
+      const activityFromTracking: ActivityItem[] = [];
+      trackingData.forEach(tracking => {
+        tracking.activities.forEach(activity => {
+          activityFromTracking.push({
+            id: activity.id,
+            type: activity.activity_type as any,
+            title: activity.activity_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            description: activity.description,
+            timestamp: activity.timestamp,
+            status: ['delivered', 'payment_confirmed'].includes(activity.activity_type) ? 'completed' : 'processing',
+            metadata: activity.metadata
+          });
+        });
+      });
+
+      // Add mock account activities
+      const mockAccountActivity: ActivityItem[] = [
         {
-          id: "1",
-          type: "order_created",
-          title: "Order Created",
-          description: "New order #ORD-001 has been created",
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          status: "processing"
-        },
-        {
-          id: "2",
+          id: "account-1",
           type: "account_created",
           title: "Account Created",
           description: "Welcome to MyFuze! Your account has been successfully created",
@@ -144,7 +156,7 @@ const Profile = () => {
           status: "completed"
         },
         {
-          id: "3",
+          id: "login-1",
           type: "login",
           title: "Account Access",
           description: "Signed in to your account",
@@ -152,7 +164,12 @@ const Profile = () => {
           status: "completed"
         }
       ];
-      setActivityItems(mockActivity);
+
+      // Combine and sort activities
+      const allActivities = [...activityFromTracking, ...mockAccountActivity]
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+      setActivityItems(allActivities);
 
       // Load purchases (orders)
       if (customer) {
