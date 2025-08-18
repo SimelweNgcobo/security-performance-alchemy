@@ -919,15 +919,23 @@ const BulkCheckout = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="pt-16 flex-grow bg-gradient-to-b from-primary/5 to-background">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="pt-16 flex-grow bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 py-12">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" onClick={() => navigate('/products')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Products
+          <div className="flex items-center justify-between mb-12">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/products')}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-3 rounded-lg transition-all"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span>Back to Products</span>
             </Button>
-            <h1 className="text-3xl font-bold">Bulk Purchase</h1>
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">Bulk Purchase</h1>
+              <p className="text-gray-600">Professional bulk ordering made simple</p>
+            </div>
+            <div className="w-32"></div> {/* Spacer for centering */}
           </div>
 
           {/* Progress Steps */}
