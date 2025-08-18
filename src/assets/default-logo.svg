@@ -1,0 +1,8 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Water droplet icon -->
+  <path d="M20 8c-4 6-8 12-8 16 0 4.418 3.582 8 8 8s8-3.582 8-8c0-4-4-10-8-16z" fill="#0066cc"/>
+  
+  <!-- MyFuze text -->
+  <text x="35" y="16" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0066cc">MyFuze</text>
+  <text x="35" y="28" font-family="Arial, sans-serif" font-size="8" fill="#666666">Premium Water</text>
+</svg>
