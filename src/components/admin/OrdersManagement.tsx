@@ -17,6 +17,9 @@ interface Order {
   delivery_status: string;
   total_amount: number;
   created_at: string;
+  payment_reference?: string;
+  shipping_address?: string;
+  metadata?: string;
   customers: {
     name: string;
     email: string;
