@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Eye, EyeOff, Shield } from "lucide-react";
+import { Eye, EyeOff, Shield, ArrowLeft, Droplets } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function AdminAuth() {
   const navigate = useNavigate();
