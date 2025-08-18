@@ -56,6 +56,9 @@ const App = () => {
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/admin-auth" element={<AdminAuth />} />
               <Route path="/panel-1973" element={<AdminPanel />} />
+              <Route path="/panel1973" element={<AdminPanel />} />
+              <Route path="/admin" element={<AdminAuth />} />
+              <Route path="/admin-panel" element={<AdminPanel />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
