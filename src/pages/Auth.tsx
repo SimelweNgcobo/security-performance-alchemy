@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, User, Mail, Phone, Droplets } from "lucide-react";
 import { Link } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import Layout2Footer from "@/components/Layout2Footer";
 
 export default function Auth() {
   const { signIn, signUp } = useAuth();
