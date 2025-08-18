@@ -140,7 +140,7 @@ const Enterprise = () => {
 
   const BottleVisualization = () => (
     <div className="relative">
-      <Bottle3D
+      <Bottle3DSimple
         selectedSize={selectedSize}
         labelTexture={uploadedLabel}
         labelSettings={labelSettings}
