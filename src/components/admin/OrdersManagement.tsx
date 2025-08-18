@@ -245,7 +245,9 @@ export function OrdersManagement() {
                     </Select>
                   </TableCell>
                   <TableCell>
-                    {hasCustomBranding(order) ? (
+                    {isBulkOrder(order) ? (
+                      <Badge variant="default" className="bg-blue-600">Bulk</Badge>
+                    ) : hasCustomBranding(order) ? (
                       <Badge variant="secondary">Custom</Badge>
                     ) : (
                       <Badge variant="outline">Standard</Badge>
