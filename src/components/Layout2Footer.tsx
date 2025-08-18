@@ -108,7 +108,7 @@ const Layout2Footer = () => {
           <div className="space-y-4">
             <div className="w-24 h-px bg-border/50 mx-auto"></div>
             <p className="text-xs text-muted-foreground font-light">
-              © 2024 MyFuze. All rights reserved.
+              Ads 2020 my views all right reserved
             </p>
           </div>
         </div>
