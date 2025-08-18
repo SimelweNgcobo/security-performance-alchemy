@@ -89,11 +89,13 @@ interface PaymentDetails {
 
 const BulkCheckout = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedSize, setSelectedSize] = useState<BottleSize>("500ml");
   const [quantity, setQuantity] = useState<number>(1);
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [total, setTotal] = useState<number>(0);
+  const [orderNumber, setOrderNumber] = useState<string>("");
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: "",
     company: "",
