@@ -17,9 +17,9 @@ const bottleSizes = [
 const BottleFallback = ({ selectedSize, labelTexture }: BottleFallbackProps) => {
   const currentBottle = bottleSizes.find(bottle => bottle.id === selectedSize) || bottleSizes[1];
   
-  // Calculate scale based on bottle size (500ml as base)
+  // Calculate scale based on bottle size (500ml as base) - increased base scale
   const baseHeight = 210;
-  const scale = Math.min(Math.max(currentBottle.dimensions.height / baseHeight, 0.6), 2.0);
+  const scale = Math.min(Math.max(currentBottle.dimensions.height / baseHeight, 1.0), 2.5);
 
   return (
     <div className="w-full h-96 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center relative">
