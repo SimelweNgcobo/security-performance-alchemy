@@ -386,9 +386,9 @@ const LabelEditor: React.FC = () => {
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
   return (
-    <div className="grid lg:grid-cols-4 gap-6 max-w-7xl mx-auto p-4">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto p-2 sm:p-4">
       {/* Canvas Area */}
-      <div className="lg:col-span-3">
+      <div className="lg:col-span-3 order-2 lg:order-1">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
