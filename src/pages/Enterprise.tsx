@@ -203,8 +203,8 @@ const Enterprise = () => {
                         }`}
                       >
                         <div className="text-center space-y-1">
-                          <div className="text-sm font-semibold">{bottle.size}</div>
-                          <div className="text-xs text-muted-foreground">{bottle.volume}</div>
+                          <div className="text-xs sm:text-sm font-semibold">{bottle.size}</div>
+                          <div className="text-xs text-muted-foreground hidden sm:block">{bottle.volume}</div>
                         </div>
                         {bottle.popular && (
                           <Badge className="absolute -top-2 -right-2 text-xs">Popular</Badge>
