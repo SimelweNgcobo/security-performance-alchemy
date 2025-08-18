@@ -63,7 +63,7 @@ const BottleFallback = ({ selectedSize, labelTexture }: BottleFallbackProps) => 
           </div>
           
           {/* Main Bottle Body - Professional PET design */}
-          <div className="relative w-20 h-28 mx-auto">
+          <div className="relative w-24 h-32 mx-auto">
             {/* Bottle outline with realistic curves */}
             <div className="absolute inset-0 bg-gradient-to-r from-slate-50/40 via-white/60 to-slate-50/40 rounded-3xl shadow-2xl border border-slate-200/20 backdrop-blur-sm">
               {/* Professional transparency effect */}
