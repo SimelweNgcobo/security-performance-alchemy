@@ -19,15 +19,12 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const navItems = [
-    { name: "Home", href: "/" },
     { name: "My Views", href: "/" },
     { name: "Discover Collection", href: "/products" },
-    { name: "Products", href: "/products" },
     { name: "Enterprise", href: "/enterprise" },
     { name: "About", href: "/about" },
     { name: "Company", href: "/about" },
     { name: "Profile", href: "/profile" },
-    { name: "Testimonials", href: "/testimonials" },
     { name: "Contact", href: "/contact" }
   ];
 
