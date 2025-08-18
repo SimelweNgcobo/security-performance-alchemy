@@ -55,17 +55,22 @@ const Enterprise = () => {
   const [has3DError, setHas3DError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check for 3D support
+  // Check for 3D support - temporarily using fallback for reliability
   useEffect(() => {
-    try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!gl) {
-        setHas3DError(true);
-      }
-    } catch (error) {
-      setHas3DError(true);
-    }
+    // For now, let's use the fallback to ensure preview always works
+    // TODO: Re-enable 3D when WebGL issues are resolved
+    setHas3DError(true);
+
+    // Original 3D detection code (commented out):
+    // try {
+    //   const canvas = document.createElement('canvas');
+    //   const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    //   if (!gl) {
+    //     setHas3DError(true);
+    //   }
+    // } catch (error) {
+    //   setHas3DError(true);
+    // }
   }, []);
 
   const bottleSizes: BottleSize[] = [
