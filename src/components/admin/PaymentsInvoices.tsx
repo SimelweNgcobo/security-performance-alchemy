@@ -276,7 +276,7 @@ Status: ${invoice.status.toUpperCase()}
                   <TableRow key={invoice.id}>
                     <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
                     <TableCell>{invoice.orders.customers.name}</TableCell>
-                    <TableCell>R{parseFloat(invoice.amount).toFixed(2)}</TableCell>
+                    <TableCell>R{parseFloat(invoice.amount.toString()).toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge 
                         variant={
@@ -382,7 +382,7 @@ Status: ${invoice.status.toUpperCase()}
                 {refunds.map((refund) => (
                   <TableRow key={refund.id}>
                     <TableCell>{refund.orders.order_number}</TableCell>
-                    <TableCell>R{parseFloat(refund.amount).toFixed(2)}</TableCell>
+                    <TableCell>R{parseFloat(refund.amount.toString()).toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge 
                         variant={

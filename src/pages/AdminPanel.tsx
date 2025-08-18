@@ -86,7 +86,7 @@ export default function AdminPanel() {
 
       const totalOrders = ordersRes.data?.length || 0;
       const pendingOrders = ordersRes.data?.filter(o => o.status === 'pending').length || 0;
-      const totalRevenue = ordersRes.data?.reduce((sum, order) => sum + (parseFloat(order.total_amount) || 0), 0) || 0;
+      const totalRevenue = ordersRes.data?.reduce((sum, order) => sum + (parseFloat(order.total_amount.toString()) || 0), 0) || 0;
 
       setStats({
         totalOrders,

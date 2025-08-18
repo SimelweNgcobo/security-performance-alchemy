@@ -16,6 +16,7 @@ import Quality from "./pages/Quality";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
+import AdminAuth from "./pages/AdminAuth";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/sustainability" element={<Sustainability />} />
           <Route path="/quality" element={<Quality />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/admin-auth" element={<AdminAuth />} />
           <Route path="/panel-1973" element={<AdminPanel />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
