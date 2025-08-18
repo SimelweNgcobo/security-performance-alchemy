@@ -79,14 +79,14 @@ const Navbar = () => {
                     </Button>
                   </Link>
                 )}
-                <Link to="/checkout">
+                <Link to="/products">
                   <Button
                     size="sm"
                     variant="outline"
                     className="rounded-full px-4"
                   >
                     <ShoppingBag className="h-4 w-4 mr-2" />
-                    Cart
+                    Shop
                   </Button>
                 </Link>
                 <DropdownMenu>
