@@ -156,20 +156,34 @@ const Bottle3DSimple = ({ selectedSize, labelTexture, labelSettings }: Bottle3DS
 
       mountRef.current.appendChild(renderer.domElement);
 
-      // Lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      // Professional studio lighting setup
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
       scene.add(ambientLight);
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(5, 5, 5);
-      directionalLight.castShadow = true;
-      directionalLight.shadow.mapSize.width = 1024;
-      directionalLight.shadow.mapSize.height = 1024;
-      scene.add(directionalLight);
+      // Main key light
+      const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+      keyLight.position.set(3, 4, 5);
+      keyLight.castShadow = true;
+      keyLight.shadow.mapSize.width = 2048;
+      keyLight.shadow.mapSize.height = 2048;
+      keyLight.shadow.camera.near = 0.1;
+      keyLight.shadow.camera.far = 10;
+      scene.add(keyLight);
 
-      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
-      directionalLight2.position.set(-5, 5, -5);
-      scene.add(directionalLight2);
+      // Fill light
+      const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+      fillLight.position.set(-3, 2, 3);
+      scene.add(fillLight);
+
+      // Rim light for edge definition
+      const rimLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      rimLight.position.set(-1, 2, -3);
+      scene.add(rimLight);
+
+      // Bounce light from below
+      const bounceLight = new THREE.DirectionalLight(0xffffff, 0.2);
+      bounceLight.position.set(0, -2, 2);
+      scene.add(bounceLight);
 
       // Create bottle - Professional PET material
       const bottleGeometry = createBottleGeometry();
