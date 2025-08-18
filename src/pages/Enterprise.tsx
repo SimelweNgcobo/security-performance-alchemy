@@ -298,6 +298,7 @@ const Enterprise = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <style dangerouslySetInnerHTML={{ __html: bottle3DStyles }} />
       <Navbar />
       <div className="pt-20 pb-12">
         {/* Header */}
