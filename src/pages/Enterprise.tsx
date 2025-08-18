@@ -54,7 +54,8 @@ const Enterprise = () => {
         contact_email: contactEmail,
         requirements: requirements,
         user_id: user?.id || null,
-        status: 'pending'
+        status: 'pending',
+        designs: savedDesigns
       });
 
       toast.success("Enterprise request sent successfully! We'll contact you within 24 hours.");
