@@ -91,7 +91,7 @@ const BottleFallback = ({ selectedSize, labelTexture }: BottleFallbackProps) => 
             
             {/* Label area - professional application */}
             {labelTexture && (
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-8 rounded-lg overflow-hidden shadow-xl">
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-10 rounded-lg overflow-hidden shadow-xl">
                 {/* Label shadow on bottle surface */}
                 <div className="absolute inset-0 bg-black/8 blur-sm transform translate-x-0.5 translate-y-0.5 rounded-lg"></div>
 
