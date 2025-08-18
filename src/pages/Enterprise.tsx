@@ -182,6 +182,40 @@ const Enterprise = () => {
                       className="mt-1"
                     />
                   </div>
+
+                  {/* Saved Designs Preview */}
+                  {savedDesigns.length > 0 && (
+                    <div>
+                      <Label>Attached Label Designs ({savedDesigns.length})</Label>
+                      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {savedDesigns.map((design, index) => (
+                          <div key={design.id} className="border rounded-lg p-3 bg-gray-50">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium">Design {index + 1}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(design.timestamp).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="bg-white border rounded p-2 text-center">
+                              <div className="text-xs text-muted-foreground mb-1">
+                                {design.dimensions.width}mm × {design.dimensions.height}mm
+                              </div>
+                              <div className="text-sm">
+                                {design.design.elements.length} element(s)
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Background: {design.design.backgroundColor}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        These designs will be included with your quote request for review.
+                      </p>
+                    </div>
+                  )}
+
                   <Button 
                     onClick={handleEnterpriseRequest}
                     className="w-full"
