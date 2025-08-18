@@ -530,6 +530,17 @@ const BulkCheckout = () => {
           🔒 Your payment is secured by Paystack. We never store your card details.
         </p>
       </div>
+
+      {/* Paystack Payment Button */}
+      <div className="pt-4">
+        <PaystackButton
+          {...paystackConfig}
+          text={`Pay R${total.toFixed(2)} with Paystack`}
+          onSuccess={handlePaystackSuccess}
+          onClose={handlePaystackClose}
+          className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-medium transition-colors"
+        />
+      </div>
     </div>
   );
 
