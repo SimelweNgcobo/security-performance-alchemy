@@ -55,6 +55,19 @@ const Enterprise = () => {
   const [has3DError, setHas3DError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Check for 3D support
+  useEffect(() => {
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) {
+        setHas3DError(true);
+      }
+    } catch (error) {
+      setHas3DError(true);
+    }
+  }, []);
+
   const bottleSizes: BottleSize[] = [
     { id: "250ml", size: "250ml", volume: "Small", dimensions: { diameter: 56, height: 165 } },
     { id: "500ml", size: "500ml", volume: "Regular", dimensions: { diameter: 66, height: 210 }, popular: true },
