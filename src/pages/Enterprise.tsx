@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -15,13 +16,16 @@ import {
   Send,
   Building2,
   Droplets,
-  CheckCircle
+  CheckCircle,
+  Palette,
+  Eye
 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import Bottle3DSimple from "@/components/Bottle3DSimple";
 import BottleFallback from "@/components/BottleFallback";
+import LabelEditor from "@/components/LabelEditor";
 
 
 interface BottleSize {
@@ -211,12 +215,29 @@ const Enterprise = () => {
               </h1>
             </div>
             <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
-              Customize bottles with your brand logo in real-time. Perfect for corporate events, 
-              promotional campaigns, and business partnerships.
+              Design custom bottle labels with our professional editor or customize bottles with your brand logo in real-time.
+              Perfect for corporate events, promotional campaigns, and business partnerships.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
+          <Tabs defaultValue="label-designer" className="max-w-7xl mx-auto">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="label-designer" className="flex items-center gap-2">
+                <Palette className="w-4 h-4" />
+                Label Designer
+              </TabsTrigger>
+              <TabsTrigger value="bottle-preview" className="flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                3D Preview
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="label-designer">
+              <LabelEditor />
+            </TabsContent>
+
+            <TabsContent value="bottle-preview">
+              <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Bottle Customization */}
             <div className="lg:col-span-2 space-y-6">
               {/* Bottle Sizes */}
@@ -440,7 +461,9 @@ const Enterprise = () => {
                 </CardContent>
               </Card>
             </div>
-          </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
       <Layout2Footer />
