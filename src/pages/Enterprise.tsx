@@ -137,86 +137,146 @@ const Enterprise = () => {
   };
 
   const BottleVisualization = () => (
-    <div className="relative flex items-center justify-center h-96 bg-gradient-to-b from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 rounded-2xl overflow-hidden">
-      {/* Bottle SVG */}
-      <div 
-        className={`relative transition-all duration-300 ease-in-out ${isAnimating ? 'scale-95 opacity-70' : 'scale-100 opacity-100'}`}
+    <div className="relative flex items-center justify-center h-96 bg-gradient-to-b from-slate-100 via-slate-50 to-slate-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 rounded-2xl overflow-hidden perspective-1000">
+      {/* 3D Bottle Container */}
+      <div
+        className={`relative transition-all duration-300 ease-in-out transform-gpu ${isAnimating ? 'scale-95 opacity-70' : 'scale-100 opacity-100'}`}
         style={{
           width: currentBottle.dimensions.width,
           height: currentBottle.dimensions.height,
+          transformStyle: 'preserve-3d',
         }}
       >
-        {/* Bottle Shape */}
-        <svg
-          width="100%"
-          height="100%"
-          viewBox="0 0 100 100"
-          className="drop-shadow-lg"
+        {/* Bottle Cap */}
+        <div
+          className="absolute left-1/2 transform -translate-x-1/2 z-20"
+          style={{
+            top: '2%',
+            width: '35%',
+            height: '8%',
+          }}
         >
-          {/* Bottle body gradient */}
-          <defs>
-            <linearGradient id="bottleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#e0f2fe" />
-              <stop offset="30%" stopColor="#f0f9ff" />
-              <stop offset="70%" stopColor="#f0f9ff" />
-              <stop offset="100%" stopColor="#cffafe" />
-            </linearGradient>
-            <linearGradient id="waterGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#0891b2" stopOpacity="0.3" />
-              <stop offset="50%" stopColor="#06b6d4" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#0891b2" stopOpacity="0.3" />
-            </linearGradient>
-          </defs>
-          
-          {/* Bottle outline */}
-          <path
-            d="M35 25 L35 15 Q35 10 40 10 L60 10 Q65 10 65 15 L65 25 L62 25 L62 30 Q62 35 57 35 L43 35 Q38 35 38 30 L38 25 Z M38 35 L38 85 Q38 90 43 90 L57 90 Q62 90 62 85 L62 35"
-            fill="url(#bottleGradient)"
-            stroke="#0891b2"
-            strokeWidth="1"
-          />
-          
-          {/* Water inside */}
-          <path
-            d="M40 37 L40 83 Q40 87 44 87 L56 87 Q60 87 60 83 L60 37"
-            fill="url(#waterGradient)"
-          />
-          
-          {/* Bottle cap */}
-          <rect x="40" y="10" width="20" height="8" rx="2" fill="#1e40af" />
-          <rect x="42" y="8" width="16" height="4" rx="1" fill="#3b82f6" />
-          
-          {/* Highlights */}
-          <ellipse cx="45" cy="45" rx="3" ry="8" fill="white" opacity="0.3" />
-        </svg>
-
-        {/* Custom Label Overlay */}
-        {uploadedLabel && (
-          <div
-            className="absolute pointer-events-none transition-all duration-200"
-            style={{
-              left: `${labelSettings.x}%`,
-              top: `${labelSettings.y}%`,
-              transform: `translate(-50%, -50%) scale(${labelSettings.scale / 100}) rotate(${labelSettings.rotation}deg)`,
-              width: '40%',
-              height: '30%',
-            }}
-          >
-            <img
-              src={uploadedLabel}
-              alt="Custom label"
-              className="w-full h-full object-contain rounded"
-              style={{
-                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
-              }}
-            />
+          {/* Cap Top */}
+          <div className="w-full h-full bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 rounded-sm shadow-lg transform rotateX-10">
+            <div className="w-full h-1/3 bg-gradient-to-r from-blue-400 to-blue-300 rounded-sm opacity-80"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-sm"></div>
           </div>
-        )}
+          {/* Cap Ring */}
+          <div className="w-full h-2 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 -mt-1 rounded-sm shadow-md"></div>
+        </div>
+
+        {/* Bottle Neck */}
+        <div
+          className="absolute left-1/2 transform -translate-x-1/2 z-10"
+          style={{
+            top: '10%',
+            width: '28%',
+            height: '12%',
+          }}
+        >
+          <div className="w-full h-full bg-gradient-to-r from-cyan-100 via-white to-cyan-100 border border-cyan-200/50 shadow-inner">
+            <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-transparent to-white/20"></div>
+            <div className="absolute left-0 top-0 w-1/6 h-full bg-gradient-to-r from-white/60 to-transparent"></div>
+          </div>
+        </div>
+
+        {/* Main Bottle Body */}
+        <div
+          className="absolute left-1/2 transform -translate-x-1/2"
+          style={{
+            top: '22%',
+            width: '60%',
+            height: '70%',
+          }}
+        >
+          {/* Bottle Body Background */}
+          <div className="w-full h-full bg-gradient-to-r from-cyan-50 via-white to-cyan-50 rounded-b-3xl shadow-2xl border border-cyan-100/30 relative overflow-hidden">
+            {/* Main body gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-cyan-100/30 rounded-b-3xl"></div>
+
+            {/* Left highlight */}
+            <div className="absolute left-0 top-0 w-1/4 h-full bg-gradient-to-r from-white/50 via-white/30 to-transparent rounded-bl-3xl"></div>
+
+            {/* Right shadow */}
+            <div className="absolute right-0 top-0 w-1/6 h-full bg-gradient-to-l from-cyan-200/40 to-transparent rounded-br-3xl"></div>
+
+            {/* Water inside */}
+            <div
+              className="absolute bottom-0 left-1/2 transform -translate-x-1/2 bg-gradient-to-b from-cyan-300/60 to-cyan-500/80 rounded-b-2xl"
+              style={{ width: '85%', height: '85%' }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/40 via-transparent to-cyan-600/40 rounded-b-2xl"></div>
+              {/* Water surface reflection */}
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-white/40 via-cyan-100/60 to-white/40"></div>
+              {/* Water left highlight */}
+              <div className="absolute left-0 top-0 w-1/5 h-full bg-gradient-to-r from-white/30 to-transparent rounded-bl-2xl"></div>
+            </div>
+
+            {/* Main bottle highlight */}
+            <div className="absolute left-1/6 top-1/6 w-1/6 h-2/3 bg-gradient-to-b from-white/70 via-white/40 to-white/20 rounded-full blur-sm"></div>
+          </div>
+
+          {/* Custom Label Overlay */}
+          {uploadedLabel && (
+            <div
+              className="absolute pointer-events-none transition-all duration-200 z-30"
+              style={{
+                left: `${labelSettings.x}%`,
+                top: `${labelSettings.y}%`,
+                transform: `translate(-50%, -50%) scale(${labelSettings.scale / 100}) rotate(${labelSettings.rotation}deg)`,
+                width: '70%',
+                height: '40%',
+              }}
+            >
+              <div className="relative w-full h-full">
+                <img
+                  src={uploadedLabel}
+                  alt="Custom label"
+                  className="w-full h-full object-contain"
+                  style={{
+                    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.15)) contrast(1.1)',
+                    borderRadius: '8px',
+                  }}
+                />
+                {/* Label shadow on bottle */}
+                <div className="absolute inset-0 bg-black/5 blur-sm transform translate-x-1 translate-y-1 -z-10 rounded-lg"></div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Bottle Base */}
+        <div
+          className="absolute left-1/2 transform -translate-x-1/2 bottom-0"
+          style={{
+            width: '62%',
+            height: '8%',
+          }}
+        >
+          <div className="w-full h-full bg-gradient-to-b from-cyan-200/60 to-cyan-300/80 rounded-full shadow-lg">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-full"></div>
+          </div>
+        </div>
+
+        {/* Environmental reflections */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-1/12 h-1/6 bg-white/30 rounded-full blur-md"></div>
+          <div className="absolute top-2/3 right-1/3 w-1/8 h-1/12 bg-white/20 rounded-full blur-sm"></div>
+        </div>
       </div>
 
+      {/* Ground shadow */}
+      <div
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/10 rounded-full blur-md"
+        style={{
+          width: currentBottle.dimensions.width * 0.8,
+          height: 12,
+        }}
+      ></div>
+
       {/* Size indicator */}
-      <div className="absolute bottom-4 left-4">
-        <Badge variant="secondary" className="text-sm font-medium">
+      <div className="absolute bottom-4 left-4 z-30">
+        <Badge variant="secondary" className="text-sm font-medium bg-white/90 backdrop-blur-sm">
           {currentBottle.size} - {currentBottle.volume}
         </Badge>
       </div>
