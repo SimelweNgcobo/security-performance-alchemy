@@ -19,13 +19,6 @@ const Index = () => {
         <Layout2Contact />
       </div>
       <Layout2Footer />
-      
-      {/* Admin Access Link - Hidden at bottom */}
-      <div className="p-4 text-center bg-muted">
-        <Link to="/admin-auth" className="text-sm text-muted-foreground hover:text-primary">
-          Admin Access
-        </Link>
-      </div>
     </div>
   );
 };
