@@ -358,17 +358,20 @@ const Bottle3DSimple = ({ selectedSize, labelTexture, labelSettings }: Bottle3DS
   }, [labelTexture, labelSettings]);
 
   return (
-    <div className="w-full rounded-2xl overflow-hidden bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
-      <div 
-        ref={mountRef} 
-        className="w-full max-w-sm aspect-square flex items-center justify-center"
+    <div className="w-full rounded-2xl overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4 relative">
+      {/* Professional studio background */}
+      <div className="absolute inset-0 bg-gradient-radial from-white/20 via-transparent to-slate-200/10"></div>
+
+      <div
+        ref={mountRef}
+        className="w-full max-w-sm aspect-square flex items-center justify-center relative z-10"
         style={{ minHeight: '280px' }}
       />
       {!isInitialized && (
-        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground z-20">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-            <p>Loading 3D Preview...</p>
+            <p className="text-sm font-medium">Loading Professional 3D Preview...</p>
           </div>
         </div>
       )}
