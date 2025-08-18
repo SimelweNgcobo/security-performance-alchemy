@@ -166,7 +166,7 @@ const Enterprise = () => {
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground">
                 Enterprise Solutions
               </h1>
             </div>
