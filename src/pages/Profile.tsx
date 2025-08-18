@@ -74,6 +74,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (!loading && !user) {
+      toast.error("Please sign in to access your profile");
       navigate("/auth");
       return;
     }
