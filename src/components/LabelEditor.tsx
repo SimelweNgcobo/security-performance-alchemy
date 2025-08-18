@@ -498,17 +498,17 @@ const LabelEditor: React.FC = () => {
             </div>
             
             {/* Canvas Actions */}
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={useDefaultBranding}>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-4 gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <Button variant="outline" size="sm" onClick={useDefaultBranding} className="text-xs sm:text-sm">
                   Use Default Branding
                 </Button>
-                <Button variant="outline" size="sm" onClick={resetCanvas}>
+                <Button variant="outline" size="sm" onClick={resetCanvas} className="text-xs sm:text-sm">
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Reset Canvas
                 </Button>
               </div>
-              <Button onClick={exportDesign} className="bg-primary hover:bg-primary/90">
+              <Button onClick={exportDesign} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm">
                 <Download className="w-4 h-4 mr-2" />
                 Export Design
               </Button>
