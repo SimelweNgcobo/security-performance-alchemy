@@ -176,7 +176,7 @@ const Enterprise = () => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
             {/* Bottle Customization */}
             <div className="lg:col-span-2 space-y-6">
               {/* Bottle Sizes */}
