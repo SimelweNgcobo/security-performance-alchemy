@@ -127,9 +127,44 @@ export function OrdersManagement() {
   };
 
   const hasCustomBranding = (order: Order) => {
-    return order.order_items.some(item => 
+    return order.order_items.some(item =>
       item.products.type === "custom" && item.custom_branding_data
     );
+  };
+
+  const isBulkOrder = (order: Order) => {
+    // Check if it's a bulk order based on metadata or order pattern
+    if (order.metadata) {
+      try {
+        const metadata = JSON.parse(order.metadata);
+        return metadata.bottle_size && metadata.quantity;
+      } catch {
+        return false;
+      }
+    }
+    return order.order_number?.startsWith('BLK');
+  };
+
+  const getBulkOrderDetails = (order: Order) => {
+    if (order.metadata) {
+      try {
+        return JSON.parse(order.metadata);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const getShippingAddress = (order: Order) => {
+    if (order.shipping_address) {
+      try {
+        return JSON.parse(order.shipping_address);
+      } catch {
+        return null;
+      }
+    }
+    return null;
   };
 
   if (loading) {
