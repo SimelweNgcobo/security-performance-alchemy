@@ -22,19 +22,28 @@ export const scrollToTop = () => {
   });
 };
 
-// Auto-scroll to top for all button clicks globally
+// Auto-scroll to top for specific button clicks only
 export const initializeGlobalScrollToTop = () => {
   // Add event listener for all button clicks
   document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
-    
-    // Check if clicked element is a button or has button role
+    const button = target.closest('button') || target.closest('[role="button"]') || target.closest('a[href]');
+
+    // Skip if button has no-scroll class or is in label editor
     if (
-      target.tagName === 'BUTTON' ||
-      target.closest('button') ||
-      target.getAttribute('role') === 'button' ||
-      target.closest('[role="button"]') ||
-      target.closest('a[href]') // Also include links
+      button?.classList.contains('no-scroll') ||
+      button?.closest('.label-editor') ||
+      target.classList.contains('no-scroll') ||
+      target.closest('.label-editor')
+    ) {
+      return;
+    }
+
+    // Only scroll for navigation links and major page actions
+    if (
+      target.closest('nav') || // Navigation links
+      target.closest('.main-cta') || // Main call-to-action buttons
+      button?.getAttribute('href')?.startsWith('/') // Internal navigation links
     ) {
       // Small delay to ensure any navigation happens first
       setTimeout(() => {
