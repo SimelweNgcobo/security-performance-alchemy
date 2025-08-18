@@ -330,6 +330,33 @@ const LabelEditor: React.FC = () => {
     toast.success("Default branding applied! Customize any element as needed.");
   };
 
+  // Add design to quote request
+  const addToQuoteRequest = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (design.elements.length === 0) {
+      toast.error("Please create a design first before adding to quote request");
+      return;
+    }
+
+    // Generate a preview image of the current design (simplified)
+    const designPreview = {
+      id: `design-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      design: design,
+      dimensions: { width: LABEL_WIDTH_MM, height: LABEL_HEIGHT_MM }
+    };
+
+    // Store in localStorage for now (in real implementation, this would go to a database)
+    const existingDesigns = JSON.parse(localStorage.getItem('quoteDesigns') || '[]');
+    existingDesigns.push(designPreview);
+    localStorage.setItem('quoteDesigns', JSON.stringify(existingDesigns));
+
+    toast.success("Design added to quote request! You can now submit your custom quote.");
+    setShowQuoteModal(true);
+  };
+
   const exportDesign = (e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
