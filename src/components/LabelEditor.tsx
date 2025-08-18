@@ -93,6 +93,7 @@ const LabelEditor: React.FC = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(100);
   const [isResizing, setIsResizing] = useState(false);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
 
   // Font options
   const fontFamilies = [
