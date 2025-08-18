@@ -207,7 +207,7 @@ const Enterprise = () => {
                           <div className="text-xs text-muted-foreground hidden sm:block">{bottle.volume}</div>
                         </div>
                         {bottle.popular && (
-                          <Badge className="absolute -top-2 -right-2 text-xs">Popular</Badge>
+                          <Badge className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 text-xs px-1 py-0.5">Popular</Badge>
                         )}
                       </button>
                     ))}
