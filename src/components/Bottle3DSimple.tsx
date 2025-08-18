@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 
 interface BottleSize {
@@ -39,10 +39,29 @@ const Bottle3DSimple = ({ selectedSize, labelTexture, labelSettings }: Bottle3DS
   const animationRef = useRef<number>();
   
   const [isInitialized, setIsInitialized] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
 
   // Base bottle size (500ml as reference)
   const baseSize = bottleSizes.find(s => s.id === "500ml")!.dimensions;
   const currentBottle = bottleSizes.find(s => s.id === selectedSize) || bottleSizes[1];
+
+  // Handle responsive dimensions
+  const updateDimensions = useCallback(() => {
+    if (mountRef.current) {
+      const container = mountRef.current.parentElement;
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        const size = Math.min(rect.width - 32, 400); // 16px padding on each side
+        setDimensions({ width: size, height: size });
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, [updateDimensions]);
 
   const createBottleGeometry = (baseRadius = 0.033, height = 0.210) => {
     const geometry = new THREE.CylinderGeometry(baseRadius, baseRadius, height, 32);
@@ -112,104 +131,134 @@ const Bottle3DSimple = ({ selectedSize, labelTexture, labelSettings }: Bottle3DS
   useEffect(() => {
     if (!mountRef.current || isInitialized) return;
 
-    // Scene setup
-    const scene = new THREE.Scene();
-    sceneRef.current = scene;
+    try {
+      // Scene setup
+      const scene = new THREE.Scene();
+      sceneRef.current = scene;
 
-    // Camera setup
-    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-    camera.position.set(0, 0.1, 0.4);
-    cameraRef.current = camera;
+      // Camera setup
+      const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+      camera.position.set(0, 0.1, 0.4);
+      cameraRef.current = camera;
 
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(400, 400);
-    renderer.setClearColor(0x000000, 0);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    rendererRef.current = renderer;
+      // Renderer setup
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(dimensions.width, dimensions.height);
+      renderer.setClearColor(0x000000, 0);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      rendererRef.current = renderer;
 
-    mountRef.current.appendChild(renderer.domElement);
+      // Ensure canvas fits container
+      renderer.domElement.style.width = '100%';
+      renderer.domElement.style.height = '100%';
+      renderer.domElement.style.display = 'block';
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    scene.add(ambientLight);
+      mountRef.current.appendChild(renderer.domElement);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 5, 5);
-    directionalLight.castShadow = true;
-    scene.add(directionalLight);
+      // Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
 
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
-    directionalLight2.position.set(-5, 5, -5);
-    scene.add(directionalLight2);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(5, 5, 5);
+      directionalLight.castShadow = true;
+      directionalLight.shadow.mapSize.width = 1024;
+      directionalLight.shadow.mapSize.height = 1024;
+      scene.add(directionalLight);
 
-    // Create bottle
-    const bottleGeometry = createBottleGeometry();
-    const bottleMaterial = new THREE.MeshLambertMaterial({
-      color: 0xf0f8ff,
-      transparent: true,
-      opacity: 0.3,
-    });
-    const bottle = new THREE.Mesh(bottleGeometry, bottleMaterial);
-    bottle.castShadow = true;
-    bottle.receiveShadow = true;
-    scene.add(bottle);
-    bottleRef.current = bottle;
+      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
+      directionalLight2.position.set(-5, 5, -5);
+      scene.add(directionalLight2);
 
-    // Create water
-    const waterGeometry = createWaterGeometry();
-    const waterMaterial = new THREE.MeshLambertMaterial({
-      color: 0x87ceeb,
-      transparent: true,
-      opacity: 0.6,
-    });
-    const water = new THREE.Mesh(waterGeometry, waterMaterial);
-    water.position.y = -0.01;
-    scene.add(water);
-    waterRef.current = water;
+      // Create bottle
+      const bottleGeometry = createBottleGeometry();
+      const bottleMaterial = new THREE.MeshPhongMaterial({
+        color: 0xe6f3ff,
+        transparent: true,
+        opacity: 0.4,
+        shininess: 100,
+      });
+      const bottle = new THREE.Mesh(bottleGeometry, bottleMaterial);
+      bottle.castShadow = true;
+      bottle.receiveShadow = true;
+      scene.add(bottle);
+      bottleRef.current = bottle;
 
-    // Create cap
-    const capGeometry = new THREE.CylinderGeometry(0.014, 0.014, 0.02, 16);
-    const capMaterial = new THREE.MeshLambertMaterial({
-      color: 0x4169e1,
-    });
-    const cap = new THREE.Mesh(capGeometry, capMaterial);
-    cap.position.y = 0.12;
-    cap.castShadow = true;
-    scene.add(cap);
-    capRef.current = cap;
+      // Create water
+      const waterGeometry = createWaterGeometry();
+      const waterMaterial = new THREE.MeshPhongMaterial({
+        color: 0x4a90e2,
+        transparent: true,
+        opacity: 0.7,
+        shininess: 100,
+      });
+      const water = new THREE.Mesh(waterGeometry, waterMaterial);
+      water.position.y = -0.01;
+      scene.add(water);
+      waterRef.current = water;
 
-    setIsInitialized(true);
+      // Create cap
+      const capGeometry = new THREE.CylinderGeometry(0.014, 0.014, 0.02, 16);
+      const capMaterial = new THREE.MeshPhongMaterial({
+        color: 0x2563eb,
+        shininess: 50,
+      });
+      const cap = new THREE.Mesh(capGeometry, capMaterial);
+      cap.position.y = 0.12;
+      cap.castShadow = true;
+      scene.add(cap);
+      capRef.current = cap;
 
-    // Animation loop
-    const animate = () => {
-      animationRef.current = requestAnimationFrame(animate);
-      
-      if (bottle && water && cap) {
-        const time = Date.now() * 0.001;
-        bottle.rotation.y = Math.sin(time * 0.5) * 0.1;
-        water.rotation.y = Math.sin(time * 0.5) * 0.1;
-        cap.rotation.y = Math.sin(time * 0.5) * 0.1;
+      setIsInitialized(true);
+
+      // Animation loop
+      const animate = () => {
+        animationRef.current = requestAnimationFrame(animate);
         
-        camera.position.x = Math.sin(time * 0.2) * 0.05;
-        camera.lookAt(0, 0, 0);
-      }
-      
-      renderer.render(scene, camera);
-    };
-    animate();
+        if (bottle && water && cap && camera) {
+          const time = Date.now() * 0.001;
+          bottle.rotation.y = Math.sin(time * 0.3) * 0.05;
+          water.rotation.y = Math.sin(time * 0.3) * 0.05;
+          cap.rotation.y = Math.sin(time * 0.3) * 0.05;
+          
+          camera.position.x = Math.sin(time * 0.2) * 0.02;
+          camera.lookAt(0, 0, 0);
+        }
+        
+        renderer.render(scene, camera);
+      };
+      animate();
+
+    } catch (error) {
+      console.error('Error initializing 3D scene:', error);
+    }
 
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (mountRef.current && rendererRef.current?.domElement) {
+        try {
+          mountRef.current.removeChild(rendererRef.current.domElement);
+        } catch (e) {
+          console.warn('Error removing canvas:', e);
+        }
       }
-      renderer.dispose();
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
     };
-  }, [isInitialized]);
+  }, [isInitialized, dimensions]);
+
+  // Update renderer size when dimensions change
+  useEffect(() => {
+    if (rendererRef.current && cameraRef.current) {
+      rendererRef.current.setSize(dimensions.width, dimensions.height);
+      cameraRef.current.aspect = 1;
+      cameraRef.current.updateProjectionMatrix();
+    }
+  }, [dimensions]);
 
   // Update bottle size
   useEffect(() => {
@@ -217,7 +266,6 @@ const Bottle3DSimple = ({ selectedSize, labelTexture, labelSettings }: Bottle3DS
 
     const scaleY = currentBottle.dimensions.height / baseSize.height;
     const scaleXZ = currentBottle.dimensions.diameter / baseSize.diameter;
-
     const targetScale = new THREE.Vector3(scaleXZ, scaleY, scaleXZ);
     
     // Animate scale change
@@ -231,12 +279,13 @@ const Bottle3DSimple = ({ selectedSize, labelTexture, labelSettings }: Bottle3DS
       
       // Ease in-out
       const easeT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-      
       const currentScale = startScale.clone().lerp(targetScale, easeT);
       
-      bottleRef.current!.scale.copy(currentScale);
-      waterRef.current!.scale.copy(currentScale);
-      capRef.current!.scale.copy(currentScale);
+      if (bottleRef.current && waterRef.current && capRef.current) {
+        bottleRef.current.scale.copy(currentScale);
+        waterRef.current.scale.copy(currentScale);
+        capRef.current.scale.copy(currentScale);
+      }
       
       if (t < 1) {
         requestAnimationFrame(animateScale);
@@ -244,43 +293,67 @@ const Bottle3DSimple = ({ selectedSize, labelTexture, labelSettings }: Bottle3DS
     };
     
     animateScale();
-  }, [selectedSize]);
+  }, [selectedSize, currentBottle, baseSize]);
 
   // Update label
   useEffect(() => {
-    if (!sceneRef.current || !labelTexture) return;
+    if (!sceneRef.current) return;
 
     // Remove existing label
     if (labelRef.current) {
       sceneRef.current.remove(labelRef.current);
+      labelRef.current = undefined;
     }
+
+    if (!labelTexture) return;
 
     // Create new label
     const loader = new THREE.TextureLoader();
-    loader.load(labelTexture, (texture) => {
-      const labelGeometry = new THREE.PlaneGeometry(0.06, 0.04);
-      const labelMaterial = new THREE.MeshLambertMaterial({
-        map: texture,
-        transparent: true,
-      });
-      
-      const label = new THREE.Mesh(labelGeometry, labelMaterial);
-      label.position.set(
-        (labelSettings.x - 50) * 0.001,
-        (labelSettings.y - 50) * 0.002,
-        0.034
-      );
-      label.scale.setScalar(labelSettings.scale * 0.001);
-      label.rotation.z = (labelSettings.rotation * Math.PI) / 180;
-      
-      sceneRef.current!.add(label);
-      labelRef.current = label;
-    });
+    loader.load(
+      labelTexture,
+      (texture) => {
+        if (!sceneRef.current) return;
+        
+        const labelGeometry = new THREE.PlaneGeometry(0.06, 0.04);
+        const labelMaterial = new THREE.MeshPhongMaterial({
+          map: texture,
+          transparent: true,
+        });
+        
+        const label = new THREE.Mesh(labelGeometry, labelMaterial);
+        label.position.set(
+          (labelSettings.x - 50) * 0.001,
+          (labelSettings.y - 50) * 0.002,
+          0.034
+        );
+        label.scale.setScalar(labelSettings.scale * 0.001);
+        label.rotation.z = (labelSettings.rotation * Math.PI) / 180;
+        
+        sceneRef.current.add(label);
+        labelRef.current = label;
+      },
+      undefined,
+      (error) => {
+        console.error('Error loading label texture:', error);
+      }
+    );
   }, [labelTexture, labelSettings]);
 
   return (
-    <div className="w-full h-96 rounded-2xl overflow-hidden bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
-      <div ref={mountRef} className="w-[400px] h-[400px]" />
+    <div className="w-full rounded-2xl overflow-hidden bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
+      <div 
+        ref={mountRef} 
+        className="w-full max-w-sm aspect-square flex items-center justify-center"
+        style={{ minHeight: '280px' }}
+      />
+      {!isInitialized && (
+        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            <p>Loading 3D Preview...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
