@@ -65,6 +65,18 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
+                {isAdmin && (
+                  <Link to="/panel-1973">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full px-4 border-destructive/20 text-destructive hover:bg-destructive/10"
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      Admin Panel
+                    </Button>
+                  </Link>
+                )}
                 <Link to="/checkout">
                   <Button
                     size="sm"
