@@ -27,6 +27,7 @@ const Enterprise = () => {
   const [contactEmail, setContactEmail] = useState(user?.email || "");
   const [requirements, setRequirements] = useState("");
   const [loading, setLoading] = useState(false);
+  const [savedDesigns, setSavedDesigns] = useState<any[]>([]);
 
   const handleEnterpriseRequest = async () => {
     if (!companyName || !contactEmail) {
