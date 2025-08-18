@@ -136,8 +136,29 @@ const Enterprise = () => {
   };
 
   // Convert mm to pixels for display (using 96 DPI for screen)
-  const labelWidthPx = Math.round((224 / 25.4) * 96);
-  const labelHeightPx = Math.round((60 / 25.4) * 96);
+  // Make responsive - scale down on mobile
+  const baseLabelWidthPx = Math.round((224 / 25.4) * 96);
+  const baseLabelHeightPx = Math.round((60 / 25.4) * 96);
+
+  // Calculate responsive dimensions
+  const getResponsiveDimensions = () => {
+    if (typeof window !== 'undefined') {
+      const screenWidth = window.innerWidth;
+      const maxWidth = screenWidth < 640 ? screenWidth - 80 : // Mobile with padding
+                     screenWidth < 1024 ? screenWidth * 0.8 : // Tablet
+                     baseLabelWidthPx; // Desktop
+
+      const scale = Math.min(maxWidth / baseLabelWidthPx, 1);
+      return {
+        width: Math.round(baseLabelWidthPx * scale),
+        height: Math.round(baseLabelHeightPx * scale),
+        scale
+      };
+    }
+    return { width: baseLabelWidthPx, height: baseLabelHeightPx, scale: 1 };
+  };
+
+  const { width: labelWidthPx, height: labelHeightPx, scale: labelScale } = getResponsiveDimensions();
 
   return (
     <div className="min-h-screen bg-background">
@@ -160,9 +181,9 @@ const Enterprise = () => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-3 gap-4 lg:gap-8 max-w-7xl mx-auto">
             {/* Label Preview */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 lg:space-y-6 order-2 lg:order-1">
               <Card>
                 <CardHeader>
                   <CardTitle>Label Preview</CardTitle>
@@ -171,14 +192,15 @@ const Enterprise = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex justify-center">
-                    <div 
-                      className="border-2 border-dashed border-gray-300 relative overflow-hidden"
+                  <div className="flex justify-center px-2 sm:px-0">
+                    <div
+                      className="border-2 border-dashed border-gray-300 relative overflow-hidden mx-auto"
                       style={{
                         width: `${labelWidthPx}px`,
                         height: `${labelHeightPx}px`,
                         backgroundColor: labelCustomization.backgroundColor,
-                        maxWidth: '100%'
+                        maxWidth: '100%',
+                        minWidth: '200px'
                       }}
                     >
                       {/* Background Image */}
@@ -208,12 +230,13 @@ const Enterprise = () => {
                       
                       {/* Custom Text */}
                       {labelCustomization.text && !isDefault && (
-                        <div 
-                          className="absolute inset-0 flex items-center justify-center"
+                        <div
+                          className="absolute inset-0 flex items-center justify-center p-2 text-center"
                           style={{
                             color: labelCustomization.textColor,
-                            fontSize: `${labelCustomization.fontSize}px`,
-                            fontFamily: labelCustomization.fontFamily
+                            fontSize: `${labelCustomization.fontSize * labelScale}px`,
+                            fontFamily: labelCustomization.fontFamily,
+                            wordBreak: 'break-word'
                           }}
                         >
                           {labelCustomization.text}
@@ -224,6 +247,13 @@ const Enterprise = () => {
                       <div className="absolute -bottom-6 left-0 right-0 text-xs text-muted-foreground text-center">
                         224mm × 60mm
                       </div>
+
+                      {/* Mobile scale indicator */}
+                      {labelScale < 1 && (
+                        <div className="absolute -top-6 left-0 right-0 text-xs text-muted-foreground text-center">
+                          Scaled for mobile ({Math.round(labelScale * 100)}%)
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -231,10 +261,10 @@ const Enterprise = () => {
             </div>
 
             {/* Customization Controls */}
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6 order-1 lg:order-2">
               {/* Default Button */}
               <Card>
-                <CardContent className="pt-6">
+                <CardContent className="pt-4 lg:pt-6">
                   <Button 
                     onClick={resetToDefault}
                     variant={isDefault ? "default" : "outline"}
@@ -265,12 +295,12 @@ const Enterprise = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div
-                    className="border-2 border-dashed border-border rounded-lg p-4 sm:p-6 text-center cursor-pointer hover:border-primary transition-colors"
+                    className="border-2 border-dashed border-border rounded-lg p-4 sm:p-6 text-center cursor-pointer hover:border-primary transition-colors active:scale-95"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <Upload className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground mx-auto mb-2" />
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                      Click to upload or drag & drop
+                      Tap to upload or drag & drop
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       PNG, JPG, SVG up to 5MB
