@@ -170,7 +170,7 @@ const Enterprise = () => {
                 Enterprise Solutions
               </h1>
             </div>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
               Customize bottles with your brand logo in real-time. Perfect for corporate events, 
               promotional campaigns, and business partnerships.
             </p>
