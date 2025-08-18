@@ -55,12 +55,12 @@ const Layout2Products = () => {
     },
     {
       name: "Bulk Bottle",
-      size: "6 litre",
+      size: "5 litre",
       description: "Commercial grade bottle for offices, events, and large gatherings. Perfect for sharing.",
       image: "https://images.pexels.com/photos/6314334/pexels-photo-6314334.jpeg",
       badge: "Commercial",
       gradient: "from-indigo-500/20 to-indigo-600/5",
-      volume: "6L",
+      volume: "5L",
       dimensions: "Bulk & Commercial"
     }
   ];
