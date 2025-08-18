@@ -29,6 +29,12 @@ const Enterprise = () => {
   const [loading, setLoading] = useState(false);
   const [savedDesigns, setSavedDesigns] = useState<any[]>([]);
 
+  useEffect(() => {
+    // Load saved designs from localStorage
+    const designs = JSON.parse(localStorage.getItem('quoteDesigns') || '[]');
+    setSavedDesigns(designs);
+  }, []);
+
   const handleEnterpriseRequest = async () => {
     if (!companyName || !contactEmail) {
       toast.error("Please fill in company name and contact email");
