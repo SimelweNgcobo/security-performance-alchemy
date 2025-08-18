@@ -6,13 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Upload, 
-  RotateCcw, 
-  ZoomIn, 
-  ZoomOut, 
-  Move, 
-  Send, 
+import {
+  Upload,
+  RotateCcw,
+  ZoomIn,
+  ZoomOut,
+  Move,
+  Send,
   Building2,
   Droplets,
   CheckCircle
@@ -20,6 +20,19 @@ import {
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
+
+// Add 3D CSS classes
+const bottle3DStyles = `
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .transform-gpu {
+    transform: translateZ(0);
+  }
+  .rotateX-10 {
+    transform: rotateX(10deg);
+  }
+`;
 
 interface BottleSize {
   id: string;
