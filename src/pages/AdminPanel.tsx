@@ -272,6 +272,10 @@ export default function AdminPanel() {
             <DeliveryManagement />
           </TabsContent>
 
+          <TabsContent value="enterprise">
+            <EnterpriseRequests />
+          </TabsContent>
+
           <TabsContent value="reports">
             <ReportsAnalytics />
           </TabsContent>
