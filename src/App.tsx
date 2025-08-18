@@ -23,6 +23,7 @@ import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
 import AdminAuth from "./pages/AdminAuth";
 import Profile from "./pages/Profile";
+import BulkCheckout from "./pages/BulkCheckout";
 
 const queryClient = new QueryClient();
 
