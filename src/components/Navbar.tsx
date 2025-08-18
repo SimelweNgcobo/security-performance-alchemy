@@ -170,15 +170,81 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="pt-3 border-t border-border/50">
-                <Link to="/checkout" className="block">
-                  <Button
-                    size="sm"
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Shop Now
-                  </Button>
-                </Link>
+                {user ? (
+                  <div className="space-y-2">
+                    <div className="px-2 py-2 text-sm">
+                      <div className="font-medium">{user.user_metadata?.full_name || "User"}</div>
+                      <div className="text-xs text-muted-foreground">{user.email}</div>
+                    </div>
+                    <Link to="/profile" className="block">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                      </Button>
+                    </Link>
+                    <Link to="/orders" className="block">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <ShoppingBag className="mr-2 h-4 w-4" />
+                        My Orders
+                      </Button>
+                    </Link>
+                    <Link to="/checkout" className="block">
+                      <Button
+                        size="sm"
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <ShoppingBag className="mr-2 h-4 w-4" />
+                        Cart & Checkout
+                      </Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-full justify-start text-red-600"
+                      onClick={() => {
+                        setIsOpen(false);
+                        handleSignOut();
+                      }}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Link to="/auth" className="block">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full rounded-full"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        Sign In / Sign Up
+                      </Button>
+                    </Link>
+                    <Link to="/checkout" className="block">
+                      <Button
+                        size="sm"
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Shop Now
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>
