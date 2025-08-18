@@ -75,7 +75,8 @@ export default function AdminAuth() {
 
         if (adminError || !adminUser) {
           await supabase.auth.signOut();
-          toast.error("Access denied. Admin privileges required.");
+          console.error("Admin access check failed:", adminError);
+          toast.error("Access denied. This account does not have admin privileges. Please contact support if you believe this is an error.");
           return;
         }
 
