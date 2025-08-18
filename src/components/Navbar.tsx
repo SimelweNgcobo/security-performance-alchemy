@@ -261,7 +261,7 @@ const Navbar = () => {
                         Sign In / Sign Up
                       </Button>
                     </Link>
-                    <Link to="/checkout" className="block">
+                    <Link to="/products" className="block">
                       <Button
                         size="sm"
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
