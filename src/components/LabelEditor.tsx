@@ -444,78 +444,82 @@ const LabelEditor: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 overflow-auto">
-              <div
-                ref={canvasRef}
-                className="relative mx-auto border border-gray-400 shadow-lg"
-                style={{
-                  width: LABEL_WIDTH_PX * (zoom / 100),
-                  height: LABEL_HEIGHT_PX * (zoom / 100),
-                  backgroundColor: design.backgroundColor,
-                  backgroundImage: design.backgroundImage ? `url(${design.backgroundImage})` : undefined,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-                onClick={() => setSelectedElement(null)}
-              >
-                {/* Render elements sorted by layer */}
-                {design.elements
-                  .sort((a, b) => a.layer - b.layer)
-                  .map((element) => (
-                    <div
-                      key={element.id}
-                      className={`absolute cursor-move border-2 transition-all ${
-                        selectedElement === element.id
-                          ? 'border-blue-500 shadow-md'
-                          : 'border-transparent hover:border-blue-300'
-                      } ${!element.visible ? 'opacity-50' : ''}`}
-                      style={{
-                        left: element.x * (zoom / 100),
-                        top: element.y * (zoom / 100),
-                        width: element.width * (zoom / 100),
-                        height: element.height * (zoom / 100),
-                        transform: `rotate(${element.rotation}deg)`,
-                        transformOrigin: 'center'
-                      }}
-                      onMouseDown={(e) => handleMouseDown(e, element.id)}
-                    >
-                      {element.type === 'text' ? (
-                        <div
-                          className="w-full h-full flex items-center"
-                          style={{
-                            fontSize: (element as TextElement).fontSize * (zoom / 100),
-                            fontFamily: (element as TextElement).fontFamily,
-                            color: (element as TextElement).color,
-                            fontWeight: (element as TextElement).fontWeight,
-                            fontStyle: (element as TextElement).fontStyle,
-                            textDecoration: (element as TextElement).textDecoration,
-                            textAlign: (element as TextElement).textAlign,
-                            overflow: 'hidden',
-                            wordWrap: 'break-word'
-                          }}
-                        >
-                          {(element as TextElement).content}
-                        </div>
-                      ) : (
-                        <img
-                          src={(element as ImageElement).src}
-                          alt="Label element"
-                          className="w-full h-full object-cover"
-                          draggable={false}
-                        />
-                      )}
-                      
-                      {/* Selection handles */}
-                      {selectedElement === element.id && (
-                        <>
-                          <div className="absolute -top-1 -left-1 w-2 h-2 bg-blue-500 border border-white rounded-full cursor-nw-resize" />
-                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 border border-white rounded-full cursor-ne-resize" />
-                          <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-blue-500 border border-white rounded-full cursor-sw-resize" />
-                          <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-blue-500 border border-white rounded-full cursor-se-resize" />
-                        </>
-                      )}
-                    </div>
-                  ))}
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 overflow-auto max-h-[70vh]">
+              <div className="flex items-center justify-center min-h-[400px]">
+                <div
+                  ref={canvasRef}
+                  className="relative border border-gray-400 shadow-lg cursor-crosshair"
+                  style={{
+                    width: LABEL_WIDTH_PX * (zoom / 100),
+                    height: LABEL_HEIGHT_PX * (zoom / 100),
+                    backgroundColor: design.backgroundColor,
+                    backgroundImage: design.backgroundImage ? `url(${design.backgroundImage})` : undefined,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    minWidth: '200px',
+                    minHeight: '50px'
+                  }}
+                  onClick={() => setSelectedElement(null)}
+                >
+                  {/* Render elements sorted by layer */}
+                  {design.elements
+                    .sort((a, b) => a.layer - b.layer)
+                    .map((element) => (
+                      <div
+                        key={element.id}
+                        className={`absolute cursor-move border-2 transition-all ${
+                          selectedElement === element.id
+                            ? 'border-blue-500 shadow-md'
+                            : 'border-transparent hover:border-blue-300'
+                        } ${!element.visible ? 'opacity-50' : ''}`}
+                        style={{
+                          left: element.x * (zoom / 100),
+                          top: element.y * (zoom / 100),
+                          width: element.width * (zoom / 100),
+                          height: element.height * (zoom / 100),
+                          transform: `rotate(${element.rotation}deg)`,
+                          transformOrigin: 'center'
+                        }}
+                        onMouseDown={(e) => handleMouseDown(e, element.id)}
+                      >
+                        {element.type === 'text' ? (
+                          <div
+                            className="w-full h-full flex items-center"
+                            style={{
+                              fontSize: (element as TextElement).fontSize * (zoom / 100),
+                              fontFamily: (element as TextElement).fontFamily,
+                              color: (element as TextElement).color,
+                              fontWeight: (element as TextElement).fontWeight,
+                              fontStyle: (element as TextElement).fontStyle,
+                              textDecoration: (element as TextElement).textDecoration,
+                              textAlign: (element as TextElement).textAlign,
+                              overflow: 'hidden',
+                              wordWrap: 'break-word'
+                            }}
+                          >
+                            {(element as TextElement).content}
+                          </div>
+                        ) : (
+                          <img
+                            src={(element as ImageElement).src}
+                            alt="Label element"
+                            className="w-full h-full object-cover"
+                            draggable={false}
+                          />
+                        )}
+
+                        {/* Selection handles */}
+                        {selectedElement === element.id && (
+                          <>
+                            <div className="absolute -top-1 -left-1 w-2 h-2 bg-blue-500 border border-white rounded-full cursor-nw-resize" />
+                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 border border-white rounded-full cursor-ne-resize" />
+                            <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-blue-500 border border-white rounded-full cursor-sw-resize" />
+                            <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-blue-500 border border-white rounded-full cursor-se-resize" />
+                          </>
+                        )}
+                      </div>
+                    ))}
+                </div>
               </div>
             </div>
             
