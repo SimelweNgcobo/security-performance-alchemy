@@ -25,6 +25,7 @@ import { DeliveryManagement } from "@/components/admin/DeliveryManagement";
 import { ReportsAnalytics } from "@/components/admin/ReportsAnalytics";
 import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminSettings } from "@/components/admin/AdminSettings";
+import { EnterpriseRequests } from "@/components/admin/EnterpriseRequests";
 
 export default function AdminPanel() {
   const navigate = useNavigate();
