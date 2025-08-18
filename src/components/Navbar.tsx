@@ -19,11 +19,12 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const navItems = [
-    { name: "Home", href: "/" },
-    { name: "Products", href: "/products" },
+    { name: "My Views", href: "/" },
+    { name: "Discover Collection", href: "/products" },
     { name: "Enterprise", href: "/enterprise" },
     { name: "About", href: "/about" },
-    { name: "Testimonials", href: "/testimonials" },
+    { name: "Company", href: "/about" },
+    { name: "Profile", href: "/profile" },
     { name: "Contact", href: "/contact" }
   ];
 
@@ -78,14 +79,14 @@ const Navbar = () => {
                     </Button>
                   </Link>
                 )}
-                <Link to="/checkout">
+                <Link to="/products">
                   <Button
                     size="sm"
                     variant="outline"
                     className="rounded-full px-4"
                   >
                     <ShoppingBag className="h-4 w-4 mr-2" />
-                    Cart
+                    Shop
                   </Button>
                 </Link>
                 <DropdownMenu>
@@ -147,7 +148,7 @@ const Navbar = () => {
                     Sign In
                   </Button>
                 </Link>
-                <Link to="/checkout">
+                <Link to="/products">
                   <Button
                     size="sm"
                     className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6"
@@ -224,14 +225,14 @@ const Navbar = () => {
                         My Orders
                       </Button>
                     </Link>
-                    <Link to="/checkout" className="block">
+                    <Link to="/products" className="block">
                       <Button
                         size="sm"
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
                         onClick={() => setIsOpen(false)}
                       >
                         <ShoppingBag className="mr-2 h-4 w-4" />
-                        Cart & Checkout
+                        Shop Products
                       </Button>
                     </Link>
                     <Button
@@ -260,7 +261,7 @@ const Navbar = () => {
                         Sign In / Sign Up
                       </Button>
                     </Link>
-                    <Link to="/checkout" className="block">
+                    <Link to="/products" className="block">
                       <Button
                         size="sm"
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
