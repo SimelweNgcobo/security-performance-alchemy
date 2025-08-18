@@ -1,7 +1,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Droplets, Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Droplets, Menu, X, User, LogOut, ShoppingBag, Heart } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
