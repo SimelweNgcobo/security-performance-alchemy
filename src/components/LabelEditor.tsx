@@ -30,7 +30,8 @@ import {
   Eye,
   EyeOff,
   Copy,
-  Settings
+  Settings,
+  Send
 } from 'lucide-react';
 
 // Convert mm to pixels (at 96 DPI: 1mm = 3.78 pixels)
