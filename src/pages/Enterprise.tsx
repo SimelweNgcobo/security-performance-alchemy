@@ -244,7 +244,7 @@ const Enterprise = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div
-                    className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-primary transition-colors"
+                    className="border-2 border-dashed border-border rounded-lg p-4 sm:p-6 text-center cursor-pointer hover:border-primary transition-colors"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
