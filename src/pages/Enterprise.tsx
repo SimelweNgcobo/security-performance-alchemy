@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { userLabelsService, UserLabel } from "@/services/userLabels";
+import { emailService } from "@/services/emailService";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import LabelEditor from "@/components/LabelEditor";
