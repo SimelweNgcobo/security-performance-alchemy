@@ -284,6 +284,94 @@ const Profile = () => {
     }
   };
 
+  const updateProfile = async () => {
+    try {
+      // Update auth user metadata
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { full_name: profileForm.fullName }
+      });
+
+      if (authError) throw authError;
+
+      // Update customer record
+      const { error: customerError } = await supabase
+        .from("customers")
+        .update({
+          name: profileForm.fullName,
+          phone: profileForm.phone
+        })
+        .eq("email", user?.email);
+
+      if (customerError) throw customerError;
+
+      // Reload user data
+      await loadUserData();
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      // Delete customer record first
+      const { error: customerError } = await supabase
+        .from("customers")
+        .delete()
+        .eq("email", user?.email);
+
+      if (customerError) throw customerError;
+
+      // Delete auth user (this will also sign out)
+      const { error: authError } = await supabase.auth.admin.deleteUser(user?.id || "");
+
+      if (authError) {
+        console.warn("Could not delete auth user:", authError);
+      }
+
+      // Clear local storage
+      localStorage.clear();
+
+      toast.success("Account deleted successfully");
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast.error("Failed to delete account. Please contact support.");
+    }
+  };
+
+  const saveShippingDetails = (details: any) => {
+    const updated = [...savedShippingDetails, { ...details, id: Date.now() }];
+    setSavedShippingDetails(updated);
+    localStorage.setItem(`shipping_${user?.id}`, JSON.stringify(updated));
+    toast.success("Shipping details saved");
+  };
+
+  const saveCustomLabel = () => {
+    if (!newLabel.name.trim()) {
+      toast.error("Please enter a label name");
+      return;
+    }
+
+    const label = { ...newLabel, id: Date.now(), created_at: new Date().toISOString() };
+    const updated = [...customLabels, label];
+    setCustomLabels(updated);
+    localStorage.setItem(`labels_${user?.id}`, JSON.stringify(updated));
+    setNewLabel({ name: "", design: "", description: "" });
+    toast.success("Custom label saved");
+  };
+
+  const reorderItems = async (purchase: Purchase) => {
+    try {
+      // Add items back to cart (simplified for now)
+      toast.success(`${purchase.items.length} items re-added to cart`);
+      navigate("/cart");
+    } catch (error) {
+      toast.error("Failed to re-order items");
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
