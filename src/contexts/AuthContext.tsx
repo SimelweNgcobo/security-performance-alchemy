@@ -156,7 +156,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { error: customerError } = await supabase
           .from("customers")
           .update({
-            full_name: data.full_name,
+            name: data.full_name,
             phone: data.phone,
           })
           .eq("user_id", user.id);
