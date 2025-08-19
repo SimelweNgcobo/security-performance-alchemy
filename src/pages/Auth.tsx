@@ -214,13 +214,43 @@ export default function Auth() {
                       </div>
                     </div>
 
-                    <Button 
-                      type="submit" 
-                      className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium" 
+                    <Button
+                      type="submit"
+                      className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
                       disabled={loading}
                     >
                       {loading ? "Signing in..." : "Sign In"}
                     </Button>
+
+                    {/* Development mode: Test user creation */}
+                    {import.meta.env.DEV && (
+                      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-xs text-yellow-800 mb-2">
+                          <strong>Development Mode:</strong> Need a test account?
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="w-full text-xs"
+                          onClick={async () => {
+                            const result = await debugAuth.createTestUser();
+                            if (result.success) {
+                              toast.success(`Test user ready! Email: ${result.email}, Password: ${result.password}`);
+                              setFormData(prev => ({
+                                ...prev,
+                                email: result.email,
+                                password: result.password
+                              }));
+                            } else {
+                              toast.error("Failed to create test user");
+                            }
+                          }}
+                        >
+                          Create Test User
+                        </Button>
+                      </div>
+                    )}
                   </form>
                 </TabsContent>
 
