@@ -706,9 +706,9 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Suspense fallback={<div className="h-64 flex items-center justify-center"><LoadingSpinner /></div>}>
-                    <LabelEditor onSave={loadUserLabels} />
-                  </Suspense>
+                  <div className="h-32 flex items-center justify-center text-muted-foreground">
+                    Label Editor temporarily disabled for debugging
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
