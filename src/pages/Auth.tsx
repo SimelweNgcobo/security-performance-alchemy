@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Eye, EyeOff, User, Mail, Phone, Droplets } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 
@@ -39,12 +40,19 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
     if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    if (formData.password.length > 72) {
+      toast.error("Password cannot be longer than 72 characters");
       return;
     }
 
@@ -261,6 +269,7 @@ export default function Auth() {
                           className="pr-10"
                           required
                           minLength={6}
+                          maxLength={72}
                         />
                         <Button
                           type="button"
@@ -277,7 +286,7 @@ export default function Auth() {
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Must be at least 6 characters
+                        Must be 6-72 characters long
                       </p>
                     </div>
 
@@ -292,6 +301,7 @@ export default function Auth() {
                         value={formData.confirmPassword}
                         onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                         required
+                        maxLength={72}
                       />
                     </div>
 
