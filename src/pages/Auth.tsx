@@ -32,11 +32,30 @@ export default function Auth() {
     setLoading(true);
 
     try {
+      // Test connection first
+      const connectionTest = await debugAuth.testConnection();
+      if (!connectionTest.success) {
+        toast.error("Cannot connect to authentication service. Please check your internet connection.");
+        return;
+      }
+
       await signIn(formData.email, formData.password, () => {
         navigate("/profile");
       });
-    } catch (error) {
-      // Error handling is done in the auth context
+    } catch (error: any) {
+      // Enhanced error handling
+      console.error("Login error details:", error);
+
+      if (error.message?.includes("Invalid login credentials")) {
+        toast.error("Invalid email or password. Please check your credentials and try again.");
+
+        // Suggest creating an account if user doesn't exist
+        toast.info("Don't have an account? Click 'Sign Up' to create one.");
+      } else if (error.message?.includes("Email not confirmed")) {
+        toast.error("Please check your email and click the confirmation link before signing in.");
+      } else {
+        toast.error(error.message || "Failed to sign in. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
