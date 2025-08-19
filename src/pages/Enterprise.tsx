@@ -121,6 +121,27 @@ const Enterprise = () => {
             </div>
           </div>
 
+          {/* Bulk Purchase CTA */}
+          <div className="text-center mb-12">
+            <div className="bg-gradient-to-r from-primary/10 to-blue-500/10 rounded-2xl p-8 max-w-2xl mx-auto border border-primary/20">
+              <h3 className="text-2xl font-bold text-foreground mb-4">
+                Ready for Bulk Orders?
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Skip the custom design process and place your bulk order directly.
+                Choose from our standard bottle sizes with volume discounts.
+              </p>
+              <Button
+                onClick={() => navigate('/bulk-checkout')}
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-medium"
+              >
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                Start Bulk Purchase
+              </Button>
+            </div>
+          </div>
+
           {/* Label Designer Section */}
           <div className="mb-12">
             <div className="text-center mb-8">
