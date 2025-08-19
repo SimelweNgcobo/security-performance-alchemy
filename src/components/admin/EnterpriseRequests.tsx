@@ -27,13 +27,15 @@ interface EnterpriseRequest {
   id: string;
   company_name: string;
   contact_email: string;
-  requirements: string;
-  status: 'pending' | 'reviewing' | 'quoted' | 'approved' | 'rejected';
-  user_id?: string;
-  label_design_url?: string;
+  requirements: string | null;
+  status: string;
+  user_id: string | null;
+  designs: any | null;
   created_at: string;
-  updated_at?: string;
-  notes?: string;
+  updated_at: string;
+  notes: string | null;
+  quote_amount: number | null;
+  quote_valid_until: string | null;
 }
 
 export const EnterpriseRequests = () => {
