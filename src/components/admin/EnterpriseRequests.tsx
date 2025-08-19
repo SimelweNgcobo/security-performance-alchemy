@@ -87,17 +87,23 @@ export const EnterpriseRequests = () => {
   const loadRequests = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual Supabase query when table exists
-      // const { data, error } = await supabase
-      //   .from("enterprise_requests")
-      //   .select("*")
-      //   .order("created_at", { ascending: false });
 
-      // For now, use mock data
-      setRequests(mockRequests);
+      const { data, error } = await supabase
+        .from("enterprise_requests")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      setRequests(data || []);
     } catch (error) {
       console.error("Error loading enterprise requests:", error);
       toast.error("Failed to load enterprise requests");
+
+      // Fallback to mock data in case of error
+      setRequests(mockRequests);
     } finally {
       setLoading(false);
     }
