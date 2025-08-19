@@ -354,7 +354,7 @@ const Profile = () => {
 
           {/* Profile Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="recents" className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 Recents
@@ -366,6 +366,14 @@ const Profile = () => {
               <TabsTrigger value="purchases" className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4" />
                 Purchases
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Settings
+              </TabsTrigger>
+              <TabsTrigger value="delivery" className="flex items-center gap-2">
+                <Package className="w-4 h-4" />
+                Delivery
               </TabsTrigger>
             </TabsList>
 
