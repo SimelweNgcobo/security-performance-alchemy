@@ -488,8 +488,8 @@ const LabelEditor: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 overflow-auto max-h-[70vh]">
-              <div className="flex items-center justify-center min-h-[400px]">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 overflow-auto max-h-[70vh] smooth-scroll">
+              <div className="flex items-center justify-center min-h-[400px] transition-all duration-200 ease-in-out">
                 <div
                   ref={canvasRef}
                   className="relative border border-gray-400 shadow-lg cursor-crosshair"
