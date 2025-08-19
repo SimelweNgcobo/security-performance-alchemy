@@ -36,7 +36,7 @@ const WaterFillingAnimation = ({ className = "" }: { className?: string }) => {
           />
         </svg>
         
-        <style jsx>{`
+        <style>{`
           @keyframes waterDrop {
             0% { opacity: 0; transform: translateY(0); }
             50% { opacity: 1; transform: translateY(10px); }
