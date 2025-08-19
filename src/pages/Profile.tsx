@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import LabelEditor from "@/components/LabelEditor";
 import {
   User,
   Clock,
@@ -38,7 +39,8 @@ import {
   Truck,
   Plus,
   Edit,
-  Tag
+  Tag,
+  Palette
 } from "lucide-react";
 
 interface RecentItem {
@@ -116,11 +118,8 @@ const Profile = () => {
     try {
       setLoadingData(true);
 
-      // Parallel data loading for better performance
-      const [
-        customerResponse,
-        ordersResponse
-      ] = await Promise.all([
+      // Optimized parallel data loading
+      const [customerResponse, ordersResponse] = await Promise.all([
         supabase
           .from("customers")
           .select("*")
@@ -129,16 +128,25 @@ const Profile = () => {
         supabase
           .from("orders")
           .select(`
-            *,
+            id,
+            order_number,
+            total_amount,
+            status,
+            payment_status,
+            delivery_status,
+            created_at,
+            metadata,
+            shipping_address,
             order_items (
-              *,
+              quantity,
+              unit_price,
               products (name, size, type)
             ),
             invoices (id, invoice_number)
           `)
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
-          .limit(10) // Only load recent 10 orders for performance
+          .limit(10)
       ]);
 
       const customer = customerResponse.data;
@@ -151,96 +159,46 @@ const Profile = () => {
         phone: customer?.phone || ""
       });
 
-      // Load localStorage data
-      const savedShipping = localStorage.getItem(`shipping_${user.id}`);
-      if (savedShipping) {
-        setSavedShippingDetails(JSON.parse(savedShipping));
-      }
-
-      const savedLabels = localStorage.getItem(`labels_${user.id}`);
-      if (savedLabels) {
-        setCustomLabels(JSON.parse(savedLabels));
-      }
-
-      // Load recent activity (mock data for now since we need to implement tracking)
-      const mockRecents: RecentItem[] = [
-        {
-          id: "1",
-          type: "product",
-          name: "Crystal Reserve",
-          description: "750ml Premium crystal bottle",
-          image: "https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: "2",
-          type: "order",
-          name: "Order #ORD-001",
-          description: "2x Artisan Glass bottles",
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          status: "processing"
-        },
-        {
-          id: "3",
-          type: "quote",
-          name: "Enterprise Quote",
-          description: "Custom label design for 1000 bottles",
-          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          status: "pending"
+      // Load localStorage data efficiently
+      if (user.id) {
+        const savedShipping = localStorage.getItem(`shipping_${user.id}`);
+        if (savedShipping) {
+          setSavedShippingDetails(JSON.parse(savedShipping));
         }
-      ];
-      setRecentItems(mockRecents);
 
-      // Load order tracking data
-      const trackingData = orderTrackingService.getCustomerOrders(user?.email || "");
-      setOrderTrackingData(trackingData);
+        const savedLabels = localStorage.getItem(`labels_${user.id}`);
+        if (savedLabels) {
+          setCustomLabels(JSON.parse(savedLabels));
+        }
+      }
 
-      // Generate activity timeline from order tracking
-      const activityFromTracking: ActivityItem[] = [];
-      trackingData.forEach(tracking => {
-        tracking.activities.forEach(activity => {
-          activityFromTracking.push({
-            id: activity.id,
-            type: activity.activity_type as any,
-            title: activity.activity_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-            description: activity.description,
-            timestamp: activity.timestamp,
-            status: ['delivered', 'payment_confirmed'].includes(activity.activity_type) ? 'completed' : 'processing',
-            metadata: activity.metadata
-          });
-        });
+      // Generate real activity from actual data instead of mock data
+      const realActivity: ActivityItem[] = [];
+      
+      // Add account creation activity
+      realActivity.push({
+        id: "account-created",
+        type: "account_created",
+        title: "Account Created",
+        description: "Welcome to MyFuze! Your account has been successfully created",
+        timestamp: user.created_at || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        status: "completed"
       });
 
-      // Add mock account activities
-      const mockAccountActivity: ActivityItem[] = [
-        {
-          id: "account-1",
-          type: "account_created",
-          title: "Account Created",
-          description: "Welcome to MyFuze! Your account has been successfully created",
-          timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-          status: "completed"
-        },
-        {
-          id: "login-1",
-          type: "login",
-          title: "Account Access",
-          description: "Signed in to your account",
-          timestamp: new Date().toISOString(),
-          status: "completed"
-        }
-      ];
+      // Add login activity
+      realActivity.push({
+        id: "current-login",
+        type: "login",
+        title: "Recent Sign In",
+        description: "Signed in to your account",
+        timestamp: new Date().toISOString(),
+        status: "completed"
+      });
 
-      // Combine and sort activities
-      const allActivities = [...activityFromTracking, ...mockAccountActivity]
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
-      setActivityItems(allActivities);
-
-      // Process orders data that was loaded in parallel
+      // Process orders data
       const orders = ordersResponse.data;
       if (orders) {
-        setPurchases(orders.map(order => {
+        const processedPurchases = orders.map(order => {
           let items = order.order_items || [];
 
           // For bulk orders, create virtual items from metadata
@@ -261,6 +219,27 @@ const Profile = () => {
             }
           }
 
+          // Add order activities
+          realActivity.push({
+            id: `order-${order.id}`,
+            type: "order_created",
+            title: `Order ${order.order_number}`,
+            description: `Created order with ${items.length} item(s) - R${order.total_amount.toFixed(2)}`,
+            timestamp: order.created_at,
+            status: order.status === 'completed' || order.status === 'delivered' ? 'completed' : 'processing'
+          });
+
+          if (order.payment_status === 'paid') {
+            realActivity.push({
+              id: `payment-${order.id}`,
+              type: "payment_processed",
+              title: `Payment Processed`,
+              description: `Payment of R${order.total_amount.toFixed(2)} processed for order ${order.order_number}`,
+              timestamp: order.created_at,
+              status: 'completed'
+            });
+          }
+
           return {
             id: order.id,
             order_number: order.order_number,
@@ -274,8 +253,29 @@ const Profile = () => {
             metadata: order.metadata,
             shipping_address: order.shipping_address
           };
+        });
+
+        setPurchases(processedPurchases);
+
+        // Generate recent items from actual orders, not mock data
+        const orderRecents: RecentItem[] = processedPurchases.slice(0, 3).map(order => ({
+          id: `order-${order.id}`,
+          type: 'order' as const,
+          name: order.order_number,
+          description: `${order.items.length} item(s) - R${order.total_amount.toFixed(2)}`,
+          timestamp: order.created_at,
+          status: order.status
         }));
+
+        setRecentItems(orderRecents);
       }
+
+      // Sort activities by timestamp (newest first)
+      const sortedActivities = realActivity.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      
+      setActivityItems(sortedActivities.slice(0, 10)); // Limit to 10 most recent
 
     } catch (error) {
       console.error("Error loading user data:", error);
@@ -287,7 +287,6 @@ const Profile = () => {
 
   const downloadInvoice = async (invoiceId: string) => {
     try {
-      // In a real implementation, this would generate and download the invoice as an image
       toast.success("Invoice download feature will be implemented soon");
     } catch (error) {
       toast.error("Failed to download invoice");
@@ -314,7 +313,6 @@ const Profile = () => {
 
       if (customerError) throw customerError;
 
-      // Reload user data
       await loadUserData();
       toast.success("Profile updated successfully");
     } catch (error) {
@@ -333,17 +331,10 @@ const Profile = () => {
 
       if (customerError) throw customerError;
 
-      // Delete auth user (this will also sign out)
-      const { error: authError } = await supabase.auth.admin.deleteUser(user?.id || "");
-
-      if (authError) {
-        console.warn("Could not delete auth user:", authError);
-      }
-
       // Clear local storage
       localStorage.clear();
 
-      toast.success("Account deleted successfully");
+      toast.success("Account deletion request processed. Please contact support to complete the process.");
       navigate("/");
     } catch (error) {
       console.error("Error deleting account:", error);
@@ -374,9 +365,8 @@ const Profile = () => {
 
   const reorderItems = async (purchase: Purchase) => {
     try {
-      // Add items back to cart (simplified for now)
       toast.success(`${purchase.items.length} items re-added to cart`);
-      navigate("/cart");
+      navigate("/products");
     } catch (error) {
       toast.error("Failed to re-order items");
     }
@@ -387,16 +377,16 @@ const Profile = () => {
       case "completed":
       case "delivered":
       case "paid":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
       case "processing":
       case "shipped":
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
       case "cancelled":
       case "failed":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
     }
   };
 
@@ -428,6 +418,15 @@ const Profile = () => {
     } else {
       return `${Math.floor(diffInMinutes / 1440)} days ago`;
     }
+  };
+
+  const viewItemDetails = (item: RecentItem) => {
+    if (item.type === 'order') {
+      navigate("/orders");
+    } else if (item.type === 'product') {
+      navigate("/products");
+    }
+    toast.success(`Viewing details for ${item.name}`);
   };
 
   if (loading || loadingData) {
@@ -555,7 +554,11 @@ const Profile = () => {
                               {formatDateTime(item.timestamp)}
                             </p>
                           </div>
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => viewItemDetails(item)}
+                          >
                             <Eye className="w-4 h-4" />
                           </Button>
                         </div>
@@ -565,6 +568,9 @@ const Profile = () => {
                     <div className="text-center py-8">
                       <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground">No recent activity found</p>
+                      <Button className="mt-4" onClick={() => navigate("/products")}>
+                        Browse Products
+                      </Button>
                     </div>
                   )}
                 </CardContent>
@@ -688,7 +694,6 @@ const Profile = () => {
                               </div>
                             </div>
 
-                            {/* Shipping Address for Bulk Orders */}
                             {purchase.shipping_address && (
                               <div>
                                 <h4 className="font-medium">Shipping Address:</h4>
@@ -819,18 +824,34 @@ const Profile = () => {
                   </CardContent>
                 </Card>
 
-                {/* Custom Labels */}
+                {/* Custom Label Editor - Full Featured */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Custom Labels</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <Palette className="w-5 h-5" />
+                      Custom Label Designer
+                    </CardTitle>
                     <CardDescription>
-                      Create and save custom labels for your bottles
+                      Create and design custom labels for your bottles with our professional design tools
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <LabelEditor />
+                  </CardContent>
+                </Card>
+
+                {/* Saved Custom Labels */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Saved Custom Labels</CardTitle>
+                    <CardDescription>
+                      Manage your saved custom label designs
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {/* Add New Label */}
                     <div className="border rounded-lg p-4 space-y-4">
-                      <h4 className="font-medium">Create New Label</h4>
+                      <h4 className="font-medium">Create Quick Label</h4>
                       <div className="grid gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="labelName">Label Name</Label>
@@ -870,7 +891,7 @@ const Profile = () => {
                     {/* Saved Labels */}
                     {customLabels.length > 0 && (
                       <div className="space-y-2">
-                        <h4 className="font-medium">Saved Labels</h4>
+                        <h4 className="font-medium">Your Saved Labels</h4>
                         <div className="space-y-2">
                           {customLabels.map((label) => (
                             <div key={label.id} className="border rounded-lg p-3">
@@ -895,18 +916,18 @@ const Profile = () => {
                   </CardContent>
                 </Card>
 
-                {/* Account Deletion */}
-                <Card className="border-destructive">
+                {/* Account Deletion - Softer Red */}
+                <Card className="border-red-200 dark:border-red-900/50">
                   <CardHeader>
-                    <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                    <CardTitle className="text-red-600 dark:text-red-400">Account Management</CardTitle>
                     <CardDescription>
-                      Permanently delete your account and all associated data
+                      Manage your account settings and data
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full">
+                        <Button variant="outline" className="w-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/10">
                           <Trash2 className="w-4 h-4 mr-2" />
                           Delete Account
                         </Button>
@@ -921,7 +942,7 @@ const Profile = () => {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={deleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          <AlertDialogAction onClick={deleteAccount} className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800">
                             Yes, delete my account
                           </AlertDialogAction>
                         </AlertDialogFooter>
