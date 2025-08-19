@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { orderTrackingService, OrderTracking } from "@/services/orderTracking";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -78,15 +77,14 @@ interface Purchase {
 }
 
 const Profile = () => {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("recents");
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
   const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [customerData, setCustomerData] = useState<any>(null);
-  const [orderTrackingData, setOrderTrackingData] = useState<OrderTracking[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
+  const [loadingData, setLoadingData] = useState(false);
   const [profileForm, setProfileForm] = useState({
     fullName: "",
     email: "",
@@ -100,187 +98,225 @@ const Profile = () => {
     description: ""
   });
 
+  // Check authentication first
   useEffect(() => {
-    if (!loading && !user) {
+    if (!authLoading && !user) {
+      console.log("No user found, redirecting to auth");
       toast.error("Please sign in to access your profile");
       navigate("/auth");
       return;
     }
+  }, [user, authLoading, navigate]);
 
-    if (user) {
+  // Load user data when user is available
+  useEffect(() => {
+    if (user && !authLoading) {
+      console.log("User available, loading data for:", user.email);
       loadUserData();
     }
-  }, [user, loading, navigate]);
+  }, [user, authLoading]);
 
   const loadUserData = useCallback(async () => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      console.log("No user email available");
+      return;
+    }
 
     try {
+      console.log("Starting to load user data...");
       setLoadingData(true);
 
-      // Optimized parallel data loading
-      const [customerResponse, ordersResponse] = await Promise.all([
-        supabase
-          .from("customers")
-          .select("*")
-          .eq("email", user.email)
-          .single(),
-        supabase
-          .from("orders")
-          .select(`
-            id,
-            order_number,
-            total_amount,
-            status,
-            payment_status,
-            delivery_status,
-            created_at,
-            metadata,
-            shipping_address,
-            order_items (
-              quantity,
-              unit_price,
-              products (name, size, type)
-            ),
-            invoices (id, invoice_number)
-          `)
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(10)
-      ]);
-
-      const customer = customerResponse.data;
-      setCustomerData(customer);
-
-      // Populate profile form
+      // Set basic form data immediately from user
       setProfileForm({
-        fullName: customer?.name || user?.user_metadata?.full_name || "",
-        email: customer?.email || user?.email || "",
-        phone: customer?.phone || ""
+        fullName: user?.user_metadata?.full_name || "",
+        email: user?.email || "",
+        phone: ""
       });
 
       // Load localStorage data efficiently
       if (user.id) {
-        const savedShipping = localStorage.getItem(`shipping_${user.id}`);
-        if (savedShipping) {
-          setSavedShippingDetails(JSON.parse(savedShipping));
-        }
+        try {
+          const savedShipping = localStorage.getItem(`shipping_${user.id}`);
+          if (savedShipping) {
+            setSavedShippingDetails(JSON.parse(savedShipping));
+          }
 
-        const savedLabels = localStorage.getItem(`labels_${user.id}`);
-        if (savedLabels) {
-          setCustomLabels(JSON.parse(savedLabels));
+          const savedLabels = localStorage.getItem(`labels_${user.id}`);
+          if (savedLabels) {
+            setCustomLabels(JSON.parse(savedLabels));
+          }
+        } catch (e) {
+          console.log("Error loading localStorage data:", e);
         }
       }
 
-      // Generate real activity from actual data instead of mock data
-      const realActivity: ActivityItem[] = [];
-      
-      // Add account creation activity
-      realActivity.push({
-        id: "account-created",
-        type: "account_created",
-        title: "Account Created",
-        description: "Welcome to MyFuze! Your account has been successfully created",
-        timestamp: user.created_at || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "completed"
-      });
+      // Optimized data loading - handle errors gracefully
+      try {
+        const [customerResponse, ordersResponse] = await Promise.all([
+          supabase
+            .from("customers")
+            .select("*")
+            .eq("email", user.email)
+            .maybeSingle(),
+          supabase
+            .from("orders")
+            .select(`
+              id,
+              order_number,
+              total_amount,
+              status,
+              payment_status,
+              delivery_status,
+              created_at,
+              metadata,
+              shipping_address,
+              order_items (
+                quantity,
+                unit_price,
+                products (name, size, type)
+              ),
+              invoices (id, invoice_number)
+            `)
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(10)
+        ]);
 
-      // Add login activity
-      realActivity.push({
-        id: "current-login",
-        type: "login",
-        title: "Recent Sign In",
-        description: "Signed in to your account",
-        timestamp: new Date().toISOString(),
-        status: "completed"
-      });
+        console.log("Database queries completed");
 
-      // Process orders data
-      const orders = ordersResponse.data;
-      if (orders) {
-        const processedPurchases = orders.map(order => {
-          let items = order.order_items || [];
+        const customer = customerResponse.data;
+        setCustomerData(customer);
 
-          // For bulk orders, create virtual items from metadata
-          if (order.metadata && order.order_number?.startsWith('BLK')) {
-            try {
-              const metadata = JSON.parse(order.metadata);
-              items = [{
-                quantity: metadata.quantity,
-                unit_price: metadata.unit_price,
-                products: {
-                  name: `${metadata.bottle_size} Water Bottle`,
-                  size: metadata.bottle_size,
-                  type: 'bulk'
-                }
-              }];
-            } catch (e) {
-              console.log('Could not parse bulk order metadata');
-            }
-          }
+        // Update profile form with customer data
+        if (customer) {
+          setProfileForm(prev => ({
+            ...prev,
+            fullName: customer.name || prev.fullName,
+            phone: customer.phone || ""
+          }));
+        }
 
-          // Add order activities
-          realActivity.push({
-            id: `order-${order.id}`,
-            type: "order_created",
-            title: `Order ${order.order_number}`,
-            description: `Created order with ${items.length} item(s) - R${order.total_amount.toFixed(2)}`,
-            timestamp: order.created_at,
-            status: order.status === 'completed' || order.status === 'delivered' ? 'completed' : 'processing'
-          });
-
-          if (order.payment_status === 'paid') {
-            realActivity.push({
-              id: `payment-${order.id}`,
-              type: "payment_processed",
-              title: `Payment Processed`,
-              description: `Payment of R${order.total_amount.toFixed(2)} processed for order ${order.order_number}`,
-              timestamp: order.created_at,
-              status: 'completed'
-            });
-          }
-
-          return {
-            id: order.id,
-            order_number: order.order_number,
-            total_amount: order.total_amount,
-            status: order.status,
-            payment_status: order.payment_status,
-            delivery_status: order.delivery_status,
-            created_at: order.created_at,
-            items: items,
-            invoice_id: order.invoices?.[0]?.id,
-            metadata: order.metadata,
-            shipping_address: order.shipping_address
-          };
+        // Generate real activity from actual data
+        const realActivity: ActivityItem[] = [];
+        
+        // Add account creation activity
+        realActivity.push({
+          id: "account-created",
+          type: "account_created",
+          title: "Account Created",
+          description: "Welcome to MyFuze! Your account has been successfully created",
+          timestamp: user.created_at || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          status: "completed"
         });
 
-        setPurchases(processedPurchases);
+        // Add login activity
+        realActivity.push({
+          id: "current-login",
+          type: "login",
+          title: "Recent Sign In",
+          description: "Signed in to your account",
+          timestamp: new Date().toISOString(),
+          status: "completed"
+        });
 
-        // Generate recent items from actual orders, not mock data
-        const orderRecents: RecentItem[] = processedPurchases.slice(0, 3).map(order => ({
-          id: `order-${order.id}`,
-          type: 'order' as const,
-          name: order.order_number,
-          description: `${order.items.length} item(s) - R${order.total_amount.toFixed(2)}`,
-          timestamp: order.created_at,
-          status: order.status
-        }));
+        // Process orders data
+        const orders = ordersResponse.data || [];
+        console.log("Processing orders:", orders.length);
+        
+        if (orders.length > 0) {
+          const processedPurchases = orders.map(order => {
+            let items = order.order_items || [];
 
-        setRecentItems(orderRecents);
+            // For bulk orders, create virtual items from metadata
+            if (order.metadata && order.order_number?.startsWith('BLK')) {
+              try {
+                const metadata = JSON.parse(order.metadata);
+                items = [{
+                  quantity: metadata.quantity,
+                  unit_price: metadata.unit_price,
+                  products: {
+                    name: `${metadata.bottle_size} Water Bottle`,
+                    size: metadata.bottle_size,
+                    type: 'bulk'
+                  }
+                }];
+              } catch (e) {
+                console.log('Could not parse bulk order metadata:', e);
+              }
+            }
+
+            // Add order activities
+            realActivity.push({
+              id: `order-${order.id}`,
+              type: "order_created",
+              title: `Order ${order.order_number}`,
+              description: `Created order with ${items.length} item(s) - R${order.total_amount.toFixed(2)}`,
+              timestamp: order.created_at,
+              status: order.status === 'completed' || order.status === 'delivered' ? 'completed' : 'processing'
+            });
+
+            if (order.payment_status === 'paid') {
+              realActivity.push({
+                id: `payment-${order.id}`,
+                type: "payment_processed",
+                title: `Payment Processed`,
+                description: `Payment of R${order.total_amount.toFixed(2)} processed for order ${order.order_number}`,
+                timestamp: order.created_at,
+                status: 'completed'
+              });
+            }
+
+            return {
+              id: order.id,
+              order_number: order.order_number,
+              total_amount: order.total_amount,
+              status: order.status,
+              payment_status: order.payment_status,
+              delivery_status: order.delivery_status,
+              created_at: order.created_at,
+              items: items,
+              invoice_id: order.invoices?.[0]?.id,
+              metadata: order.metadata,
+              shipping_address: order.shipping_address
+            };
+          });
+
+          setPurchases(processedPurchases);
+
+          // Generate recent items from actual orders
+          const orderRecents: RecentItem[] = processedPurchases.slice(0, 3).map(order => ({
+            id: `order-${order.id}`,
+            type: 'order' as const,
+            name: order.order_number,
+            description: `${order.items.length} item(s) - R${order.total_amount.toFixed(2)}`,
+            timestamp: order.created_at,
+            status: order.status
+          }));
+
+          setRecentItems(orderRecents);
+        } else {
+          // No orders found
+          setPurchases([]);
+          setRecentItems([]);
+        }
+
+        // Sort activities by timestamp (newest first)
+        const sortedActivities = realActivity.sort((a, b) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        
+        setActivityItems(sortedActivities.slice(0, 10));
+
+      } catch (dbError) {
+        console.error("Database error:", dbError);
+        toast.error("Some profile data could not be loaded");
       }
-
-      // Sort activities by timestamp (newest first)
-      const sortedActivities = realActivity.sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      
-      setActivityItems(sortedActivities.slice(0, 10)); // Limit to 10 most recent
 
     } catch (error) {
       console.error("Error loading user data:", error);
       toast.error("Failed to load profile data");
     } finally {
+      console.log("Loading complete, setting loadingData to false");
       setLoadingData(false);
     }
   }, [user]);
@@ -305,7 +341,8 @@ const Profile = () => {
       // Update customer record
       const { error: customerError } = await supabase
         .from("customers")
-        .update({
+        .upsert({
+          email: user?.email,
           name: profileForm.fullName,
           phone: profileForm.phone
         })
@@ -429,7 +466,8 @@ const Profile = () => {
     toast.success(`Viewing details for ${item.name}`);
   };
 
-  if (loading || loadingData) {
+  // Show loading only when auth is loading or when we're actively loading data
+  if (authLoading || (user && loadingData)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner message="Loading your profile..." size="lg" />
@@ -437,6 +475,7 @@ const Profile = () => {
     );
   }
 
+  // If no user and auth isn't loading, don't render anything (redirect will happen)
   if (!user) {
     return null;
   }
