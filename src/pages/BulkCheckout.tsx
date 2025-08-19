@@ -153,12 +153,8 @@ const BulkCheckout = () => {
       toast.error("Please fill in all required shipping fields");
       return;
     }
-    if (currentStep === 3 && !validatePayment()) {
-      toast.error("Please fill in all payment details");
-      return;
-    }
-    
-    if (currentStep < 4) {
+
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
