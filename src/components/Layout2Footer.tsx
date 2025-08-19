@@ -100,6 +100,23 @@ const Layout2Footer = () => {
                 ))}
               </ul>
             </div>
+
+            <div className="space-y-4">
+              <h4 className="text-base font-medium text-foreground">Legal</h4>
+              <ul className="space-y-3">
+                {links.legal.map((link, index) => (
+                  <li key={index}>
+                    <Link
+                      to={link.href}
+                      onClick={handleLinkClick}
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors font-light"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* Contact info */}
