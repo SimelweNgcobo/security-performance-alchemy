@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 const Layout2Hero = () => {
   const [showOurStory, setShowOurStory] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <section id="home" className="min-h-screen relative overflow-hidden">
