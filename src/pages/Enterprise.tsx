@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import {
   Send,
   Building2,
@@ -15,12 +16,16 @@ import {
   Award,
   ShoppingCart,
   RefreshCw,
-  Tag
+  Tag,
+  User,
+  Eye,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { userLabelsService, UserLabel } from "@/services/userLabels";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import LabelEditor from "@/components/LabelEditor";
@@ -33,19 +38,48 @@ const Enterprise = () => {
   const [requirements, setRequirements] = useState("");
   const [loading, setLoading] = useState(false);
   const [savedDesigns, setSavedDesigns] = useState<any[]>([]);
-  const [profileLabels, setProfileLabels] = useState<any[]>([]);
+  const [profileLabels, setProfileLabels] = useState<UserLabel[]>([]);
+  const [defaultLabel, setDefaultLabel] = useState<UserLabel | null>(null);
+  const [loadingLabels, setLoadingLabels] = useState(false);
 
   useEffect(() => {
     // Load saved designs from localStorage
     const designs = JSON.parse(localStorage.getItem('quoteDesigns') || '[]');
     setSavedDesigns(designs);
 
-    // Load profile labels if user is logged in
+    // Load user labels from Supabase if user is logged in
     if (user?.id) {
-      const labels = JSON.parse(localStorage.getItem(`labels_${user.id}`) || '[]');
-      setProfileLabels(labels);
+      loadUserLabels();
     }
   }, [user]);
+
+  const loadUserLabels = async () => {
+    if (!user?.id) return;
+
+    setLoadingLabels(true);
+    try {
+      const [labels, defaultLabelData] = await Promise.all([
+        userLabelsService.getUserLabels(user.id),
+        userLabelsService.getDefaultLabel(user.id)
+      ]);
+
+      setProfileLabels(labels);
+      setDefaultLabel(defaultLabelData);
+
+      // If no labels exist, create a default one
+      if (labels.length === 0) {
+        const newDefaultLabel = await userLabelsService.createDefaultMyFuzeLabel(user.id);
+        if (newDefaultLabel) {
+          setProfileLabels([newDefaultLabel]);
+          setDefaultLabel(newDefaultLabel);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user labels:', error);
+    } finally {
+      setLoadingLabels(false);
+    }
+  };
 
   const handleEnterpriseRequest = async () => {
     if (!companyName || !contactEmail) {
@@ -55,20 +89,23 @@ const Enterprise = () => {
 
     setLoading(true);
     try {
-      // TODO: Save enterprise request to database when enterprise_requests table is created
-      // For now, we'll simulate the request submission
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      console.log("Enterprise request submitted:", {
+      // Save enterprise request to database
+      const requestData = {
         company_name: companyName,
         contact_email: contactEmail,
         requirements: requirements,
         user_id: user?.id || null,
         status: 'pending',
-        designs: savedDesigns
-      });
+        designs: savedDesigns.length > 0 ? savedDesigns : null
+      };
+
+      const { data, error } = await supabase
+        .from('enterprise_requests')
+        .insert(requestData)
+        .select()
+        .single();
+
+      if (error) throw error;
 
       toast.success("Enterprise request sent successfully! We'll contact you within 24 hours.");
 
@@ -84,18 +121,78 @@ const Enterprise = () => {
     }
   };
 
-  const loadLabelFromProfile = (label: any) => {
-    // This would integrate with the LabelEditor component
-    // For now, we'll just add it to requirements
+  const useDefaultLabel = () => {
+    if (!defaultLabel) {
+      toast.error("No default label found. Please set a default label in your profile.");
+      return;
+    }
+
+    setRequirements(
+      `Using Default Label: "${defaultLabel.name}"\n` +
+      `${defaultLabel.description || ''}\n\n` +
+      `Design elements: ${defaultLabel.design_data.elements?.length || 0} elements\n` +
+      `Background: ${defaultLabel.design_data.backgroundColor || '#ffffff'}`
+    );
+
+    // Add to saved designs for the quote
+    const exportedLabel = userLabelsService.exportLabelForQuote(defaultLabel);
+    setSavedDesigns(prev => {
+      const existing = prev.find(d => d.id === exportedLabel.id);
+      if (!existing) {
+        return [...prev, exportedLabel];
+      }
+      return prev;
+    });
+
+    toast.success(`Default label "${defaultLabel.name}" loaded successfully!`);
+  };
+
+  const useMyViews = () => {
+    if (!user) {
+      toast.error("Please sign in to access your saved labels");
+      navigate('/auth');
+      return;
+    }
+
+    if (profileLabels.length === 0) {
+      toast.error("No saved labels found. Create and save labels first.");
+      return;
+    }
+
+    // Redirect to bulk checkout with user's labels
+    navigate('/bulk-checkout', {
+      state: {
+        userLabels: profileLabels,
+        preSelectedDesigns: profileLabels.map(label => userLabelsService.exportLabelForQuote(label))
+      }
+    });
+
+    toast.success("Redirecting to checkout with your saved labels...");
+  };
+
+  const loadLabelFromProfile = (label: UserLabel) => {
     setRequirements(prev =>
       prev + (prev ? '\n\n' : '') +
-      `Custom Label: "${label.name}"\n${label.description}\nDesign: ${label.design}`
+      `Custom Label: "${label.name}"\n${label.description || ''}\n` +
+      `Elements: ${label.design_data.elements?.length || 0} design elements`
     );
+
+    // Add to saved designs
+    const exportedLabel = userLabelsService.exportLabelForQuote(label);
+    setSavedDesigns(prev => {
+      const existing = prev.find(d => d.id === exportedLabel.id);
+      if (!existing) {
+        return [...prev, exportedLabel];
+      }
+      return prev;
+    });
+
     toast.success(`Label "${label.name}" loaded from profile`);
   };
 
   const resetToDefaultBranding = () => {
     setRequirements("Please use MyFuze default branding for this order.");
+    setSavedDesigns([]);
     toast.success("Reset to default branding");
   };
 
@@ -145,31 +242,123 @@ const Enterprise = () => {
             </div>
           </div>
 
-          {/* Bulk Purchase CTA */}
-          <div className="text-center mb-12">
-            <div className="bg-gradient-to-r from-primary/10 to-blue-500/10 rounded-2xl p-8 max-w-2xl mx-auto border border-primary/20">
-              <h3 className="text-2xl font-bold text-foreground mb-4">
-                Ready for Bulk Orders?
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                Skip the custom design process and place your bulk order directly.
-                Choose from our standard bottle sizes with volume discounts.
+          {/* Enterprise Actions Section */}
+          <div className="mb-12">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
+                Quick Enterprise Actions
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Choose how you want to proceed with your enterprise order
               </p>
-              <Button
-                onClick={() => {
-                  if (!user) {
-                    toast.error("Please sign in to access bulk purchasing");
-                    navigate('/auth');
-                    return;
-                  }
-                  navigate('/bulk-checkout');
-                }}
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-medium"
-              >
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                Start Bulk Purchase
-              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {/* Use Default Label */}
+              <Card className="relative group hover:shadow-lg transition-shadow">
+                <CardHeader className="text-center">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Settings className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg">Use Default</CardTitle>
+                  <CardDescription>
+                    {defaultLabel ? `"${defaultLabel.name}"` : 'MyFuze Default Branding'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  {defaultLabel && (
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
+                      <p className="font-medium text-gray-700">{defaultLabel.description}</p>
+                      <Badge variant="outline" className="mt-2">
+                        {defaultLabel.design_data.elements?.length || 0} elements
+                      </Badge>
+                    </div>
+                  )}
+                  <Button
+                    onClick={useDefaultLabel}
+                    variant="outline"
+                    className="w-full"
+                    disabled={loadingLabels}
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    {loadingLabels ? 'Loading...' : 'Use Default'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Use My Views */}
+              <Card className="relative group hover:shadow-lg transition-shadow border-primary/20">
+                <CardHeader className="text-center">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <User className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg">Use My Views</CardTitle>
+                  <CardDescription>
+                    {profileLabels.length} saved label{profileLabels.length !== 1 ? 's' : ''}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  {profileLabels.length > 0 ? (
+                    <div className="mb-4 space-y-2">
+                      {profileLabels.slice(0, 2).map((label) => (
+                        <div key={label.id} className="p-2 bg-gray-50 rounded text-sm">
+                          <span className="font-medium">{label.name}</span>
+                          {label.is_default && (
+                            <Badge variant="secondary" className="ml-2 text-xs">Default</Badge>
+                          )}
+                        </div>
+                      ))}
+                      {profileLabels.length > 2 && (
+                        <p className="text-xs text-gray-500">+{profileLabels.length - 2} more</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 mb-4">No saved labels yet</p>
+                  )}
+                  <Button
+                    onClick={useMyViews}
+                    className="w-full"
+                    disabled={loadingLabels}
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    {profileLabels.length > 0 ? 'Proceed to Checkout' : 'Create Labels First'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Bulk Purchase */}
+              <Card className="relative group hover:shadow-lg transition-shadow">
+                <CardHeader className="text-center">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ShoppingCart className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg">Bulk Purchase</CardTitle>
+                  <CardDescription>
+                    Standard bottles with volume discounts
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
+                    <p className="font-medium text-gray-700">Skip custom design</p>
+                    <p className="text-gray-600">Fast processing</p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      if (!user) {
+                        toast.error("Please sign in to access bulk purchasing");
+                        navigate('/auth');
+                        return;
+                      }
+                      navigate('/bulk-checkout');
+                    }}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    Start Bulk Order
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
@@ -239,32 +428,51 @@ const Enterprise = () => {
                     />
 
                     {/* Profile Labels and Default Branding Options */}
-                    <div className="flex gap-2 mt-2">
+                    <div className="space-y-2 mt-2">
                       {profileLabels.length > 0 && (
-                        <div className="flex gap-2 flex-wrap">
-                          {profileLabels.map((label) => (
-                            <Button
-                              key={label.id}
-                              variant="outline"
-                              size="sm"
-                              onClick={() => loadLabelFromProfile(label)}
-                              className="text-xs"
-                            >
-                              <Tag className="w-3 h-3 mr-1" />
-                              {label.name}
-                            </Button>
-                          ))}
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Your Saved Labels:</Label>
+                          <div className="flex gap-2 flex-wrap mt-1">
+                            {profileLabels.map((label) => (
+                              <Button
+                                key={label.id}
+                                variant="outline"
+                                size="sm"
+                                onClick={() => loadLabelFromProfile(label)}
+                                className="text-xs"
+                              >
+                                <Tag className="w-3 h-3 mr-1" />
+                                {label.name}
+                                {label.is_default && (
+                                  <Badge variant="secondary" className="ml-1 text-xs px-1">Default</Badge>
+                                )}
+                              </Button>
+                            ))}
+                          </div>
                         </div>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={resetToDefaultBranding}
-                        className="text-xs"
-                      >
-                        <RefreshCw className="w-3 h-3 mr-1" />
-                        Default Branding
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={resetToDefaultBranding}
+                          className="text-xs"
+                        >
+                          <RefreshCw className="w-3 h-3 mr-1" />
+                          Reset
+                        </Button>
+                        {user && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate('/profile')}
+                            className="text-xs"
+                          >
+                            <User className="w-3 h-3 mr-1" />
+                            Manage Labels
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
 
