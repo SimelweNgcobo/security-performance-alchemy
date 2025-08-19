@@ -139,18 +139,9 @@ const BulkCheckout = () => {
     setShippingAddress(prev => ({ ...prev, [field]: value }));
   };
 
-  const handlePaymentChange = (field: keyof PaymentDetails, value: string) => {
-    setPaymentDetails(prev => ({ ...prev, [field]: value }));
-  };
-
   const validateShipping = () => {
     const required = ['fullName', 'address1', 'city', 'province', 'postalCode', 'phone'];
     return required.every(field => shippingAddress[field as keyof ShippingAddress].trim() !== '');
-  };
-
-  const validatePayment = () => {
-    const required = ['cardNumber', 'expiryDate', 'cvv', 'cardholderName'];
-    return required.every(field => paymentDetails[field as keyof PaymentDetails].trim() !== '');
   };
 
   const handleNextStep = () => {
