@@ -101,12 +101,7 @@ const BulkCheckout = () => {
     postalCode: "",
     phone: ""
   });
-  const [paymentDetails, setPaymentDetails] = useState<PaymentDetails>({
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    cardholderName: ""
-  });
+  // Removed paymentDetails state since Paystack handles all payment processing
 
   // Check authentication on component mount
   useEffect(() => {
