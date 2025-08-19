@@ -398,6 +398,60 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     toast.success("Design exported successfully!");
   };
 
+  const handleSaveToProfile = async () => {
+    if (!user) {
+      toast.error('Please sign in to save labels to your profile');
+      return;
+    }
+
+    if (!saveForm.name.trim()) {
+      toast.error('Please enter a name for your label');
+      return;
+    }
+
+    if (design.elements.length === 0) {
+      toast.error('Please add some elements to your design before saving');
+      return;
+    }
+
+    const designData = {
+      backgroundColor: design.backgroundColor,
+      elements: design.elements
+    };
+
+    const savedLabel = await userLabelsService.saveLabel(
+      user.id,
+      saveForm.name.trim(),
+      designData,
+      saveForm.description.trim() || undefined,
+      saveForm.isDefault
+    );
+
+    if (savedLabel) {
+      setShowSaveDialog(false);
+      setSaveForm({ name: '', description: '', isDefault: false });
+
+      // Call the onSave callback to refresh the parent component
+      if (onSave) {
+        onSave();
+      }
+    }
+  };
+
+  const openSaveDialog = () => {
+    if (!user) {
+      toast.error('Please sign in to save labels');
+      return;
+    }
+
+    if (design.elements.length === 0) {
+      toast.error('Please add some elements to your design first');
+      return;
+    }
+
+    setShowSaveDialog(true);
+  };
+
   const selectedElementData = selectedElement 
     ? design.elements.find(el => el.id === selectedElement)
     : null;
