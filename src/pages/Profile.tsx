@@ -736,6 +736,214 @@ const Profile = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="space-y-4">
+              <div className="grid gap-6">
+                {/* Profile Settings */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Profile Settings</CardTitle>
+                    <CardDescription>
+                      Update your personal information and account preferences
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">Full Name</Label>
+                        <Input
+                          id="fullName"
+                          value={profileForm.fullName}
+                          onChange={(e) => setProfileForm(prev => ({ ...prev, fullName: e.target.value }))}
+                          placeholder="Enter your full name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={profileForm.email}
+                          disabled
+                          className="bg-muted"
+                          placeholder="Your email address"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Email cannot be changed. Contact support if needed.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Cell Phone Number</Label>
+                        <Input
+                          id="phone"
+                          value={profileForm.phone}
+                          onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
+                          placeholder="Enter your phone number"
+                        />
+                      </div>
+                    </div>
+                    <Button onClick={updateProfile} className="w-full">
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Changes
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Custom Labels */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Custom Labels</CardTitle>
+                    <CardDescription>
+                      Create and save custom labels for your bottles
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Add New Label */}
+                    <div className="border rounded-lg p-4 space-y-4">
+                      <h4 className="font-medium">Create New Label</h4>
+                      <div className="grid gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="labelName">Label Name</Label>
+                          <Input
+                            id="labelName"
+                            value={newLabel.name}
+                            onChange={(e) => setNewLabel(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="e.g., My Company Logo"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="labelDesign">Design/Text</Label>
+                          <Textarea
+                            id="labelDesign"
+                            value={newLabel.design}
+                            onChange={(e) => setNewLabel(prev => ({ ...prev, design: e.target.value }))}
+                            placeholder="Enter your label text or describe your design"
+                            rows={3}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="labelDescription">Description</Label>
+                          <Input
+                            id="labelDescription"
+                            value={newLabel.description}
+                            onChange={(e) => setNewLabel(prev => ({ ...prev, description: e.target.value }))}
+                            placeholder="Brief description of this label"
+                          />
+                        </div>
+                      </div>
+                      <Button onClick={saveCustomLabel} className="w-full">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Save Label
+                      </Button>
+                    </div>
+
+                    {/* Saved Labels */}
+                    {customLabels.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Saved Labels</h4>
+                        <div className="space-y-2">
+                          {customLabels.map((label) => (
+                            <div key={label.id} className="border rounded-lg p-3">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h5 className="font-medium">{label.name}</h5>
+                                  <p className="text-sm text-muted-foreground">{label.description}</p>
+                                </div>
+                                <Badge variant="outline">
+                                  <Tag className="w-3 h-3 mr-1" />
+                                  Saved
+                                </Badge>
+                              </div>
+                              {label.design && (
+                                <p className="text-sm mt-2 p-2 bg-muted rounded">{label.design}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Account Deletion */}
+                <Card className="border-destructive">
+                  <CardHeader>
+                    <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                    <CardDescription>
+                      Permanently delete your account and all associated data
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full">
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Account
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete your account
+                            and remove all your data from our servers.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={deleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Yes, delete my account
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Delivery Tab */}
+            <TabsContent value="delivery" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Saved Shipping Details</CardTitle>
+                  <CardDescription>
+                    Manage your shipping addresses for faster checkout
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {savedShippingDetails.length > 0 ? (
+                    <div className="space-y-4">
+                      {savedShippingDetails.map((details) => (
+                        <div key={details.id} className="border rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{details.name || "Shipping Address"}</h4>
+                            <Badge variant="outline">
+                              <Truck className="w-3 h-3 mr-1" />
+                              Saved
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <p>{details.address}</p>
+                            <p>{details.city}, {details.province} {details.postalCode}</p>
+                            {details.phone && <p>Phone: {details.phone}</p>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Truck className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-4">No saved shipping details</p>
+                      <Button onClick={() => navigate("/products")}>
+                        Shop Now to Add Addresses
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         </div>
       </div>
