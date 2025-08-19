@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 
 // Lazy load heavy components
-// const LabelEditor = lazy(() => import("@/components/LabelEditor"));
+const LabelEditor = lazy(() => import("@/components/LabelEditor"));
 
 interface BasicProfile {
   name: string;
