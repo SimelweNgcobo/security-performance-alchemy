@@ -7,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Truck, CreditCard, CheckCircle, ArrowLeft, Package, MapPin, Shield, Clock, Award, Star, Plus, Trash2, ChevronDown, ChevronUp, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Truck, CreditCard, CheckCircle, ArrowLeft, Package, MapPin, Shield, Clock, Award, Star, Plus, Trash2, Eye, Save } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import { toast } from "sonner";
@@ -93,9 +93,10 @@ const BulkCheckout = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedSize, setSelectedSize] = useState<BottleSize>("500ml");
-  const [quantity, setQuantity] = useState<number>(1);
+  const [quantity, setQuantity] = useState<number>(500);
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [showPricingTiers, setShowPricingTiers] = useState(false);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: "",
     company: "",
@@ -194,7 +195,7 @@ const BulkCheckout = () => {
     }
     
     // Reset form
-    setQuantity(1);
+    setQuantity(500);
   };
 
   const removeFromCart = (id: string) => {
@@ -245,12 +246,16 @@ const BulkCheckout = () => {
 
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
+      // Scroll to top of page
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handlePrevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+      // Scroll to top of page
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -308,6 +313,50 @@ const BulkCheckout = () => {
 
   const handlePaystackClose = () => {
     toast.error("Payment was not completed");
+  };
+
+  const handleSaveAddress = async () => {
+    if (!user?.id) {
+      toast.error("Please sign in to save address");
+      return;
+    }
+
+    if (!validateShipping()) {
+      toast.error("Please fill in all required fields before saving");
+      return;
+    }
+
+    setIsSavingAddress(true);
+    try {
+      const { error } = await supabase
+        .from('user_addresses')
+        .upsert({
+          user_id: user.id,
+          full_name: shippingAddress.fullName,
+          company: shippingAddress.company,
+          address_line_1: shippingAddress.address1,
+          address_line_2: shippingAddress.address2,
+          city: shippingAddress.city,
+          province: shippingAddress.province,
+          postal_code: shippingAddress.postalCode,
+          phone: shippingAddress.phone,
+          is_default: true
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) {
+        console.error('Error saving address:', error);
+        toast.error("Failed to save address");
+      } else {
+        toast.success("Address saved to your profile!");
+      }
+    } catch (error) {
+      console.error('Error saving address:', error);
+      toast.error("Failed to save address");
+    } finally {
+      setIsSavingAddress(false);
+    }
   };
 
   const steps = [
@@ -416,20 +465,27 @@ const BulkCheckout = () => {
                       key={size}
                       onClick={() => handleSizeChange(size as BottleSize)}
                       className={`
-                        p-2 lg:p-4 rounded-lg border-2 transition-all duration-200 hover:border-slate-300
-                        ${selectedSize === size 
-                          ? "border-slate-900 bg-slate-50 shadow-sm" 
+                        relative p-2 lg:p-4 rounded-lg border-2 transition-all duration-200 hover:border-slate-300
+                        ${selectedSize === size
+                          ? "border-slate-900 bg-slate-50 shadow-sm"
                           : "border-slate-200 bg-white"
                         }
                       `}
                     >
+                      {size === '500ml' && (
+                        <div className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-800 rounded-full p-1">
+                          <Star className="h-3 w-3 fill-current" />
+                        </div>
+                      )}
                       <div className="text-center">
                         <div className={`text-sm lg:text-lg font-semibold ${
                           selectedSize === size ? "text-slate-900" : "text-slate-700"
                         }`}>
                           {size}
                         </div>
-                        <div className="text-xs text-slate-500 mt-1">Bottles</div>
+                        <div className="text-xs text-slate-500 mt-1">
+                          {size === '500ml' ? 'Popular' : 'Bottles'}
+                        </div>
                       </div>
                     </button>
                   ))}
@@ -537,56 +593,54 @@ const BulkCheckout = () => {
             </CardContent>
           </Card>
 
-          {/* Pricing Tiers - Collapsible */}
-          <Collapsible open={showPricingTiers} onOpenChange={setShowPricingTiers}>
-            <Card className="border-slate-200 shadow-sm">
-              <CollapsibleTrigger asChild>
-                <CardHeader className="pb-3 lg:pb-4 cursor-pointer hover:bg-slate-50 transition-colors">
-                  <CardTitle className="text-base lg:text-lg font-medium flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Eye className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" />
-                      <span>{selectedSize} Pricing Tiers</span>
-                    </div>
-                    {showPricingTiers ? 
-                      <ChevronUp className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" /> : 
-                      <ChevronDown className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" />
-                    }
+          {/* Pricing Tiers - Dialog Popup */}
+          <Dialog open={showPricingTiers} onOpenChange={setShowPricingTiers}>
+            <DialogTrigger asChild>
+              <Card className="border-slate-200 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
+                <CardHeader className="pb-3 lg:pb-4">
+                  <CardTitle className="text-base lg:text-lg font-medium flex items-center gap-2">
+                    <Eye className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" />
+                    <span>View {selectedSize} Pricing Tiers</span>
                   </CardTitle>
                 </CardHeader>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <CardContent className="p-0 pt-0">
-                  <div className="space-y-0">
-                    {pricingData[selectedSize].map((tier, index) => (
-                      <div
-                        key={index}
-                        className={`p-3 lg:p-4 border-b border-slate-100 last:border-b-0 transition-colors ${
-                          quantity >= tier.min && quantity <= tier.max
-                            ? "bg-slate-50"
-                            : "bg-white hover:bg-slate-25"
-                        }`}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <div className="font-medium text-xs lg:text-sm">
-                              {tier.min} - {tier.max} bottles
-                            </div>
-                            {tier.notes && (
-                              <div className="text-xs text-slate-500">{tier.notes}</div>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <div className="font-semibold text-sm lg:text-base">R{tier.price.toFixed(2)}</div>
-                            <div className="text-xs text-slate-500">per bottle</div>
-                          </div>
+              </Card>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-slate-500" />
+                  {selectedSize} Pricing Tiers
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-0 max-h-96 overflow-y-auto">
+                {pricingData[selectedSize].map((tier, index) => (
+                  <div
+                    key={index}
+                    className={`p-4 border-b border-slate-100 last:border-b-0 transition-colors ${
+                      quantity >= tier.min && quantity <= tier.max
+                        ? "bg-slate-50 border-l-4 border-l-slate-900"
+                        : "bg-white hover:bg-slate-25"
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-medium text-sm">
+                          {tier.min} - {tier.max} bottles
                         </div>
+                        {tier.notes && (
+                          <div className="text-xs text-slate-500 mt-1">{tier.notes}</div>
+                        )}
                       </div>
-                    ))}
+                      <div className="text-right">
+                        <div className="font-semibold text-base">R{tier.price.toFixed(2)}</div>
+                        <div className="text-xs text-slate-500">per bottle</div>
+                      </div>
+                    </div>
                   </div>
-                </CardContent>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Trust Indicators */}
           <div className="space-y-3 lg:space-y-4">
@@ -729,6 +783,29 @@ const BulkCheckout = () => {
                 placeholder="Phone number"
               />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Save Address Button */}
+      <Card className="border-slate-200 shadow-sm">
+        <CardContent className="p-4 lg:p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Save className="h-5 w-5 text-slate-500" />
+              <div>
+                <h4 className="font-medium text-slate-900 text-sm lg:text-base">Save Address</h4>
+                <p className="text-xs lg:text-sm text-slate-600">Save this address to your profile for future orders</p>
+              </div>
+            </div>
+            <Button
+              onClick={handleSaveAddress}
+              disabled={isSavingAddress || !validateShipping()}
+              variant="outline"
+              className="border-slate-200 text-slate-700 hover:bg-slate-50"
+            >
+              {isSavingAddress ? "Saving..." : "Save Address"}
+            </Button>
           </div>
         </CardContent>
       </Card>
