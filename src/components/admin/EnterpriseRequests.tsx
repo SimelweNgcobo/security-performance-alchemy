@@ -111,20 +111,23 @@ export const EnterpriseRequests = () => {
 
   const updateRequestStatus = async (requestId: string, status: string, notes?: string) => {
     try {
-      // TODO: Replace with actual Supabase update when table exists
-      // const { error } = await supabase
-      //   .from("enterprise_requests")
-      //   .update({ 
-      //     status,
-      //     notes: notes || "",
-      //     updated_at: new Date().toISOString()
-      //   })
-      //   .eq("id", requestId);
+      const { error } = await supabase
+        .from("enterprise_requests")
+        .update({
+          status,
+          notes: notes || "",
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", requestId);
 
-      // Mock update for now
-      setRequests(prev => prev.map(req => 
-        req.id === requestId 
-          ? { ...req, status: status as any, notes: notes || req.notes, updated_at: new Date().toISOString() }
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setRequests(prev => prev.map(req =>
+        req.id === requestId
+          ? { ...req, status, notes: notes || req.notes, updated_at: new Date().toISOString() }
           : req
       ));
 
