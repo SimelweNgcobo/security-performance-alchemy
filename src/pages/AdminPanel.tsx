@@ -138,7 +138,7 @@ export default function AdminPanel() {
 
       <div className="container mx-auto py-6 px-4">
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-10">
+          <TabsList className="grid w-full grid-cols-11">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
@@ -146,6 +146,7 @@ export default function AdminPanel() {
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="delivery">Delivery</TabsTrigger>
             <TabsTrigger value="enterprise">Enterprise</TabsTrigger>
+            <TabsTrigger value="labels">Labels</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>
             <TabsTrigger value="admin-users">Admins</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
