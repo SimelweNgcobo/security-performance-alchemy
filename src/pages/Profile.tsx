@@ -9,6 +9,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
@@ -26,7 +30,14 @@ import {
   Activity,
   CreditCard,
   FileText,
-  ChevronRight
+  ChevronRight,
+  Settings,
+  Trash2,
+  Save,
+  Truck,
+  Plus,
+  Edit,
+  Tag
 } from "lucide-react";
 
 interface RecentItem {
@@ -73,6 +84,18 @@ const Profile = () => {
   const [customerData, setCustomerData] = useState<any>(null);
   const [orderTrackingData, setOrderTrackingData] = useState<OrderTracking[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [profileForm, setProfileForm] = useState({
+    fullName: "",
+    email: "",
+    phone: ""
+  });
+  const [savedShippingDetails, setSavedShippingDetails] = useState<any[]>([]);
+  const [customLabels, setCustomLabels] = useState<any[]>([]);
+  const [newLabel, setNewLabel] = useState({
+    name: "",
+    design: "",
+    description: ""
+  });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -98,6 +121,24 @@ const Profile = () => {
         .single();
 
       setCustomerData(customer);
+
+      // Populate profile form
+      setProfileForm({
+        fullName: customer?.name || user?.user_metadata?.full_name || "",
+        email: customer?.email || user?.email || "",
+        phone: customer?.phone || ""
+      });
+
+      // Load saved shipping details and custom labels from localStorage for now
+      const savedShipping = localStorage.getItem(`shipping_${user?.id}`);
+      if (savedShipping) {
+        setSavedShippingDetails(JSON.parse(savedShipping));
+      }
+
+      const savedLabels = localStorage.getItem(`labels_${user?.id}`);
+      if (savedLabels) {
+        setCustomLabels(JSON.parse(savedLabels));
+      }
 
       // Load recent activity (mock data for now since we need to implement tracking)
       const mockRecents: RecentItem[] = [
