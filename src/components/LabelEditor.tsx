@@ -88,7 +88,12 @@ interface LabelDesign {
   backgroundImage?: string;
 }
 
-const LabelEditor: React.FC = () => {
+interface LabelEditorProps {
+  onSave?: () => void; // Callback when a label is saved
+}
+
+const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
+  const { user } = useAuth();
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [design, setDesign] = useState<LabelDesign>({
