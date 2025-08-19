@@ -70,8 +70,8 @@ const Layout2Hero = () => {
                 <div className="text-sm text-muted-foreground font-medium">Purity</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-light text-primary mb-1">15+</div>
-                <div className="text-sm text-muted-foreground font-medium">Countries</div>
+                <div className="text-3xl font-light text-primary mb-1">5+</div>
+                <div className="text-sm text-muted-foreground font-medium">Years</div>
               </div>
             </div>
           </div>
