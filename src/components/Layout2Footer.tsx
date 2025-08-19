@@ -23,6 +23,10 @@ const Layout2Footer = () => {
       { name: "Contact", href: "/contact" },
       { name: "FAQ", href: "/faq" },
       { name: "Shipping", href: "/shipping" }
+    ],
+    legal: [
+      { name: "Privacy Policy", href: "/privacy-policy" },
+      { name: "Terms & Conditions", href: "/terms-conditions" }
     ]
   };
 
