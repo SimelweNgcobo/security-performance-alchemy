@@ -89,22 +89,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) throw error;
 
-      // If user is created successfully, also create a customer record
-      if (data.user) {
-        const { error: customerError } = await supabase
-          .from("customers")
-          .insert({
-            user_id: data.user.id,
-            email: data.user.email,
-            name: userData?.full_name || "",
-            phone: userData?.phone || "",
-          });
-
-        if (customerError) {
-          console.error("Error creating customer record:", customerError);
-        }
-      }
-
+      // Customer record will be created automatically by database trigger
       toast.success("Account created successfully! Please check your email to verify your account.");
     } catch (error: any) {
       console.error("Sign up error:", error);
