@@ -48,8 +48,8 @@ const Layout2Footer = () => {
             </p>
           </div>
 
-          {/* Three-column navigation */}
-          <div className="grid md:grid-cols-3 gap-12 max-w-4xl mx-auto">
+          {/* Four-column navigation */}
+          <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
             <div className="space-y-4">
               <h4 className="text-base font-medium text-foreground">Products</h4>
               <ul className="space-y-3">
