@@ -219,22 +219,7 @@ const BulkCheckout = () => {
     toast.error("Payment was not completed");
   };
 
-  const handleSubmitOrder = async () => {
-    if (!user) {
-      toast.error("Please log in to place an order");
-      navigate("/auth");
-      return;
-    }
-
-    if (!validatePayment()) {
-      toast.error("Please fill in all payment details");
-      return;
-    }
-
-    // For demo purposes, we'll proceed to confirmation
-    // In production, this would be handled by the PaystackButton
-    setCurrentStep(4);
-  };
+  // Removed handleSubmitOrder since all payment processing is handled by Paystack
 
   const steps = [
     { number: 1, title: "Product & Quantity", icon: Package },
