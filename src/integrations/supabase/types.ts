@@ -200,6 +200,7 @@ export type Database = {
           city: string | null
           created_at: string | null
           email: string
+          full_name: string | null
           id: string
           name: string
           phone: string | null
@@ -212,6 +213,7 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           email: string
+          full_name?: string | null
           id?: string
           name: string
           phone?: string | null
@@ -224,6 +226,7 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           email?: string
+          full_name?: string | null
           id?: string
           name?: string
           phone?: string | null
