@@ -53,10 +53,7 @@ const App = () => {
     // Initialize global scroll to top for all button clicks
     initializeGlobalScrollToTop();
 
-    // Initialize demo order tracking data (defer to not block initial load)
-    setTimeout(() => {
-      orderTrackingService.initializeDemoData().catch(console.error);
-    }, 1000);
+    // App initialization complete
   }, []);
 
   return (

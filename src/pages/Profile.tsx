@@ -1,8 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { orderTrackingService, OrderTracking } from "@/services/orderTracking";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -17,6 +16,8 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import LabelEditor from "@/components/LabelEditor";
+import { ProfileHeaderSkeleton, ActivitySkeleton, PurchasesSkeleton, RecentItemsSkeleton } from "@/components/ProfileSkeleton";
 import {
   User,
   Clock,
@@ -38,7 +39,8 @@ import {
   Truck,
   Plus,
   Edit,
-  Tag
+  Tag,
+  Palette
 } from "lucide-react";
 
 interface RecentItem {
@@ -75,21 +77,42 @@ interface Purchase {
   shipping_address?: string;
 }
 
+interface BasicProfile {
+  name: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+}
+
 const Profile = () => {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("recents");
-  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
-  const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [customerData, setCustomerData] = useState<any>(null);
-  const [orderTrackingData, setOrderTrackingData] = useState<OrderTracking[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
+  
+  // Basic profile state (loads instantly)
+  const [basicProfile, setBasicProfile] = useState<BasicProfile | null>(null);
   const [profileForm, setProfileForm] = useState({
     fullName: "",
     email: "",
     phone: ""
   });
+
+  // Heavy data states (loads progressively)
+  const [activeTab, setActiveTab] = useState("recents");
+  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [customerData, setCustomerData] = useState<any>(null);
+  
+  // Loading states for different sections
+  const [loadingStates, setLoadingStates] = useState({
+    basic: false,
+    activity: false,
+    purchases: false,
+    recents: false,
+    customer: false
+  });
+
+  // UI states
   const [savedShippingDetails, setSavedShippingDetails] = useState<any[]>([]);
   const [customLabels, setCustomLabels] = useState<any[]>([]);
   const [newLabel, setNewLabel] = useState({
@@ -97,61 +120,102 @@ const Profile = () => {
     design: "",
     description: ""
   });
+  const [saving, setSaving] = useState(false);
 
+  // Redirect if not authenticated
   useEffect(() => {
-    if (!loading && !user) {
-      toast.error("Please sign in to access your profile");
+    if (!authLoading && !user) {
+      console.log("No user found, redirecting to auth");
       navigate("/auth");
       return;
     }
+  }, [user, authLoading, navigate]);
 
-    if (user) {
-      loadUserData();
+  // Load basic profile instantly when user is available
+  useEffect(() => {
+    if (user && !authLoading) {
+      loadBasicProfile();
+      loadLocalStorageData();
     }
-  }, [user, loading, navigate]);
+  }, [user, authLoading]);
 
-  const loadUserData = useCallback(async () => {
+  // Load basic profile data instantly (< 100ms)
+  const loadBasicProfile = useCallback(async () => {
     if (!user?.email) return;
 
     try {
-      setLoadingData(true);
+      setLoadingStates(prev => ({ ...prev, basic: true }));
 
-      // Parallel data loading for better performance
-      const [
-        customerResponse,
-        ordersResponse
-      ] = await Promise.all([
-        supabase
-          .from("customers")
-          .select("*")
-          .eq("email", user.email)
-          .single(),
-        supabase
-          .from("orders")
-          .select(`
-            *,
-            order_items (
-              *,
-              products (name, size, type)
-            ),
-            invoices (id, invoice_number)
-          `)
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(10) // Only load recent 10 orders for performance
-      ]);
-
-      const customer = customerResponse.data;
-      setCustomerData(customer);
-
-      // Populate profile form
+      // Set immediate basic profile from auth user
+      const immediate = {
+        name: user.user_metadata?.full_name || "User",
+        email: user.email,
+        phone: "",
+        avatar: user.user_metadata?.avatar_url
+      };
+      
+      setBasicProfile(immediate);
       setProfileForm({
-        fullName: customer?.name || user?.user_metadata?.full_name || "",
-        email: customer?.email || user?.email || "",
-        phone: customer?.phone || ""
+        fullName: immediate.name,
+        email: immediate.email,
+        phone: ""
       });
 
-      // Load localStorage data
+      console.log("Basic profile loaded instantly");
+
+      // Then enhance with customer data in background
+      loadCustomerData();
+
+    } catch (error) {
+      console.error("Error loading basic profile:", error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, basic: false }));
+    }
+  }, [user]);
+
+  // Load customer data in background (no blocking)
+  const loadCustomerData = useCallback(async () => {
+    if (!user?.email) return;
+
+    try {
+      setLoadingStates(prev => ({ ...prev, customer: true }));
+
+      const { data: customer } = await supabase
+        .from("customers")
+        .select("name, phone, address")
+        .eq("email", user.email)
+        .maybeSingle();
+
+      if (customer) {
+        setCustomerData(customer);
+        
+        // Update basic profile with customer data
+        setBasicProfile(prev => prev ? {
+          ...prev,
+          name: customer.name || prev.name,
+          phone: customer.phone || prev.phone
+        } : null);
+
+        // Update form
+        setProfileForm(prev => ({
+          ...prev,
+          fullName: customer.name || prev.fullName,
+          phone: customer.phone || ""
+        }));
+      }
+
+    } catch (error) {
+      console.error("Error loading customer data:", error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, customer: false }));
+    }
+  }, [user]);
+
+  // Load localStorage data instantly
+  const loadLocalStorageData = useCallback(() => {
+    if (!user?.id) return;
+
+    try {
       const savedShipping = localStorage.getItem(`shipping_${user.id}`);
       if (savedShipping) {
         setSavedShippingDetails(JSON.parse(savedShipping));
@@ -161,171 +225,211 @@ const Profile = () => {
       if (savedLabels) {
         setCustomLabels(JSON.parse(savedLabels));
       }
+    } catch (e) {
+      console.log("Error loading localStorage data:", e);
+    }
+  }, [user]);
 
-      // Load recent activity (mock data for now since we need to implement tracking)
-      const mockRecents: RecentItem[] = [
-        {
-          id: "1",
-          type: "product",
-          name: "Crystal Reserve",
-          description: "750ml Premium crystal bottle",
-          image: "https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: "2",
-          type: "order",
-          name: "Order #ORD-001",
-          description: "2x Artisan Glass bottles",
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          status: "processing"
-        },
-        {
-          id: "3",
-          type: "quote",
-          name: "Enterprise Quote",
-          description: "Custom label design for 1000 bottles",
-          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          status: "pending"
-        }
-      ];
-      setRecentItems(mockRecents);
+  // Lazy load activity data when tab is accessed
+  const loadActivityData = useCallback(async () => {
+    if (!user || activityItems.length > 0 || loadingStates.activity) return;
 
-      // Load order tracking data
-      const trackingData = orderTrackingService.getCustomerOrders(user?.email || "");
-      setOrderTrackingData(trackingData);
+    try {
+      setLoadingStates(prev => ({ ...prev, activity: true }));
 
-      // Generate activity timeline from order tracking
-      const activityFromTracking: ActivityItem[] = [];
-      trackingData.forEach(tracking => {
-        tracking.activities.forEach(activity => {
-          activityFromTracking.push({
-            id: activity.id,
-            type: activity.activity_type as any,
-            title: activity.activity_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-            description: activity.description,
-            timestamp: activity.timestamp,
-            status: ['delivered', 'payment_confirmed'].includes(activity.activity_type) ? 'completed' : 'processing',
-            metadata: activity.metadata
-          });
-        });
-      });
-
-      // Add mock account activities
-      const mockAccountActivity: ActivityItem[] = [
+      // Generate basic activity items
+      const basicActivity: ActivityItem[] = [
         {
-          id: "account-1",
+          id: "account-created",
           type: "account_created",
           title: "Account Created",
           description: "Welcome to MyFuze! Your account has been successfully created",
-          timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          timestamp: user.created_at || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
           status: "completed"
         },
         {
-          id: "login-1",
+          id: "current-login",
           type: "login",
-          title: "Account Access",
+          title: "Recent Sign In",
           description: "Signed in to your account",
           timestamp: new Date().toISOString(),
           status: "completed"
         }
       ];
 
-      // Combine and sort activities
-      const allActivities = [...activityFromTracking, ...mockAccountActivity]
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      setActivityItems(basicActivity);
 
-      setActivityItems(allActivities);
+    } catch (error) {
+      console.error("Error loading activity:", error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, activity: false }));
+    }
+  }, [user, activityItems.length, loadingStates.activity]);
 
-      // Process orders data that was loaded in parallel
-      const orders = ordersResponse.data;
+  // Lazy load purchases data when tab is accessed
+  const loadPurchasesData = useCallback(async () => {
+    if (!user || purchases.length > 0 || loadingStates.purchases) return;
+
+    try {
+      setLoadingStates(prev => ({ ...prev, purchases: true }));
+
+      const { data: orders } = await supabase
+        .from("orders")
+        .select(`
+          id,
+          order_number,
+          total_amount,
+          status,
+          payment_status,
+          delivery_status,
+          created_at,
+          metadata,
+          shipping_address,
+          order_items!inner (
+            quantity,
+            unit_price,
+            products (name, size, type)
+          ),
+          invoices (id, invoice_number)
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
       if (orders) {
-        setPurchases(orders.map(order => {
-          let items = order.order_items || [];
-
-          // For bulk orders, create virtual items from metadata
-          if (order.metadata && order.order_number?.startsWith('BLK')) {
-            try {
-              const metadata = JSON.parse(order.metadata);
-              items = [{
-                quantity: metadata.quantity,
-                unit_price: metadata.unit_price,
-                products: {
-                  name: `${metadata.bottle_size} Water Bottle`,
-                  size: metadata.bottle_size,
-                  type: 'bulk'
-                }
-              }];
-            } catch (e) {
-              console.log('Could not parse bulk order metadata');
-            }
-          }
-
-          return {
-            id: order.id,
-            order_number: order.order_number,
-            total_amount: order.total_amount,
-            status: order.status,
-            payment_status: order.payment_status,
-            delivery_status: order.delivery_status,
-            created_at: order.created_at,
-            items: items,
-            invoice_id: order.invoices?.[0]?.id,
-            metadata: order.metadata,
-            shipping_address: order.shipping_address
-          };
+        const processedPurchases = orders.map(order => ({
+          id: order.id,
+          order_number: order.order_number,
+          total_amount: order.total_amount,
+          status: order.status,
+          payment_status: order.payment_status,
+          delivery_status: order.delivery_status,
+          created_at: order.created_at,
+          items: order.order_items || [],
+          invoice_id: order.invoices?.[0]?.id,
+          metadata: order.metadata,
+          shipping_address: order.shipping_address
         }));
+
+        setPurchases(processedPurchases);
       }
 
     } catch (error) {
-      console.error("Error loading user data:", error);
-      toast.error("Failed to load profile data");
+      console.error("Error loading purchases:", error);
     } finally {
-      setLoadingData(false);
+      setLoadingStates(prev => ({ ...prev, purchases: false }));
     }
-  }, [user]);
+  }, [user, purchases.length, loadingStates.purchases]);
+
+  // Lazy load recent items when tab is accessed
+  const loadRecentItems = useCallback(async () => {
+    if (!user || recentItems.length > 0 || loadingStates.recents) return;
+
+    try {
+      setLoadingStates(prev => ({ ...prev, recents: true }));
+
+      // For now, generate from purchases data
+      if (purchases.length > 0) {
+        const orderRecents: RecentItem[] = purchases.slice(0, 3).map(order => ({
+          id: `order-${order.id}`,
+          type: 'order' as const,
+          name: order.order_number,
+          description: `${order.items.length} item(s) - R${order.total_amount.toFixed(2)}`,
+          timestamp: order.created_at,
+          status: order.status
+        }));
+
+        setRecentItems(orderRecents);
+      }
+
+    } catch (error) {
+      console.error("Error loading recent items:", error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, recents: false }));
+    }
+  }, [user, recentItems.length, loadingStates.recents, purchases]);
+
+  // Handle tab changes with lazy loading
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    
+    switch (tab) {
+      case "activity":
+        loadActivityData();
+        break;
+      case "purchases":
+        loadPurchasesData();
+        break;
+      case "recents":
+        loadRecentItems();
+        break;
+    }
+  };
+
+  // Optimistic profile update
+  const updateProfile = useCallback(async () => {
+    if (saving) return;
+
+    try {
+      setSaving(true);
+
+      // Optimistic update - update UI immediately
+      const newProfile = {
+        ...basicProfile!,
+        name: profileForm.fullName,
+        phone: profileForm.phone
+      };
+      setBasicProfile(newProfile);
+
+      // Show immediate success
+      toast.success("Profile updated!");
+
+      // Background update to server
+      const [authUpdate, customerUpdate] = await Promise.all([
+        supabase.auth.updateUser({
+          data: { full_name: profileForm.fullName }
+        }),
+        supabase
+          .from("customers")
+          .upsert({
+            email: user!.email,
+            name: profileForm.fullName,
+            phone: profileForm.phone
+          })
+          .eq("email", user!.email)
+      ]);
+
+      if (authUpdate.error) throw authUpdate.error;
+      if (customerUpdate.error) throw customerUpdate.error;
+
+      console.log("Profile updated successfully in background");
+
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      
+      // Revert optimistic update on error
+      setBasicProfile(prev => prev ? {
+        ...prev,
+        name: customerData?.name || user?.user_metadata?.full_name || "User",
+        phone: customerData?.phone || ""
+      } : null);
+
+      toast.error("Failed to update profile. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }, [basicProfile, profileForm, customerData, user, saving]);
 
   const downloadInvoice = async (invoiceId: string) => {
     try {
-      // In a real implementation, this would generate and download the invoice as an image
       toast.success("Invoice download feature will be implemented soon");
     } catch (error) {
       toast.error("Failed to download invoice");
     }
   };
 
-  const updateProfile = async () => {
-    try {
-      // Update auth user metadata
-      const { error: authError } = await supabase.auth.updateUser({
-        data: { full_name: profileForm.fullName }
-      });
-
-      if (authError) throw authError;
-
-      // Update customer record
-      const { error: customerError } = await supabase
-        .from("customers")
-        .update({
-          name: profileForm.fullName,
-          phone: profileForm.phone
-        })
-        .eq("email", user?.email);
-
-      if (customerError) throw customerError;
-
-      // Reload user data
-      await loadUserData();
-      toast.success("Profile updated successfully");
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Failed to update profile");
-    }
-  };
-
   const deleteAccount = async () => {
     try {
-      // Delete customer record first
       const { error: customerError } = await supabase
         .from("customers")
         .delete()
@@ -333,29 +437,13 @@ const Profile = () => {
 
       if (customerError) throw customerError;
 
-      // Delete auth user (this will also sign out)
-      const { error: authError } = await supabase.auth.admin.deleteUser(user?.id || "");
-
-      if (authError) {
-        console.warn("Could not delete auth user:", authError);
-      }
-
-      // Clear local storage
       localStorage.clear();
-
-      toast.success("Account deleted successfully");
+      toast.success("Account deletion request processed. Please contact support to complete the process.");
       navigate("/");
     } catch (error) {
       console.error("Error deleting account:", error);
       toast.error("Failed to delete account. Please contact support.");
     }
-  };
-
-  const saveShippingDetails = (details: any) => {
-    const updated = [...savedShippingDetails, { ...details, id: Date.now() }];
-    setSavedShippingDetails(updated);
-    localStorage.setItem(`shipping_${user?.id}`, JSON.stringify(updated));
-    toast.success("Shipping details saved");
   };
 
   const saveCustomLabel = () => {
@@ -374,9 +462,8 @@ const Profile = () => {
 
   const reorderItems = async (purchase: Purchase) => {
     try {
-      // Add items back to cart (simplified for now)
       toast.success(`${purchase.items.length} items re-added to cart`);
-      navigate("/cart");
+      navigate("/products");
     } catch (error) {
       toast.error("Failed to re-order items");
     }
@@ -387,16 +474,16 @@ const Profile = () => {
       case "completed":
       case "delivered":
       case "paid":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
       case "processing":
       case "shipped":
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
       case "cancelled":
       case "failed":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
     }
   };
 
@@ -430,14 +517,25 @@ const Profile = () => {
     }
   };
 
-  if (loading || loadingData) {
+  const viewItemDetails = (item: RecentItem) => {
+    if (item.type === 'order') {
+      navigate("/orders");
+    } else if (item.type === 'product') {
+      navigate("/products");
+    }
+    toast.success(`Viewing details for ${item.name}`);
+  };
+
+  // Show loading only for auth
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner message="Loading your profile..." size="lg" />
+        <LoadingSpinner message="Authenticating..." size="lg" />
       </div>
     );
   }
 
+  // If no user, don't render anything (redirect will happen)
   if (!user) {
     return null;
   }
@@ -447,49 +545,47 @@ const Profile = () => {
       <Navbar />
       <div className="pt-20 pb-12">
         <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
-          {/* Profile Header */}
+          {/* Profile Header - Shows immediately with basic data */}
           <div className="mb-8">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                      {user.email?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <CardTitle className="text-2xl">
-                      {customerData?.name || user.user_metadata?.full_name || "User"}
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1">
-                        <Mail className="w-4 h-4" />
-                        {user.email}
-                      </span>
-                      {customerData?.phone && (
+            {loadingStates.basic && !basicProfile ? (
+              <ProfileHeaderSkeleton />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="h-16 w-16">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                        {basicProfile?.email?.charAt(0).toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <CardTitle className="text-2xl">
+                        {basicProfile?.name || "Loading..."}
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-4 mt-2">
                         <span className="flex items-center gap-1">
-                          <Phone className="w-4 h-4" />
-                          {customerData.phone}
+                          <Mail className="w-4 h-4" />
+                          {basicProfile?.email || "Loading..."}
                         </span>
-                      )}
-                      {customerData?.address && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          {customerData.address}
-                        </span>
-                      )}
-                    </CardDescription>
+                        {basicProfile?.phone && (
+                          <span className="flex items-center gap-1">
+                            <Phone className="w-4 h-4" />
+                            {basicProfile.phone}
+                          </span>
+                        )}
+                      </CardDescription>
+                    </div>
+                    <Badge variant="outline" className="text-primary border-primary">
+                      Active Member
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="text-primary border-primary">
-                    Active Member
-                  </Badge>
-                </div>
-              </CardHeader>
-            </Card>
+                </CardHeader>
+              </Card>
+            )}
           </div>
 
           {/* Profile Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="recents" className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
@@ -523,24 +619,17 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {recentItems.length > 0 ? (
+                  {loadingStates.recents ? (
+                    <RecentItemsSkeleton />
+                  ) : recentItems.length > 0 ? (
                     <div className="space-y-4">
                       {recentItems.map((item) => (
                         <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                          {item.image && (
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="w-12 h-12 rounded-lg object-cover"
-                            />
-                          )}
-                          {!item.image && (
-                            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                              {item.type === 'product' && <Package className="w-6 h-6 text-primary" />}
-                              {item.type === 'order' && <ShoppingBag className="w-6 h-6 text-primary" />}
-                              {item.type === 'quote' && <FileText className="w-6 h-6 text-primary" />}
-                            </div>
-                          )}
+                          <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                            {item.type === 'product' && <Package className="w-6 h-6 text-primary" />}
+                            {item.type === 'order' && <ShoppingBag className="w-6 h-6 text-primary" />}
+                            {item.type === 'quote' && <FileText className="w-6 h-6 text-primary" />}
+                          </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <h3 className="font-medium">{item.name}</h3>
@@ -555,7 +644,11 @@ const Profile = () => {
                               {formatDateTime(item.timestamp)}
                             </p>
                           </div>
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => viewItemDetails(item)}
+                          >
                             <Eye className="w-4 h-4" />
                           </Button>
                         </div>
@@ -565,6 +658,9 @@ const Profile = () => {
                     <div className="text-center py-8">
                       <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground">No recent activity found</p>
+                      <Button className="mt-4" onClick={() => navigate("/products")}>
+                        Browse Products
+                      </Button>
                     </div>
                   )}
                 </CardContent>
@@ -581,7 +677,9 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {activityItems.length > 0 ? (
+                  {loadingStates.activity ? (
+                    <ActivitySkeleton />
+                  ) : activityItems.length > 0 ? (
                     <div className="space-y-4">
                       {activityItems.map((item, index) => (
                         <div key={item.id} className="relative">
@@ -642,7 +740,9 @@ const Profile = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {purchases.length > 0 ? (
+                  {loadingStates.purchases ? (
+                    <PurchasesSkeleton />
+                  ) : purchases.length > 0 ? (
                     <div className="space-y-4">
                       {purchases.map((purchase) => (
                         <div key={purchase.id} className="border rounded-lg p-6">
@@ -687,32 +787,6 @@ const Profile = () => {
                                 ))}
                               </div>
                             </div>
-
-                            {/* Shipping Address for Bulk Orders */}
-                            {purchase.shipping_address && (
-                              <div>
-                                <h4 className="font-medium">Shipping Address:</h4>
-                                <div className="text-sm text-muted-foreground mt-1">
-                                  {(() => {
-                                    try {
-                                      const address = JSON.parse(purchase.shipping_address);
-                                      return (
-                                        <div>
-                                          <p className="font-medium text-foreground">{address.fullName}</p>
-                                          {address.company && <p>{address.company}</p>}
-                                          <p>{address.address1}</p>
-                                          {address.address2 && <p>{address.address2}</p>}
-                                          <p>{address.city}, {address.province} {address.postalCode}</p>
-                                          <p>{address.phone}</p>
-                                        </div>
-                                      );
-                                    } catch {
-                                      return <p>Address information available</p>;
-                                    }
-                                  })()}
-                                </div>
-                              </div>
-                            )}
                           </div>
 
                           <Separator className="my-4" />
@@ -812,25 +886,44 @@ const Profile = () => {
                         />
                       </div>
                     </div>
-                    <Button onClick={updateProfile} className="w-full">
+                    <Button 
+                      onClick={updateProfile} 
+                      className="w-full"
+                      disabled={saving}
+                    >
                       <Save className="w-4 h-4 mr-2" />
-                      Save Changes
+                      {saving ? "Saving..." : "Save Changes"}
                     </Button>
                   </CardContent>
                 </Card>
 
-                {/* Custom Labels */}
+                {/* Custom Label Editor */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Custom Labels</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <Palette className="w-5 h-5" />
+                      Custom Label Designer
+                    </CardTitle>
                     <CardDescription>
-                      Create and save custom labels for your bottles
+                      Create and design custom labels for your bottles with our professional design tools
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <LabelEditor />
+                  </CardContent>
+                </Card>
+
+                {/* Saved Custom Labels */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Saved Custom Labels</CardTitle>
+                    <CardDescription>
+                      Manage your saved custom label designs
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* Add New Label */}
                     <div className="border rounded-lg p-4 space-y-4">
-                      <h4 className="font-medium">Create New Label</h4>
+                      <h4 className="font-medium">Create Quick Label</h4>
                       <div className="grid gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="labelName">Label Name</Label>
@@ -867,10 +960,9 @@ const Profile = () => {
                       </Button>
                     </div>
 
-                    {/* Saved Labels */}
                     {customLabels.length > 0 && (
                       <div className="space-y-2">
-                        <h4 className="font-medium">Saved Labels</h4>
+                        <h4 className="font-medium">Your Saved Labels</h4>
                         <div className="space-y-2">
                           {customLabels.map((label) => (
                             <div key={label.id} className="border rounded-lg p-3">
@@ -896,17 +988,17 @@ const Profile = () => {
                 </Card>
 
                 {/* Account Deletion */}
-                <Card className="border-destructive">
+                <Card className="border-red-200 dark:border-red-900/50">
                   <CardHeader>
-                    <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                    <CardTitle className="text-red-600 dark:text-red-400">Account Management</CardTitle>
                     <CardDescription>
-                      Permanently delete your account and all associated data
+                      Manage your account settings and data
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full">
+                        <Button variant="outline" className="w-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/10">
                           <Trash2 className="w-4 h-4 mr-2" />
                           Delete Account
                         </Button>
@@ -921,7 +1013,7 @@ const Profile = () => {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={deleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          <AlertDialogAction onClick={deleteAccount} className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800">
                             Yes, delete my account
                           </AlertDialogAction>
                         </AlertDialogFooter>
