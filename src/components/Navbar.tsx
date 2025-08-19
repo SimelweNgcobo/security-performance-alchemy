@@ -23,7 +23,6 @@ const Navbar = () => {
     { name: "Discover Collection", href: "/products" },
     { name: "Enterprise", href: "/enterprise" },
     { name: "About", href: "/about" },
-    { name: "Company", href: "/about" },
     { name: "Profile", href: "/profile" },
     { name: "Contact", href: "/contact" }
   ];
@@ -79,16 +78,6 @@ const Navbar = () => {
                     </Button>
                   </Link>
                 )}
-                <Link to="/products">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-full px-4"
-                  >
-                    <ShoppingBag className="h-4 w-4 mr-2" />
-                    Shop
-                  </Button>
-                </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-9 w-9 rounded-full">
@@ -146,14 +135,6 @@ const Navbar = () => {
                     className="rounded-full px-4"
                   >
                     Sign In
-                  </Button>
-                </Link>
-                <Link to="/products">
-                  <Button
-                    size="sm"
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6"
-                  >
-                    Shop Now
                   </Button>
                 </Link>
               </>
