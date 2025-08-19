@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Truck, CreditCard, CheckCircle, ArrowLeft, Package, MapPin, Shield, Clock, Award, Star } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Truck, CreditCard, CheckCircle, ArrowLeft, Package, MapPin, Shield, Clock, Award, Star, Plus, Trash2, ChevronDown, ChevronUp, Eye } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import { toast } from "sonner";
@@ -67,6 +68,14 @@ const pricingData = {
 
 type BottleSize = keyof typeof pricingData;
 
+interface CartItem {
+  id: string;
+  size: BottleSize;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
 interface ShippingAddress {
   fullName: string;
   company: string;
@@ -82,11 +91,11 @@ const BulkCheckout = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedSize, setSelectedSize] = useState<BottleSize>("500ml");
   const [quantity, setQuantity] = useState<number>(1);
-  const [currentPrice, setCurrentPrice] = useState<number>(0);
-  const [total, setTotal] = useState<number>(0);
   const [orderNumber, setOrderNumber] = useState<string>("");
+  const [showPricingTiers, setShowPricingTiers] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: "",
     company: "",
@@ -106,19 +115,32 @@ const BulkCheckout = () => {
     }
   }, [user, navigate]);
 
-  // Calculate price based on quantity and size
-  useEffect(() => {
-    const pricing = pricingData[selectedSize];
-    const tier = pricing.find(p => quantity >= p.min && quantity <= p.max);
-    if (tier) {
-      setCurrentPrice(tier.price);
-      setTotal(quantity * tier.price);
-    }
-  }, [selectedSize, quantity]);
+  // Calculate pricing for a given size and quantity
+  const calculatePrice = (size: BottleSize, qty: number) => {
+    const pricing = pricingData[size];
+    const tier = pricing.find(p => qty >= p.min && qty <= p.max);
+    return tier ? tier.price : 0;
+  };
 
+  // Get current price for selected size and quantity
+  const getCurrentPrice = () => {
+    return calculatePrice(selectedSize, quantity);
+  };
+
+  // Get current pricing tier for selected size and quantity
   const getCurrentPriceTier = () => {
     const pricing = pricingData[selectedSize];
     return pricing.find(p => quantity >= p.min && quantity <= p.max);
+  };
+
+  // Calculate total for all cart items
+  const getCartTotal = () => {
+    return cartItems.reduce((total, item) => total + item.subtotal, 0);
+  };
+
+  // Get total quantity across all cart items
+  const getTotalQuantity = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
   const handleSizeChange = (size: BottleSize) => {
@@ -128,6 +150,78 @@ const BulkCheckout = () => {
   const handleQuantityChange = (value: string) => {
     const num = parseInt(value) || 0;
     setQuantity(Math.max(0, num));
+  };
+
+  const addToCart = () => {
+    if (quantity < 1) {
+      toast.error("Please enter a valid quantity");
+      return;
+    }
+
+    const unitPrice = getCurrentPrice();
+    const subtotal = quantity * unitPrice;
+    
+    // Check if same size already exists in cart
+    const existingItemIndex = cartItems.findIndex(item => item.size === selectedSize);
+    
+    if (existingItemIndex >= 0) {
+      // Update existing item
+      const updatedItems = [...cartItems];
+      const newQuantity = updatedItems[existingItemIndex].quantity + quantity;
+      const newUnitPrice = calculatePrice(selectedSize, newQuantity);
+      
+      updatedItems[existingItemIndex] = {
+        ...updatedItems[existingItemIndex],
+        quantity: newQuantity,
+        unitPrice: newUnitPrice,
+        subtotal: newQuantity * newUnitPrice
+      };
+      
+      setCartItems(updatedItems);
+      toast.success(`Updated ${selectedSize} bottles in cart`);
+    } else {
+      // Add new item
+      const newItem: CartItem = {
+        id: `${selectedSize}-${Date.now()}`,
+        size: selectedSize,
+        quantity,
+        unitPrice,
+        subtotal
+      };
+      
+      setCartItems([...cartItems, newItem]);
+      toast.success(`Added ${quantity} × ${selectedSize} bottles to cart`);
+    }
+    
+    // Reset form
+    setQuantity(1);
+  };
+
+  const removeFromCart = (id: string) => {
+    setCartItems(cartItems.filter(item => item.id !== id));
+    toast.success("Item removed from cart");
+  };
+
+  const updateCartItemQuantity = (id: string, newQuantity: number) => {
+    if (newQuantity < 1) {
+      removeFromCart(id);
+      return;
+    }
+
+    const updatedItems = cartItems.map(item => {
+      if (item.id === id) {
+        const newUnitPrice = calculatePrice(item.size, newQuantity);
+        return {
+          ...item,
+          quantity: newQuantity,
+          unitPrice: newUnitPrice,
+          subtotal: newQuantity * newUnitPrice
+        };
+      }
+      return item;
+    });
+    
+    setCartItems(updatedItems);
   };
 
   const handleShippingChange = (field: keyof ShippingAddress, value: string) => {
@@ -140,8 +234,8 @@ const BulkCheckout = () => {
   };
 
   const handleNextStep = () => {
-    if (currentStep === 1 && quantity < 1) {
-      toast.error("Please enter a valid quantity");
+    if (currentStep === 1 && cartItems.length === 0) {
+      toast.error("Please add items to your cart");
       return;
     }
     if (currentStep === 2 && !validateShipping()) {
@@ -160,11 +254,14 @@ const BulkCheckout = () => {
     }
   };
 
+  const cartTotal = getCartTotal();
+  const totalQuantity = getTotalQuantity();
+
   // Paystack configuration
   const paystackConfig = {
     reference: `BLK_${Date.now()}`,
     email: user?.email || "customer@example.com",
-    amount: Math.round(total * 100), // Paystack expects amount in kobo (multiply by 100)
+    amount: Math.round(cartTotal * 100), // Paystack expects amount in kobo (multiply by 100)
     publicKey: "pk_test_your_paystack_public_key", // You should use environment variable for this
   };
 
@@ -181,13 +278,12 @@ const BulkCheckout = () => {
         status: "paid",
         payment_status: "paid",
         delivery_status: "processing",
-        total_amount: total,
+        total_amount: cartTotal,
         payment_reference: reference.reference,
         shipping_address: JSON.stringify(shippingAddress),
         metadata: JSON.stringify({
-          bottle_size: selectedSize,
-          quantity: quantity,
-          unit_price: currentPrice,
+          cart_items: cartItems,
+          total_quantity: totalQuantity,
           payment_method: "paystack"
         })
       };
@@ -223,89 +319,168 @@ const BulkCheckout = () => {
 
   const renderStep1 = () => (
     <div className="max-w-7xl mx-auto">
-      <div className="grid lg:grid-cols-12 gap-8">
+      <div className="grid lg:grid-cols-12 gap-6 lg:gap-8">
         {/* Main Content - 8 columns */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="lg:col-span-8 space-y-6 lg:space-y-8">
           {/* Product Selection Header */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-semibold text-slate-900">Configure Your Order</h2>
-            <p className="text-slate-600">Select bottle size and quantity for your bulk purchase</p>
+          <div className="space-y-2 lg:space-y-4">
+            <h2 className="text-xl lg:text-2xl font-semibold text-slate-900">Configure Your Order</h2>
+            <p className="text-sm lg:text-base text-slate-600">Select bottle sizes and quantities for your bulk purchase</p>
           </div>
 
-          {/* Size Selection */}
+          {/* Current Cart */}
+          {cartItems.length > 0 && (
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader className="pb-3 lg:pb-4">
+                <CardTitle className="text-base lg:text-lg font-medium flex items-center gap-2">
+                  <Package className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" />
+                  Your Cart ({cartItems.length} item{cartItems.length !== 1 ? 's' : ''})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 lg:space-y-4">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="flex flex-col sm:flex-row sm:items-center gap-3 lg:gap-4 p-3 lg:p-4 bg-slate-50 rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 lg:gap-3 mb-1 lg:mb-2">
+                        <span className="font-semibold text-sm lg:text-base">{item.size} Bottles</span>
+                        <Badge variant="secondary" className="text-xs">{item.quantity} bottles</Badge>
+                      </div>
+                      <div className="text-xs lg:text-sm text-slate-600">
+                        R{item.unitPrice.toFixed(2)} per bottle
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 lg:gap-3">
+                      <div className="flex items-center gap-1 lg:gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
+                          className="h-7 w-7 lg:h-8 lg:w-8 p-0"
+                        >
+                          -
+                        </Button>
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => updateCartItemQuantity(item.id, parseInt(e.target.value) || 0)}
+                          className="w-16 lg:w-20 h-7 lg:h-8 text-center text-sm"
+                          min="1"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
+                          className="h-7 w-7 lg:h-8 lg:w-8 p-0"
+                        >
+                          +
+                        </Button>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-sm lg:text-base">R{item.subtotal.toFixed(2)}</div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7 lg:h-8 lg:w-8 p-0"
+                      >
+                        <Trash2 className="h-3 w-3 lg:h-4 lg:w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                <Separator />
+                <div className="flex justify-between items-center p-3 lg:p-4 bg-green-50 rounded-lg">
+                  <span className="font-semibold text-sm lg:text-base">Cart Total</span>
+                  <span className="text-lg lg:text-xl font-bold text-green-600">R{cartTotal.toFixed(2)}</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Add Items Section */}
           <Card className="border-slate-200 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-medium flex items-center gap-2">
-                <Package className="h-5 w-5 text-slate-500" />
-                Bottle Size
+            <CardHeader className="pb-3 lg:pb-4">
+              <CardTitle className="text-base lg:text-lg font-medium flex items-center gap-2">
+                <Plus className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" />
+                Add Items to Cart
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-5 gap-3">
-                {Object.keys(pricingData).map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => handleSizeChange(size as BottleSize)}
-                    className={`
-                      p-4 rounded-lg border-2 transition-all duration-200 hover:border-slate-300
-                      ${selectedSize === size 
-                        ? "border-slate-900 bg-slate-50 shadow-sm" 
-                        : "border-slate-200 bg-white"
-                      }
-                    `}
-                  >
-                    <div className="text-center">
-                      <div className={`text-lg font-semibold ${
-                        selectedSize === size ? "text-slate-900" : "text-slate-700"
-                      }`}>
-                        {size}
+            <CardContent className="space-y-4 lg:space-y-6">
+              {/* Size Selection */}
+              <div>
+                <Label className="text-sm font-medium mb-2 lg:mb-3 block">Bottle Size</Label>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 lg:gap-3">
+                  {Object.keys(pricingData).map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => handleSizeChange(size as BottleSize)}
+                      className={`
+                        p-2 lg:p-4 rounded-lg border-2 transition-all duration-200 hover:border-slate-300
+                        ${selectedSize === size 
+                          ? "border-slate-900 bg-slate-50 shadow-sm" 
+                          : "border-slate-200 bg-white"
+                        }
+                      `}
+                    >
+                      <div className="text-center">
+                        <div className={`text-sm lg:text-lg font-semibold ${
+                          selectedSize === size ? "text-slate-900" : "text-slate-700"
+                        }`}>
+                          {size}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1">Bottles</div>
                       </div>
-                      <div className="text-xs text-slate-500 mt-1">Bottles</div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Quantity Input */}
-          <Card className="border-slate-200 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-medium">Quantity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="relative">
-                  <Input
-                    type="number"
-                    min="1"
-                    max="10000"
-                    value={quantity}
-                    onChange={(e) => handleQuantityChange(e.target.value)}
-                    className="text-lg p-6 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
-                    placeholder="Enter quantity"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
-                    bottles
-                  </span>
+              {/* Quantity Input */}
+              <div>
+                <Label className="text-sm font-medium mb-2 lg:mb-3 block">Quantity</Label>
+                <div className="flex gap-2 lg:gap-3 items-end">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min="1"
+                        max="10000"
+                        value={quantity}
+                        onChange={(e) => handleQuantityChange(e.target.value)}
+                        className="text-base lg:text-lg p-3 lg:p-6 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                        placeholder="Enter quantity"
+                      />
+                      <span className="absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm lg:text-base">
+                        bottles
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={addToCart}
+                    className="bg-slate-900 hover:bg-slate-800 text-white px-4 lg:px-6 py-3 lg:py-6"
+                  >
+                    <Plus className="h-4 w-4 mr-1 lg:mr-2" />
+                    Add to Cart
+                  </Button>
                 </div>
                 
-                {getCurrentPriceTier() && (
-                  <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                {quantity > 0 && getCurrentPriceTier() && (
+                  <div className="mt-3 lg:mt-4 p-3 lg:p-4 bg-slate-50 rounded-lg border border-slate-200">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-slate-600">Pricing Tier</span>
+                      <span className="text-xs lg:text-sm text-slate-600">Pricing Tier</span>
                       <Badge variant="secondary" className="text-xs">
                         {getCurrentPriceTier()?.notes || "Standard"}
                       </Badge>
                     </div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium">Unit Price</span>
-                      <span className="font-semibold">R{currentPrice.toFixed(2)}</span>
+                      <span className="text-sm lg:text-base font-medium">Unit Price</span>
+                      <span className="font-semibold">R{getCurrentPrice().toFixed(2)}</span>
                     </div>
                     <Separator className="my-2" />
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold">Subtotal</span>
-                      <span className="text-lg font-bold text-slate-900">R{total.toFixed(2)}</span>
+                      <span className="font-semibold">Subtotal for {quantity} bottles</span>
+                      <span className="text-base lg:text-lg font-bold text-slate-900">R{(quantity * getCurrentPrice()).toFixed(2)}</span>
                     </div>
                   </div>
                 )}
@@ -315,24 +490,24 @@ const BulkCheckout = () => {
 
           {/* Features */}
           <Card className="border-slate-200 shadow-sm bg-slate-50">
-            <CardContent className="p-6">
-              <h4 className="font-semibold text-slate-900 mb-4">Premium Quality Assurance</h4>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-slate-700">BPA-free materials</span>
+            <CardContent className="p-4 lg:p-6">
+              <h4 className="font-semibold text-slate-900 mb-3 lg:mb-4 text-sm lg:text-base">Premium Quality Assurance</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
+                <div className="flex items-center gap-2 lg:gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                  <span className="text-xs lg:text-sm text-slate-700">BPA-free materials</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-slate-700">Food-grade certified</span>
+                <div className="flex items-center gap-2 lg:gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                  <span className="text-xs lg:text-sm text-slate-700">Food-grade certified</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-slate-700">Eco-friendly & recyclable</span>
+                <div className="flex items-center gap-2 lg:gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                  <span className="text-xs lg:text-sm text-slate-700">Eco-friendly & recyclable</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-slate-700">Custom branding available</span>
+                <div className="flex items-center gap-2 lg:gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                  <span className="text-xs lg:text-sm text-slate-700">Custom branding available</span>
                 </div>
               </div>
             </CardContent>
@@ -340,7 +515,7 @@ const BulkCheckout = () => {
         </div>
 
         {/* Sidebar - 4 columns */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-4 lg:space-y-6">
           {/* Product Showcase */}
           <Card className="border-slate-200 shadow-sm overflow-hidden">
             <div className="aspect-[4/3] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
@@ -350,74 +525,89 @@ const BulkCheckout = () => {
                 className="w-full h-full object-cover"
               />
             </div>
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-slate-900">Premium Water Bottles</h3>
-              <p className="text-sm text-slate-600 mt-1">Professional grade, bulk quantities</p>
+            <CardContent className="p-3 lg:p-4">
+              <h3 className="font-semibold text-slate-900 text-sm lg:text-base">Premium Water Bottles</h3>
+              <p className="text-xs lg:text-sm text-slate-600 mt-1">Professional grade, bulk quantities</p>
               <div className="flex items-center gap-1 mt-2">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <Star key={i} className="h-3 w-3 lg:h-4 lg:w-4 fill-yellow-400 text-yellow-400" />
                 ))}
-                <span className="text-sm text-slate-600 ml-2">4.9 (2,847 reviews)</span>
+                <span className="text-xs lg:text-sm text-slate-600 ml-2">4.9 (2,847 reviews)</span>
               </div>
             </CardContent>
           </Card>
 
-          {/* Pricing Table */}
-          <Card className="border-slate-200 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-medium">{selectedSize} Pricing Tiers</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="space-y-0">
-                {pricingData[selectedSize].map((tier, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 border-b border-slate-100 last:border-b-0 transition-colors ${
-                      quantity >= tier.min && quantity <= tier.max
-                        ? "bg-slate-50"
-                        : "bg-white hover:bg-slate-25"
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <div className="font-medium text-sm">
-                          {tier.min} - {tier.max} bottles
-                        </div>
-                        {tier.notes && (
-                          <div className="text-xs text-slate-500">{tier.notes}</div>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold">R{tier.price.toFixed(2)}</div>
-                        <div className="text-xs text-slate-500">per bottle</div>
-                      </div>
+          {/* Pricing Tiers - Collapsible */}
+          <Collapsible open={showPricingTiers} onOpenChange={setShowPricingTiers}>
+            <Card className="border-slate-200 shadow-sm">
+              <CollapsibleTrigger asChild>
+                <CardHeader className="pb-3 lg:pb-4 cursor-pointer hover:bg-slate-50 transition-colors">
+                  <CardTitle className="text-base lg:text-lg font-medium flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" />
+                      <span>{selectedSize} Pricing Tiers</span>
                     </div>
+                    {showPricingTiers ? 
+                      <ChevronUp className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" /> : 
+                      <ChevronDown className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" />
+                    }
+                  </CardTitle>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="p-0 pt-0">
+                  <div className="space-y-0">
+                    {pricingData[selectedSize].map((tier, index) => (
+                      <div
+                        key={index}
+                        className={`p-3 lg:p-4 border-b border-slate-100 last:border-b-0 transition-colors ${
+                          quantity >= tier.min && quantity <= tier.max
+                            ? "bg-slate-50"
+                            : "bg-white hover:bg-slate-25"
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <div className="font-medium text-xs lg:text-sm">
+                              {tier.min} - {tier.max} bottles
+                            </div>
+                            {tier.notes && (
+                              <div className="text-xs text-slate-500">{tier.notes}</div>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <div className="font-semibold text-sm lg:text-base">R{tier.price.toFixed(2)}</div>
+                            <div className="text-xs text-slate-500">per bottle</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
 
           {/* Trust Indicators */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-              <Award className="h-5 w-5 text-green-600" />
+          <div className="space-y-3 lg:space-y-4">
+            <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-3 bg-green-50 rounded-lg border border-green-200">
+              <Award className="h-4 w-4 lg:h-5 lg:w-5 text-green-600 flex-shrink-0" />
               <div>
-                <div className="text-sm font-medium text-green-900">Quality Certified</div>
+                <div className="text-xs lg:text-sm font-medium text-green-900">Quality Certified</div>
                 <div className="text-xs text-green-700">ISO 9001:2015 certified</div>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <Shield className="h-5 w-5 text-blue-600" />
+            <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <Shield className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600 flex-shrink-0" />
               <div>
-                <div className="text-sm font-medium text-blue-900">Secure Ordering</div>
+                <div className="text-xs lg:text-sm font-medium text-blue-900">Secure Ordering</div>
                 <div className="text-xs text-blue-700">256-bit SSL encryption</div>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
-              <Clock className="h-5 w-5 text-orange-600" />
+            <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-3 bg-orange-50 rounded-lg border border-orange-200">
+              <Clock className="h-4 w-4 lg:h-5 lg:w-5 text-orange-600 flex-shrink-0" />
               <div>
-                <div className="text-sm font-medium text-orange-900">Fast Delivery</div>
+                <div className="text-xs lg:text-sm font-medium text-orange-900">Fast Delivery</div>
                 <div className="text-xs text-orange-700">3-5 business days</div>
               </div>
             </div>
@@ -428,28 +618,28 @@ const BulkCheckout = () => {
   );
 
   const renderStep2 = () => (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="space-y-4">
-        <h2 className="text-2xl font-semibold text-slate-900">Delivery Information</h2>
-        <p className="text-slate-600">Please provide accurate delivery details for your bulk order</p>
+    <div className="max-w-4xl mx-auto space-y-6 lg:space-y-8">
+      <div className="space-y-2 lg:space-y-4">
+        <h2 className="text-xl lg:text-2xl font-semibold text-slate-900">Delivery Information</h2>
+        <p className="text-sm lg:text-base text-slate-600">Please provide accurate delivery details for your bulk order</p>
       </div>
 
       <Card className="border-slate-200 shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-slate-500" />
+          <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
+            <MapPin className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" />
             Shipping Address
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="space-y-4 lg:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
             <div className="space-y-2">
               <Label htmlFor="fullName" className="text-sm font-medium">Full Name *</Label>
               <Input
                 id="fullName"
                 value={shippingAddress.fullName}
                 onChange={(e) => handleShippingChange('fullName', e.target.value)}
-                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm lg:text-base"
                 placeholder="Enter full name"
               />
             </div>
@@ -460,7 +650,7 @@ const BulkCheckout = () => {
                 id="company"
                 value={shippingAddress.company}
                 onChange={(e) => handleShippingChange('company', e.target.value)}
-                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm lg:text-base"
                 placeholder="Company name"
               />
             </div>
@@ -471,7 +661,7 @@ const BulkCheckout = () => {
                 id="address1"
                 value={shippingAddress.address1}
                 onChange={(e) => handleShippingChange('address1', e.target.value)}
-                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm lg:text-base"
                 placeholder="Enter street address"
               />
             </div>
@@ -482,7 +672,7 @@ const BulkCheckout = () => {
                 id="address2"
                 value={shippingAddress.address2}
                 onChange={(e) => handleShippingChange('address2', e.target.value)}
-                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm lg:text-base"
                 placeholder="Apartment, suite, unit, etc."
               />
             </div>
@@ -493,7 +683,7 @@ const BulkCheckout = () => {
                 id="city"
                 value={shippingAddress.city}
                 onChange={(e) => handleShippingChange('city', e.target.value)}
-                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm lg:text-base"
                 placeholder="City"
               />
             </div>
@@ -501,7 +691,7 @@ const BulkCheckout = () => {
             <div className="space-y-2">
               <Label htmlFor="province" className="text-sm font-medium">Province *</Label>
               <Select value={shippingAddress.province} onValueChange={(value) => handleShippingChange('province', value)}>
-                <SelectTrigger className="border-slate-200 focus:border-slate-400 focus:ring-slate-400">
+                <SelectTrigger className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm lg:text-base">
                   <SelectValue placeholder="Select province" />
                 </SelectTrigger>
                 <SelectContent>
@@ -524,7 +714,7 @@ const BulkCheckout = () => {
                 id="postalCode"
                 value={shippingAddress.postalCode}
                 onChange={(e) => handleShippingChange('postalCode', e.target.value)}
-                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm lg:text-base"
                 placeholder="Postal code"
               />
             </div>
@@ -535,7 +725,7 @@ const BulkCheckout = () => {
                 id="phone"
                 value={shippingAddress.phone}
                 onChange={(e) => handleShippingChange('phone', e.target.value)}
-                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 text-sm lg:text-base"
                 placeholder="Phone number"
               />
             </div>
@@ -544,12 +734,12 @@ const BulkCheckout = () => {
       </Card>
 
       <Card className="border-amber-200 bg-amber-50">
-        <CardContent className="p-6">
+        <CardContent className="p-4 lg:p-6">
           <div className="flex gap-3">
-            <Truck className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <Truck className="h-4 w-4 lg:h-5 lg:w-5 text-amber-600 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-medium text-amber-900 mb-2">Delivery Information</h4>
-              <div className="space-y-1 text-sm text-amber-800">
+              <h4 className="font-medium text-amber-900 mb-2 text-sm lg:text-base">Delivery Information</h4>
+              <div className="space-y-1 text-xs lg:text-sm text-amber-800">
                 <p>• Processing time: 1-2 business days</p>
                 <p>• Delivery time: 3-5 business days</p>
                 <p>• Free delivery for orders over R1,000</p>
@@ -564,60 +754,62 @@ const BulkCheckout = () => {
 
   const renderStep3 = () => (
     <div className="max-w-6xl mx-auto">
-      <div className="space-y-4 mb-8">
-        <h2 className="text-2xl font-semibold text-slate-900">Complete Your Order</h2>
-        <p className="text-slate-600">Review your order details and complete secure payment</p>
+      <div className="space-y-2 lg:space-y-4 mb-6 lg:mb-8">
+        <h2 className="text-xl lg:text-2xl font-semibold text-slate-900">Complete Your Order</h2>
+        <p className="text-sm lg:text-base text-slate-600">Review your order details and complete secure payment</p>
       </div>
 
-      <div className="grid lg:grid-cols-5 gap-8">
+      <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
         {/* Order Summary */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-4 lg:space-y-6">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-slate-500" />
+              <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
+                <Package className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" />
                 Order Summary
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg">
-                <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                  <Package className="h-8 w-8 text-slate-600" />
+            <CardContent className="space-y-4 lg:space-y-6">
+              {cartItems.map((item) => (
+                <div key={item.id} className="flex items-center gap-3 lg:gap-4 p-3 lg:p-4 bg-slate-50 rounded-lg">
+                  <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <Package className="h-6 w-6 lg:h-8 lg:w-8 text-slate-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-sm lg:text-base">{item.size} Water Bottles</h4>
+                    <p className="text-xs lg:text-sm text-slate-600">Premium grade, BPA-free</p>
+                    <p className="text-xs lg:text-sm text-slate-500">Quantity: {item.quantity} bottles</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-base lg:text-lg font-bold">R{item.subtotal.toFixed(2)}</p>
+                    <p className="text-xs lg:text-sm text-slate-500">R{item.unitPrice.toFixed(2)} each</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold">{selectedSize} Water Bottles</h4>
-                  <p className="text-sm text-slate-600">Premium grade, BPA-free</p>
-                  <p className="text-sm text-slate-500 mt-1">Quantity: {quantity} bottles</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold">R{total.toFixed(2)}</p>
-                  <p className="text-sm text-slate-500">R{currentPrice.toFixed(2)} each</p>
-                </div>
-              </div>
+              ))}
 
               <Separator />
 
-              <div className="space-y-3">
-                <div className="flex justify-between">
+              <div className="space-y-2 lg:space-y-3">
+                <div className="flex justify-between text-sm lg:text-base">
                   <span>Subtotal</span>
-                  <span>R{total.toFixed(2)}</span>
+                  <span>R{cartTotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs lg:text-sm">
                   <span>Delivery</span>
-                  <span className={total >= 1000 ? "text-green-600" : ""}>
-                    {total >= 1000 ? "FREE" : "R150"}
+                  <span className={cartTotal >= 1000 ? "text-green-600" : ""}>
+                    {cartTotal >= 1000 ? "FREE" : "R150"}
                   </span>
                 </div>
                 <Separator />
-                <div className="flex justify-between text-lg font-bold">
+                <div className="flex justify-between text-base lg:text-lg font-bold">
                   <span>Total</span>
-                  <span>R{(total >= 1000 ? total : total + 150).toFixed(2)}</span>
+                  <span>R{(cartTotal >= 1000 ? cartTotal : cartTotal + 150).toFixed(2)}</span>
                 </div>
               </div>
 
-              {total >= 1000 && (
+              {cartTotal >= 1000 && (
                 <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-700 text-sm font-medium">
+                  <p className="text-green-700 text-xs lg:text-sm font-medium">
                     ✓ Free delivery included - You saved R150
                   </p>
                 </div>
@@ -627,13 +819,13 @@ const BulkCheckout = () => {
 
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-slate-500" />
+              <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
+                <MapPin className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" />
                 Delivery Address
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-sm space-y-1">
+              <div className="text-xs lg:text-sm space-y-1">
                 <p className="font-medium">{shippingAddress.fullName}</p>
                 {shippingAddress.company && <p className="text-slate-600">{shippingAddress.company}</p>}
                 <p className="text-slate-600">{shippingAddress.address1}</p>
@@ -646,22 +838,22 @@ const BulkCheckout = () => {
         </div>
 
         {/* Payment Section */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 lg:space-y-6">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-slate-500" />
+              <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
+                <CreditCard className="h-4 w-4 lg:h-5 lg:w-5 text-slate-500" />
                 Secure Payment
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto">
-                  <Shield className="h-8 w-8 text-green-600" />
+            <CardContent className="space-y-4 lg:space-y-6">
+              <div className="text-center space-y-3 lg:space-y-4">
+                <div className="w-12 h-12 lg:w-16 lg:h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto">
+                  <Shield className="h-6 w-6 lg:h-8 lg:w-8 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-medium mb-2">Payment with Paystack</h3>
-                  <p className="text-sm text-slate-600">
+                  <h3 className="font-medium mb-2 text-sm lg:text-base">Payment with Paystack</h3>
+                  <p className="text-xs lg:text-sm text-slate-600">
                     Secure payment processing powered by Paystack. Your payment details are encrypted and protected.
                   </p>
                 </div>
@@ -669,23 +861,23 @@ const BulkCheckout = () => {
 
               <PaystackButton
                 {...paystackConfig}
-                text={`Pay R${(total >= 1000 ? total : total + 150).toFixed(2)}`}
+                text={`Pay R${(cartTotal >= 1000 ? cartTotal : cartTotal + 150).toFixed(2)}`}
                 onSuccess={handlePaystackSuccess}
                 onClose={handlePaystackClose}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 px-4 rounded-lg font-medium transition-colors duration-200"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 lg:py-3 px-4 rounded-lg font-medium transition-colors duration-200 text-sm lg:text-base"
               />
 
-              <div className="space-y-3 text-xs text-slate-500">
+              <div className="space-y-2 lg:space-y-3 text-xs text-slate-500">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <CheckCircle className="h-3 w-3 lg:h-4 lg:w-4 text-green-500 flex-shrink-0" />
                   <span>256-bit SSL encryption</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <CheckCircle className="h-3 w-3 lg:h-4 lg:w-4 text-green-500 flex-shrink-0" />
                   <span>PCI DSS compliant</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <CheckCircle className="h-3 w-3 lg:h-4 lg:w-4 text-green-500 flex-shrink-0" />
                   <span>No card details stored</span>
                 </div>
               </div>
@@ -697,46 +889,48 @@ const BulkCheckout = () => {
   );
 
   const renderStep4 = () => (
-    <div className="max-w-4xl mx-auto text-center space-y-8">
-      <div className="space-y-4">
-        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto">
-          <CheckCircle className="h-12 w-12 text-green-600" />
+    <div className="max-w-4xl mx-auto text-center space-y-6 lg:space-y-8">
+      <div className="space-y-3 lg:space-y-4">
+        <div className="w-16 h-16 lg:w-20 lg:h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto">
+          <CheckCircle className="h-8 w-8 lg:h-12 lg:w-12 text-green-600" />
         </div>
-        <h2 className="text-3xl font-bold text-slate-900">Order Confirmed</h2>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+        <h2 className="text-2xl lg:text-3xl font-bold text-slate-900">Order Confirmed</h2>
+        <p className="text-base lg:text-lg text-slate-600 max-w-2xl mx-auto">
           Thank you for your order. We've received your payment and will begin processing immediately.
         </p>
       </div>
 
       <Card className="border-slate-200 shadow-sm text-left">
         <CardHeader className="bg-slate-50 border-b border-slate-200">
-          <div className="flex justify-between items-center">
-            <CardTitle>Order Receipt</CardTitle>
-            <Badge variant="outline" className="text-xs">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+            <CardTitle className="text-base lg:text-lg">Order Receipt</CardTitle>
+            <Badge variant="outline" className="text-xs w-fit">
               #{orderNumber || `BLK${Date.now().toString().slice(-6)}`}
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="p-6 space-y-6">
-          <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg">
-            <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center shadow-sm">
-              <Package className="h-8 w-8 text-slate-600" />
+        <CardContent className="p-4 lg:p-6 space-y-4 lg:space-y-6">
+          {cartItems.map((item) => (
+            <div key={item.id} className="flex items-center gap-3 lg:gap-4 p-3 lg:p-4 bg-slate-50 rounded-lg">
+              <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                <Package className="h-6 w-6 lg:h-8 lg:w-8 text-slate-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-sm lg:text-base">{item.size} Water Bottles</h4>
+                <p className="text-xs lg:text-sm text-slate-600">{item.quantity} bottles × R{item.unitPrice.toFixed(2)} each</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-lg lg:text-xl font-bold">R{item.subtotal.toFixed(2)}</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <h4 className="font-semibold">{selectedSize} Water Bottles</h4>
-              <p className="text-sm text-slate-600">{quantity} bottles × R{currentPrice.toFixed(2)} each</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xl font-bold">R{total.toFixed(2)}</p>
-            </div>
-          </div>
+          ))}
 
           <Separator />
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
             <div>
-              <h5 className="font-medium mb-3">Order Details</h5>
-              <div className="space-y-2 text-sm">
+              <h5 className="font-medium mb-3 text-sm lg:text-base">Order Details</h5>
+              <div className="space-y-2 text-xs lg:text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-600">Order Date</span>
                   <span>{new Date().toLocaleDateString()}</span>
@@ -753,8 +947,8 @@ const BulkCheckout = () => {
             </div>
 
             <div>
-              <h5 className="font-medium mb-3">Delivery Address</h5>
-              <div className="text-sm text-slate-600 space-y-1">
+              <h5 className="font-medium mb-3 text-sm lg:text-base">Delivery Address</h5>
+              <div className="text-xs lg:text-sm text-slate-600 space-y-1">
                 <p className="font-medium text-slate-900">{shippingAddress.fullName}</p>
                 {shippingAddress.company && <p>{shippingAddress.company}</p>}
                 <p>{shippingAddress.address1}</p>
@@ -764,23 +958,23 @@ const BulkCheckout = () => {
             </div>
           </div>
 
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h5 className="font-medium text-blue-900 mb-3">What's Next?</h5>
-            <div className="space-y-2 text-sm text-blue-800">
+          <div className="p-3 lg:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h5 className="font-medium text-blue-900 mb-2 lg:mb-3 text-sm lg:text-base">What's Next?</h5>
+            <div className="space-y-1 lg:space-y-2 text-xs lg:text-sm text-blue-800">
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full flex-shrink-0"></div>
                 <span>Order confirmation sent to your email</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full flex-shrink-0"></div>
                 <span>Processing begins within 2 business hours</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full flex-shrink-0"></div>
                 <span>Tracking information will be provided</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full flex-shrink-0"></div>
                 <span>Delivery in 3-5 business days</span>
               </div>
             </div>
@@ -788,17 +982,17 @@ const BulkCheckout = () => {
         </CardContent>
       </Card>
 
-      <div className="flex gap-4 justify-center">
+      <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center">
         <Button
           onClick={() => navigate('/profile')}
-          className="bg-slate-900 hover:bg-slate-800 text-white px-6"
+          className="bg-slate-900 hover:bg-slate-800 text-white px-4 lg:px-6 text-sm lg:text-base"
         >
           Track Order
         </Button>
         <Button
           variant="outline"
           onClick={() => navigate('/products')}
-          className="border-slate-200 text-slate-700 hover:bg-slate-50 px-6"
+          className="border-slate-200 text-slate-700 hover:bg-slate-50 px-4 lg:px-6 text-sm lg:text-base"
         >
           Continue Shopping
         </Button>
@@ -810,26 +1004,26 @@ const BulkCheckout = () => {
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       <div className="pt-16 flex-grow">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 lg:mb-8 gap-4">
             <Button
               variant="ghost"
               onClick={() => navigate('/products')}
-              className="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              className="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 self-start"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Products
+              <span className="text-sm lg:text-base">Back to Products</span>
             </Button>
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-slate-900">Bulk Purchase</h1>
-              <p className="text-slate-600 mt-1">Professional ordering made simple</p>
+            <div className="text-center sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2">
+              <h1 className="text-2xl lg:text-3xl font-bold text-slate-900">Bulk Purchase</h1>
+              <p className="text-slate-600 mt-1 text-sm lg:text-base">Professional ordering made simple</p>
             </div>
-            <div className="w-32"></div>
+            <div className="hidden sm:block w-32"></div>
           </div>
 
           {/* Progress Steps */}
-          <div className="relative mb-12">
+          <div className="relative mb-8 lg:mb-12">
             <div className="flex justify-between items-center max-w-4xl mx-auto">
               {steps.map((step, index) => {
                 const StepIcon = step.icon;
@@ -839,7 +1033,7 @@ const BulkCheckout = () => {
                 return (
                   <div key={step.number} className="flex flex-col items-center relative z-10 flex-1">
                     <div className={`
-                      flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 mb-3
+                      flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full transition-all duration-300 mb-2 lg:mb-3
                       ${isCompleted
                         ? "bg-green-600 text-white"
                         : isCurrent
@@ -847,15 +1041,15 @@ const BulkCheckout = () => {
                         : "bg-slate-200 text-slate-400"
                       }
                     `}>
-                      <StepIcon className="h-5 w-5" />
+                      <StepIcon className="h-4 w-4 lg:h-5 lg:w-5" />
                     </div>
                     <div className="text-center">
-                      <p className={`text-sm font-medium mb-1 ${
+                      <p className={`text-xs lg:text-sm font-medium mb-1 ${
                         isCurrent ? "text-slate-900" : isCompleted ? "text-green-700" : "text-slate-500"
                       }`}>
                         {step.title}
                       </p>
-                      <p className="text-xs text-slate-500 max-w-24">
+                      <p className="text-xs text-slate-500 max-w-20 lg:max-w-24 hidden sm:block">
                         {step.desc}
                       </p>
                     </div>
@@ -864,7 +1058,7 @@ const BulkCheckout = () => {
               })}
             </div>
             {/* Progress Line */}
-            <div className="absolute top-6 left-1/2 right-6 h-0.5 bg-slate-200 -z-10" style={{ left: '12.5%', right: '12.5%' }}>
+            <div className="absolute top-5 lg:top-6 left-1/2 right-6 h-0.5 bg-slate-200 -z-10" style={{ left: '12.5%', right: '12.5%' }}>
               <div
                 className="h-full bg-slate-900 transition-all duration-500"
                 style={{
@@ -875,7 +1069,7 @@ const BulkCheckout = () => {
           </div>
 
           {/* Step Content */}
-          <div className="mb-12">
+          <div className="mb-8 lg:mb-12">
             {currentStep === 1 && renderStep1()}
             {currentStep === 2 && renderStep2()}
             {currentStep === 3 && renderStep3()}
@@ -884,12 +1078,12 @@ const BulkCheckout = () => {
 
           {/* Navigation Buttons */}
           {currentStep < 4 && (
-            <div className="flex justify-between items-center max-w-4xl mx-auto">
+            <div className="flex flex-col sm:flex-row justify-between items-center max-w-4xl mx-auto gap-4">
               <Button
                 variant="outline"
                 onClick={handlePrevStep}
                 disabled={currentStep === 1}
-                className="px-6 py-2 border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                className="px-4 lg:px-6 py-2 border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50 order-2 sm:order-1 w-full sm:w-auto"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Previous
@@ -897,14 +1091,14 @@ const BulkCheckout = () => {
               {currentStep < 3 && (
                 <Button
                   onClick={handleNextStep}
-                  className="px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white"
+                  className="px-4 lg:px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white order-1 sm:order-2 w-full sm:w-auto"
                 >
                   Continue
                   <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
                 </Button>
               )}
               {currentStep === 3 && (
-                <div className="text-sm text-slate-600 max-w-xs text-right">
+                <div className="text-xs lg:text-sm text-slate-600 max-w-xs text-center sm:text-right order-1 sm:order-2">
                   Click the payment button above to complete your secure purchase
                 </div>
               )}
