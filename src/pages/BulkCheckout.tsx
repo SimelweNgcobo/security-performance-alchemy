@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { Truck, CreditCard, CheckCircle, ArrowLeft, Package, MapPin, Palette, Droplets } from "lucide-react";
+import { Truck, CreditCard, CheckCircle, ArrowLeft, Package, MapPin, Shield, Clock, Award, Star } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import { toast } from "sonner";
@@ -80,8 +78,6 @@ interface ShippingAddress {
   phone: string;
 }
 
-// Removed PaymentDetails interface since we use Paystack for all payment processing
-
 const BulkCheckout = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -101,7 +97,6 @@ const BulkCheckout = () => {
     postalCode: "",
     phone: ""
   });
-  // Removed paymentDetails state since Paystack handles all payment processing
 
   // Check authentication on component mount
   useEffect(() => {
@@ -219,622 +214,591 @@ const BulkCheckout = () => {
     toast.error("Payment was not completed");
   };
 
-  // Removed handleSubmitOrder since all payment processing is handled by Paystack
-
   const steps = [
-    { number: 1, title: "Product & Quantity", icon: Package },
-    { number: 2, title: "Shipping Address", icon: Truck },
-    { number: 3, title: "Payment Details", icon: CreditCard },
-    { number: 4, title: "Confirmation", icon: CheckCircle }
+    { number: 1, title: "Configure Order", icon: Package, desc: "Select products & quantities" },
+    { number: 2, title: "Delivery Details", icon: Truck, desc: "Shipping information" },
+    { number: 3, title: "Secure Payment", icon: CreditCard, desc: "Complete your purchase" },
+    { number: 4, title: "Order Complete", icon: CheckCircle, desc: "Confirmation & tracking" }
   ];
 
   const renderStep1 = () => (
-    <div className="space-y-10">
-      {/* Header Section */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-3 mb-4">
-          <Droplets className="h-8 w-8 text-primary" />
-          <h2 className="text-3xl font-bold text-gray-900">Choose Your Bottles</h2>
-        </div>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Select your preferred bottle size and quantity. Our bulk pricing tiers offer significant savings for larger orders.
-        </p>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-10">
-        {/* Left Column - Product & Selection */}
-        <div className="space-y-8">
-          {/* Product Showcase */}
-          <Card className="border-none shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardContent className="p-8">
-              <div className="flex justify-center mb-6">
-                <div className="relative">
-                  <div className="w-48 h-64 rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
-                    <img
-                      src="https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg"
-                      alt="Premium Water Bottle"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="absolute -top-2 -right-2 bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
-                    {selectedSize}
-                  </div>
-                </div>
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Premium Water Bottles</h3>
-                <p className="text-gray-600">BPA-free, food-grade, eco-friendly materials</p>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="max-w-7xl mx-auto">
+      <div className="grid lg:grid-cols-12 gap-8">
+        {/* Main Content - 8 columns */}
+        <div className="lg:col-span-8 space-y-8">
+          {/* Product Selection Header */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold text-slate-900">Configure Your Order</h2>
+            <p className="text-slate-600">Select bottle size and quantity for your bulk purchase</p>
+          </div>
 
           {/* Size Selection */}
-          <div className="space-y-6">
-            <div className="flex items-center space-x-2">
-              <Palette className="h-5 w-5 text-primary" />
-              <Label className="text-xl font-semibold text-gray-800">Bottle Size</Label>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-              {Object.keys(pricingData).map((size) => (
-                <Button
-                  key={size}
-                  variant={selectedSize === size ? "default" : "outline"}
-                  onClick={() => handleSizeChange(size as BottleSize)}
-                  className={`h-20 flex flex-col space-y-1 transition-all duration-200 ${
-                    selectedSize === size
-                      ? "bg-primary text-white shadow-lg scale-105"
-                      : "hover:shadow-md hover:scale-102"
-                  }`}
-                >
-                  <span className="font-bold text-lg">{size}</span>
-                  <span className="text-xs opacity-80">Bottles</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Quantity Input */}
-          <div className="space-y-6">
-            <div className="flex items-center space-x-2">
-              <Package className="h-5 w-5 text-primary" />
-              <Label htmlFor="quantity" className="text-xl font-semibold text-gray-800">Quantity</Label>
-            </div>
-            <div className="space-y-4">
-              <Input
-                id="quantity"
-                type="number"
-                min="1"
-                max="10000"
-                value={quantity}
-                onChange={(e) => handleQuantityChange(e.target.value)}
-                className="text-xl p-6 border-2 rounded-xl focus:ring-2 focus:ring-primary/20"
-                placeholder="Enter number of bottles"
-              />
-              {getCurrentPriceTier() && (
-                <Card className="border-l-4 border-l-primary bg-primary/5">
-                  <CardContent className="p-6">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-600">Pricing Tier</span>
-                        <Badge variant="secondary">{getCurrentPriceTier()?.notes || "Standard"}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg font-medium">Price per bottle</span>
-                        <span className="text-lg font-bold text-primary">R{currentPrice.toFixed(2)}</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between items-center">
-                        <span className="text-xl font-semibold">Total Amount</span>
-                        <span className="text-2xl font-bold text-green-600">R{total.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Pricing Table */}
-        <div className="space-y-6">
-          <div className="flex items-center space-x-2">
-            <CreditCard className="h-5 w-5 text-primary" />
-            <h3 className="text-xl font-semibold text-gray-800">{selectedSize} Pricing Tiers</h3>
-          </div>
-
-          <Card className="shadow-lg">
-            <CardContent className="p-0">
-              <div className="bg-gradient-to-r from-primary to-blue-600 text-white p-4 rounded-t-lg">
-                <h4 className="font-semibold">Volume Discounts Available</h4>
-                <p className="text-sm opacity-90">Save more with larger quantities</p>
-              </div>
-              <div className="p-6">
-                <div className="space-y-3">
-                  {pricingData[selectedSize].map((tier, index) => (
-                    <div
-                      key={index}
-                      className={`p-4 rounded-lg border-2 transition-all duration-200 ${
-                        quantity >= tier.min && quantity <= tier.max
-                          ? "border-primary bg-primary/10 shadow-md"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <div className="font-semibold text-gray-800">
-                            {tier.min} - {tier.max} bottles
-                          </div>
-                          {tier.notes && (
-                            <div className="text-sm text-gray-600">{tier.notes}</div>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-primary">
-                            R{tier.price.toFixed(2)}
-                          </div>
-                          <div className="text-xs text-gray-500">per bottle</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Features */}
-          <Card className="bg-green-50 border-green-200">
-            <CardContent className="p-6">
-              <h4 className="font-semibold text-green-800 mb-3">Why Choose Our Bottles?</h4>
-              <div className="space-y-2 text-sm text-green-700">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>100% BPA-free materials</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>Food-grade certified</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>Eco-friendly & recyclable</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>Custom branding available</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderStep2 = () => (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-3 mb-4">
-          <MapPin className="h-8 w-8 text-primary" />
-          <h2 className="text-3xl font-bold text-gray-900">Delivery Details</h2>
-        </div>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Please provide your delivery address. We'll ensure your bulk order arrives safely at your specified location.
-        </p>
-      </div>
-
-      <div className="max-w-4xl mx-auto">
-        <Card className="shadow-lg border-0">
-          <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-t-lg">
-            <CardTitle className="flex items-center space-x-2">
-              <Truck className="h-6 w-6" />
-              <span>Shipping Information</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <Label htmlFor="fullName" className="text-sm font-semibold text-gray-700">
-                  Full Name *
-                </Label>
-                <Input
-                  id="fullName"
-                  value={shippingAddress.fullName}
-                  onChange={(e) => handleShippingChange('fullName', e.target.value)}
-                  placeholder="Enter full name"
-                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label htmlFor="company" className="text-sm font-semibold text-gray-700">
-                  Company (Optional)
-                </Label>
-                <Input
-                  id="company"
-                  value={shippingAddress.company}
-                  onChange={(e) => handleShippingChange('company', e.target.value)}
-                  placeholder="Company name"
-                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="space-y-3 md:col-span-2">
-                <Label htmlFor="address1" className="text-sm font-semibold text-gray-700">
-                  Street Address *
-                </Label>
-                <Input
-                  id="address1"
-                  value={shippingAddress.address1}
-                  onChange={(e) => handleShippingChange('address1', e.target.value)}
-                  placeholder="Enter street address"
-                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="space-y-3 md:col-span-2">
-                <Label htmlFor="address2" className="text-sm font-semibold text-gray-700">
-                  Address Line 2 (Optional)
-                </Label>
-                <Input
-                  id="address2"
-                  value={shippingAddress.address2}
-                  onChange={(e) => handleShippingChange('address2', e.target.value)}
-                  placeholder="Apartment, suite, unit, etc."
-                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label htmlFor="city" className="text-sm font-semibold text-gray-700">
-                  City *
-                </Label>
-                <Input
-                  id="city"
-                  value={shippingAddress.city}
-                  onChange={(e) => handleShippingChange('city', e.target.value)}
-                  placeholder="City"
-                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label htmlFor="province" className="text-sm font-semibold text-gray-700">
-                  Province *
-                </Label>
-                <Select value={shippingAddress.province} onValueChange={(value) => handleShippingChange('province', value)}>
-                  <SelectTrigger className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20">
-                    <SelectValue placeholder="Select province" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gauteng">Gauteng</SelectItem>
-                    <SelectItem value="western-cape">Western Cape</SelectItem>
-                    <SelectItem value="kwazulu-natal">KwaZulu-Natal</SelectItem>
-                    <SelectItem value="eastern-cape">Eastern Cape</SelectItem>
-                    <SelectItem value="free-state">Free State</SelectItem>
-                    <SelectItem value="limpopo">Limpopo</SelectItem>
-                    <SelectItem value="mpumalanga">Mpumalanga</SelectItem>
-                    <SelectItem value="north-west">North West</SelectItem>
-                    <SelectItem value="northern-cape">Northern Cape</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-3">
-                <Label htmlFor="postalCode" className="text-sm font-semibold text-gray-700">
-                  Postal Code *
-                </Label>
-                <Input
-                  id="postalCode"
-                  value={shippingAddress.postalCode}
-                  onChange={(e) => handleShippingChange('postalCode', e.target.value)}
-                  placeholder="Postal code"
-                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label htmlFor="phone" className="text-sm font-semibold text-gray-700">
-                  Phone Number *
-                </Label>
-                <Input
-                  id="phone"
-                  value={shippingAddress.phone}
-                  onChange={(e) => handleShippingChange('phone', e.target.value)}
-                  placeholder="Phone number"
-                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Delivery Information */}
-        <Card className="mt-6 bg-amber-50 border-amber-200">
-          <CardContent className="p-6">
-            <div className="flex items-start space-x-3">
-              <Truck className="h-6 w-6 text-amber-600 mt-1" />
-              <div>
-                <h4 className="font-semibold text-amber-800 mb-2">Delivery Information</h4>
-                <div className="space-y-1 text-sm text-amber-700">
-                  <p>• Bulk orders typically take 3-5 business days for processing</p>
-                  <p>• Free delivery for orders over R1,000</p>
-                  <p>• Signature required upon delivery</p>
-                  <p>• Please ensure someone is available to receive the delivery</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-3 mb-4">
-          <CreditCard className="h-8 w-8 text-primary" />
-          <h2 className="text-3xl font-bold text-gray-900">Secure Payment</h2>
-        </div>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Review your order and complete your payment securely through our trusted payment partner.
-        </p>
-      </div>
-
-      <div className="max-w-4xl mx-auto grid lg:grid-cols-2 gap-8">
-        {/* Order Summary */}
-        <div className="space-y-6">
-          <Card className="shadow-lg border-0 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-              <CardTitle className="flex items-center space-x-2">
-                <Package className="h-6 w-6" />
-                <span>Order Summary</span>
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-medium flex items-center gap-2">
+                <Package className="h-5 w-5 text-slate-500" />
+                Bottle Size
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent>
+              <div className="grid grid-cols-5 gap-3">
+                {Object.keys(pricingData).map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => handleSizeChange(size as BottleSize)}
+                    className={`
+                      p-4 rounded-lg border-2 transition-all duration-200 hover:border-slate-300
+                      ${selectedSize === size 
+                        ? "border-slate-900 bg-slate-50 shadow-sm" 
+                        : "border-slate-200 bg-white"
+                      }
+                    `}
+                  >
+                    <div className="text-center">
+                      <div className={`text-lg font-semibold ${
+                        selectedSize === size ? "text-slate-900" : "text-slate-700"
+                      }`}>
+                        {size}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">Bottles</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quantity Input */}
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-medium">Quantity</CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Droplets className="h-8 w-8 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-lg">{selectedSize} Water Bottles</h4>
-                    <p className="text-gray-600">Premium grade, BPA-free</p>
-                  </div>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    min="1"
+                    max="10000"
+                    value={quantity}
+                    onChange={(e) => handleQuantityChange(e.target.value)}
+                    className="text-lg p-6 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                    placeholder="Enter quantity"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
+                    bottles
+                  </span>
                 </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Quantity</span>
-                    <span className="font-medium">{quantity} bottles</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Price per bottle</span>
-                    <span className="font-medium">R{currentPrice.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium">R{total.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span>Delivery</span>
-                    <span>{total >= 1000 ? "FREE" : "R150"}</span>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="flex justify-between text-xl font-bold">
-                  <span>Total</span>
-                  <span className="text-green-600">R{(total >= 1000 ? total : total + 150).toFixed(2)}</span>
-                </div>
-
-                {total >= 1000 && (
-                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                    <p className="text-green-700 text-sm font-medium">
-                      ✨ Free delivery applied! You saved R150
-                    </p>
+                
+                {getCurrentPriceTier() && (
+                  <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-slate-600">Pricing Tier</span>
+                      <Badge variant="secondary" className="text-xs">
+                        {getCurrentPriceTier()?.notes || "Standard"}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium">Unit Price</span>
+                      <span className="font-semibold">R{currentPrice.toFixed(2)}</span>
+                    </div>
+                    <Separator className="my-2" />
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold">Subtotal</span>
+                      <span className="text-lg font-bold text-slate-900">R{total.toFixed(2)}</span>
+                    </div>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Delivery Summary */}
-          <Card className="bg-blue-50 border-blue-200">
+          {/* Features */}
+          <Card className="border-slate-200 shadow-sm bg-slate-50">
             <CardContent className="p-6">
-              <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
-                <MapPin className="h-5 w-5 mr-2" />
-                Delivery Address
-              </h4>
-              <div className="text-sm text-blue-700">
-                <p className="font-medium">{shippingAddress.fullName}</p>
-                <p>{shippingAddress.address1}</p>
-                {shippingAddress.address2 && <p>{shippingAddress.address2}</p>}
-                <p>{shippingAddress.city}, {shippingAddress.province} {shippingAddress.postalCode}</p>
+              <h4 className="font-semibold text-slate-900 mb-4">Premium Quality Assurance</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-slate-700">BPA-free materials</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-slate-700">Food-grade certified</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-slate-700">Eco-friendly & recyclable</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-slate-700">Custom branding available</span>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Payment Instructions */}
-        <div className="space-y-6">
-          <Card className="shadow-lg border-0">
-            <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-              <CardTitle>Secure Payment with Paystack</CardTitle>
+        {/* Sidebar - 4 columns */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Product Showcase */}
+          <Card className="border-slate-200 shadow-sm overflow-hidden">
+            <div className="aspect-[4/3] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+              <img
+                src="https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg"
+                alt="Premium Water Bottles"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-slate-900">Premium Water Bottles</h3>
+              <p className="text-sm text-slate-600 mt-1">Professional grade, bulk quantities</p>
+              <div className="flex items-center gap-1 mt-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                ))}
+                <span className="text-sm text-slate-600 ml-2">4.9 (2,847 reviews)</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pricing Table */}
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-medium">{selectedSize} Pricing Tiers</CardTitle>
             </CardHeader>
-            <CardContent className="p-8 text-center">
-              <div className="space-y-4">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                  <CreditCard className="h-10 w-10 text-green-600" />
+            <CardContent className="p-0">
+              <div className="space-y-0">
+                {pricingData[selectedSize].map((tier, index) => (
+                  <div
+                    key={index}
+                    className={`p-4 border-b border-slate-100 last:border-b-0 transition-colors ${
+                      quantity >= tier.min && quantity <= tier.max
+                        ? "bg-slate-50"
+                        : "bg-white hover:bg-slate-25"
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-medium text-sm">
+                          {tier.min} - {tier.max} bottles
+                        </div>
+                        {tier.notes && (
+                          <div className="text-xs text-slate-500">{tier.notes}</div>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">R{tier.price.toFixed(2)}</div>
+                        <div className="text-xs text-slate-500">per bottle</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Trust Indicators */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+              <Award className="h-5 w-5 text-green-600" />
+              <div>
+                <div className="text-sm font-medium text-green-900">Quality Certified</div>
+                <div className="text-xs text-green-700">ISO 9001:2015 certified</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <Shield className="h-5 w-5 text-blue-600" />
+              <div>
+                <div className="text-sm font-medium text-blue-900">Secure Ordering</div>
+                <div className="text-xs text-blue-700">256-bit SSL encryption</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+              <Clock className="h-5 w-5 text-orange-600" />
+              <div>
+                <div className="text-sm font-medium text-orange-900">Fast Delivery</div>
+                <div className="text-xs text-orange-700">3-5 business days</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep2 = () => (
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="space-y-4">
+        <h2 className="text-2xl font-semibold text-slate-900">Delivery Information</h2>
+        <p className="text-slate-600">Please provide accurate delivery details for your bulk order</p>
+      </div>
+
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-slate-500" />
+            Shipping Address
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName" className="text-sm font-medium">Full Name *</Label>
+              <Input
+                id="fullName"
+                value={shippingAddress.fullName}
+                onChange={(e) => handleShippingChange('fullName', e.target.value)}
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                placeholder="Enter full name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="company" className="text-sm font-medium">Company (Optional)</Label>
+              <Input
+                id="company"
+                value={shippingAddress.company}
+                onChange={(e) => handleShippingChange('company', e.target.value)}
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                placeholder="Company name"
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="address1" className="text-sm font-medium">Street Address *</Label>
+              <Input
+                id="address1"
+                value={shippingAddress.address1}
+                onChange={(e) => handleShippingChange('address1', e.target.value)}
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                placeholder="Enter street address"
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="address2" className="text-sm font-medium">Address Line 2 (Optional)</Label>
+              <Input
+                id="address2"
+                value={shippingAddress.address2}
+                onChange={(e) => handleShippingChange('address2', e.target.value)}
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                placeholder="Apartment, suite, unit, etc."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="city" className="text-sm font-medium">City *</Label>
+              <Input
+                id="city"
+                value={shippingAddress.city}
+                onChange={(e) => handleShippingChange('city', e.target.value)}
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                placeholder="City"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="province" className="text-sm font-medium">Province *</Label>
+              <Select value={shippingAddress.province} onValueChange={(value) => handleShippingChange('province', value)}>
+                <SelectTrigger className="border-slate-200 focus:border-slate-400 focus:ring-slate-400">
+                  <SelectValue placeholder="Select province" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gauteng">Gauteng</SelectItem>
+                  <SelectItem value="western-cape">Western Cape</SelectItem>
+                  <SelectItem value="kwazulu-natal">KwaZulu-Natal</SelectItem>
+                  <SelectItem value="eastern-cape">Eastern Cape</SelectItem>
+                  <SelectItem value="free-state">Free State</SelectItem>
+                  <SelectItem value="limpopo">Limpopo</SelectItem>
+                  <SelectItem value="mpumalanga">Mpumalanga</SelectItem>
+                  <SelectItem value="north-west">North West</SelectItem>
+                  <SelectItem value="northern-cape">Northern Cape</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="postalCode" className="text-sm font-medium">Postal Code *</Label>
+              <Input
+                id="postalCode"
+                value={shippingAddress.postalCode}
+                onChange={(e) => handleShippingChange('postalCode', e.target.value)}
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                placeholder="Postal code"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-sm font-medium">Phone Number *</Label>
+              <Input
+                id="phone"
+                value={shippingAddress.phone}
+                onChange={(e) => handleShippingChange('phone', e.target.value)}
+                className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                placeholder="Phone number"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-amber-200 bg-amber-50">
+        <CardContent className="p-6">
+          <div className="flex gap-3">
+            <Truck className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <h4 className="font-medium text-amber-900 mb-2">Delivery Information</h4>
+              <div className="space-y-1 text-sm text-amber-800">
+                <p>• Processing time: 1-2 business days</p>
+                <p>• Delivery time: 3-5 business days</p>
+                <p>• Free delivery for orders over R1,000</p>
+                <p>• Signature required upon delivery</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderStep3 = () => (
+    <div className="max-w-6xl mx-auto">
+      <div className="space-y-4 mb-8">
+        <h2 className="text-2xl font-semibold text-slate-900">Complete Your Order</h2>
+        <p className="text-slate-600">Review your order details and complete secure payment</p>
+      </div>
+
+      <div className="grid lg:grid-cols-5 gap-8">
+        {/* Order Summary */}
+        <div className="lg:col-span-3 space-y-6">
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-slate-500" />
+                Order Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg">
+                <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                  <Package className="h-8 w-8 text-slate-600" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold">{selectedSize} Water Bottles</h4>
+                  <p className="text-sm text-slate-600">Premium grade, BPA-free</p>
+                  <p className="text-sm text-slate-500 mt-1">Quantity: {quantity} bottles</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold">R{total.toFixed(2)}</p>
+                  <p className="text-sm text-slate-500">R{currentPrice.toFixed(2)} each</p>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>R{total.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Delivery</span>
+                  <span className={total >= 1000 ? "text-green-600" : ""}>
+                    {total >= 1000 ? "FREE" : "R150"}
+                  </span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Total</span>
+                  <span>R{(total >= 1000 ? total : total + 150).toFixed(2)}</span>
+                </div>
+              </div>
+
+              {total >= 1000 && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-700 text-sm font-medium">
+                    ✓ Free delivery included - You saved R150
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-slate-500" />
+                Delivery Address
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm space-y-1">
+                <p className="font-medium">{shippingAddress.fullName}</p>
+                {shippingAddress.company && <p className="text-slate-600">{shippingAddress.company}</p>}
+                <p className="text-slate-600">{shippingAddress.address1}</p>
+                {shippingAddress.address2 && <p className="text-slate-600">{shippingAddress.address2}</p>}
+                <p className="text-slate-600">{shippingAddress.city}, {shippingAddress.province} {shippingAddress.postalCode}</p>
+                <p className="text-slate-600">{shippingAddress.phone}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Payment Section */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-slate-500" />
+                Secure Payment
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto">
+                  <Shield className="h-8 w-8 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold mb-2">Ready to Complete Your Order?</h3>
-                  <p className="text-gray-600">
-                    Click the payment button below to securely process your payment through Paystack.
-                    You'll be able to enter your card details on Paystack's secure payment page.
+                  <h3 className="font-medium mb-2">Payment with Paystack</h3>
+                  <p className="text-sm text-slate-600">
+                    Secure payment processing powered by Paystack. Your payment details are encrypted and protected.
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Security Info */}
-          <Card className="bg-green-50 border-green-200">
-            <CardContent className="p-6">
-              <div className="flex items-start space-x-3">
-                <CheckCircle className="h-6 w-6 text-green-600 mt-1" />
-                <div>
-                  <h4 className="font-semibold text-green-800 mb-2">Secure Payment</h4>
-                  <div className="space-y-1 text-sm text-green-700">
-                    <p>• Your payment is secured by Paystack</p>
-                    <p>• We never store your card details</p>
-                    <p>• 256-bit SSL encryption</p>
-                    <p>• PCI DSS compliant</p>
-                  </div>
+              <PaystackButton
+                {...paystackConfig}
+                text={`Pay R${(total >= 1000 ? total : total + 150).toFixed(2)}`}
+                onSuccess={handlePaystackSuccess}
+                onClose={handlePaystackClose}
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 px-4 rounded-lg font-medium transition-colors duration-200"
+              />
+
+              <div className="space-y-3 text-xs text-slate-500">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span>256-bit SSL encryption</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span>PCI DSS compliant</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span>No card details stored</span>
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Paystack Payment Button */}
-          <PaystackButton
-            {...paystackConfig}
-            text={`Complete Payment - R${(total >= 1000 ? total : total + 150).toFixed(2)}`}
-            onSuccess={handlePaystackSuccess}
-            onClose={handlePaystackClose}
-            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-          />
         </div>
       </div>
     </div>
   );
 
   const renderStep4 = () => (
-    <div className="text-center space-y-8">
-      {/* Success Animation */}
-      <div className="flex justify-center">
-        <div className="relative">
-          <div className="w-32 h-32 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-2xl">
-            <CheckCircle className="h-16 w-16 text-white" />
-          </div>
-          <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-            <span className="text-yellow-800 text-xl">✨</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Success Message */}
+    <div className="max-w-4xl mx-auto text-center space-y-8">
       <div className="space-y-4">
-        <h2 className="text-4xl font-bold text-gray-900">Order Confirmed!</h2>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Thank you for your bulk order. We've received your payment and will begin processing your order immediately.
+        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto">
+          <CheckCircle className="h-12 w-12 text-green-600" />
+        </div>
+        <h2 className="text-3xl font-bold text-slate-900">Order Confirmed</h2>
+        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+          Thank you for your order. We've received your payment and will begin processing immediately.
         </p>
       </div>
 
-      {/* Order Details */}
-      <div className="max-w-2xl mx-auto">
-        <Card className="shadow-xl border-0 overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-            <CardTitle className="text-2xl">Order Receipt</CardTitle>
-            <p className="opacity-90">Order #{orderNumber || `BLK${Date.now().toString().slice(-6)}`}</p>
-          </CardHeader>
-          <CardContent className="p-8">
-            <div className="space-y-6">
-              {/* Product Info */}
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Droplets className="h-8 w-8 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-lg">{selectedSize} Water Bottles</h4>
-                  <p className="text-gray-600">{quantity} bottles × R{currentPrice.toFixed(2)} each</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-green-600">R{total.toFixed(2)}</p>
-                </div>
-              </div>
+      <Card className="border-slate-200 shadow-sm text-left">
+        <CardHeader className="bg-slate-50 border-b border-slate-200">
+          <div className="flex justify-between items-center">
+            <CardTitle>Order Receipt</CardTitle>
+            <Badge variant="outline" className="text-xs">
+              #{orderNumber || `BLK${Date.now().toString().slice(-6)}`}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6 space-y-6">
+          <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg">
+            <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center shadow-sm">
+              <Package className="h-8 w-8 text-slate-600" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold">{selectedSize} Water Bottles</h4>
+              <p className="text-sm text-slate-600">{quantity} bottles × R{currentPrice.toFixed(2)} each</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xl font-bold">R{total.toFixed(2)}</p>
+            </div>
+          </div>
 
-              <Separator />
+          <Separator />
 
-              {/* Order Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h5 className="font-semibold text-gray-800 mb-3">Order Information</h5>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Order Date:</span>
-                      <span>{new Date().toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Payment Status:</span>
-                      <Badge className="bg-green-100 text-green-800">Paid</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Order Status:</span>
-                      <Badge className="bg-blue-100 text-blue-800">Processing</Badge>
-                    </div>
-                  </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h5 className="font-medium mb-3">Order Details</h5>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Order Date</span>
+                  <span>{new Date().toLocaleDateString()}</span>
                 </div>
-
-                <div>
-                  <h5 className="font-semibold text-gray-800 mb-3">Delivery Address</h5>
-                  <div className="text-sm text-gray-600">
-                    <p className="font-medium text-gray-800">{shippingAddress.fullName}</p>
-                    {shippingAddress.company && <p>{shippingAddress.company}</p>}
-                    <p>{shippingAddress.address1}</p>
-                    {shippingAddress.address2 && <p>{shippingAddress.address2}</p>}
-                    <p>{shippingAddress.city}, {shippingAddress.province} {shippingAddress.postalCode}</p>
-                  </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Payment Status</span>
+                  <Badge className="bg-green-100 text-green-800 text-xs">Paid</Badge>
                 </div>
-              </div>
-
-              <Separator />
-
-              {/* Next Steps */}
-              <div className="bg-blue-50 p-6 rounded-lg">
-                <h5 className="font-semibold text-blue-800 mb-3">What happens next?</h5>
-                <div className="space-y-2 text-sm text-blue-700">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                    <span>Order confirmation email sent to your inbox</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                    <span>Processing begins within 2 business hours</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                    <span>Tracking information will be provided</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                    <span>Delivery in 3-5 business days</span>
-                  </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Order Status</span>
+                  <Badge className="bg-blue-100 text-blue-800 text-xs">Processing</Badge>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="space-y-4 max-w-md mx-auto">
+            <div>
+              <h5 className="font-medium mb-3">Delivery Address</h5>
+              <div className="text-sm text-slate-600 space-y-1">
+                <p className="font-medium text-slate-900">{shippingAddress.fullName}</p>
+                {shippingAddress.company && <p>{shippingAddress.company}</p>}
+                <p>{shippingAddress.address1}</p>
+                {shippingAddress.address2 && <p>{shippingAddress.address2}</p>}
+                <p>{shippingAddress.city}, {shippingAddress.province} {shippingAddress.postalCode}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h5 className="font-medium text-blue-900 mb-3">What's Next?</h5>
+            <div className="space-y-2 text-sm text-blue-800">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                <span>Order confirmation sent to your email</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                <span>Processing begins within 2 business hours</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                <span>Tracking information will be provided</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                <span>Delivery in 3-5 business days</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex gap-4 justify-center">
         <Button
           onClick={() => navigate('/profile')}
-          className="w-full py-3 text-lg bg-primary hover:bg-primary/90"
+          className="bg-slate-900 hover:bg-slate-800 text-white px-6"
         >
-          Track Your Order
+          Track Order
         </Button>
         <Button
           variant="outline"
           onClick={() => navigate('/products')}
-          className="w-full py-3 text-lg border-2"
+          className="border-slate-200 text-slate-700 hover:bg-slate-50 px-6"
         >
           Continue Shopping
         </Button>
@@ -843,63 +807,56 @@ const BulkCheckout = () => {
   );
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
-      <div className="pt-16 flex-grow bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="pt-16 flex-grow">
+        <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Header */}
-          <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center justify-between mb-8">
             <Button
               variant="ghost"
               onClick={() => navigate('/products')}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-3 rounded-lg transition-all"
+              className="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
             >
-              <ArrowLeft className="h-5 w-5" />
-              <span>Back to Products</span>
+              <ArrowLeft className="h-4 w-4" />
+              Back to Products
             </Button>
             <div className="text-center">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Bulk Purchase</h1>
-              <p className="text-gray-600">Professional bulk ordering made simple</p>
+              <h1 className="text-3xl font-bold text-slate-900">Bulk Purchase</h1>
+              <p className="text-slate-600 mt-1">Professional ordering made simple</p>
             </div>
-            <div className="w-32"></div> {/* Spacer for centering */}
+            <div className="w-32"></div>
           </div>
 
           {/* Progress Steps */}
           <div className="relative mb-12">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center max-w-4xl mx-auto">
               {steps.map((step, index) => {
                 const StepIcon = step.icon;
                 const isCompleted = currentStep > step.number;
                 const isCurrent = currentStep === step.number;
-                const isUpcoming = currentStep < step.number;
 
                 return (
-                  <div key={step.number} className="flex flex-col items-center relative z-10">
+                  <div key={step.number} className="flex flex-col items-center relative z-10 flex-1">
                     <div className={`
-                      flex items-center justify-center w-16 h-16 rounded-full border-4 transition-all duration-300 mb-3
+                      flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 mb-3
                       ${isCompleted
-                        ? "bg-green-500 border-green-500 text-white shadow-lg"
+                        ? "bg-green-600 text-white"
                         : isCurrent
-                        ? "bg-primary border-primary text-white shadow-lg scale-110"
-                        : "bg-white border-gray-300 text-gray-400"
+                        ? "bg-slate-900 text-white"
+                        : "bg-slate-200 text-slate-400"
                       }
                     `}>
-                      {isCompleted ? (
-                        <CheckCircle className="h-8 w-8" />
-                      ) : (
-                        <StepIcon className="h-8 w-8" />
-                      )}
+                      <StepIcon className="h-5 w-5" />
                     </div>
                     <div className="text-center">
-                      <p className={`text-sm font-semibold mb-1 ${
-                        isCurrent ? "text-primary" : isCompleted ? "text-green-600" : "text-gray-500"
-                      }`}>
-                        Step {step.number}
-                      </p>
-                      <p className={`text-xs font-medium ${
-                        isCurrent ? "text-foreground" : isCompleted ? "text-green-700" : "text-muted-foreground"
+                      <p className={`text-sm font-medium mb-1 ${
+                        isCurrent ? "text-slate-900" : isCompleted ? "text-green-700" : "text-slate-500"
                       }`}>
                         {step.title}
+                      </p>
+                      <p className="text-xs text-slate-500 max-w-24">
+                        {step.desc}
                       </p>
                     </div>
                   </div>
@@ -907,9 +864,9 @@ const BulkCheckout = () => {
               })}
             </div>
             {/* Progress Line */}
-            <div className="absolute top-8 left-8 right-8 h-1 bg-gray-200 -z-10">
+            <div className="absolute top-6 left-1/2 right-6 h-0.5 bg-slate-200 -z-10" style={{ left: '12.5%', right: '12.5%' }}>
               <div
-                className="h-full bg-gradient-to-r from-green-500 to-primary transition-all duration-500"
+                className="h-full bg-slate-900 transition-all duration-500"
                 style={{
                   width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`
                 }}
@@ -927,12 +884,12 @@ const BulkCheckout = () => {
 
           {/* Navigation Buttons */}
           {currentStep < 4 && (
-            <div className="flex justify-between items-center max-w-4xl mx-auto mt-8">
+            <div className="flex justify-between items-center max-w-4xl mx-auto">
               <Button
                 variant="outline"
                 onClick={handlePrevStep}
                 disabled={currentStep === 1}
-                className="px-8 py-3 border-2 font-medium disabled:opacity-50"
+                className="px-6 py-2 border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Previous
@@ -940,15 +897,15 @@ const BulkCheckout = () => {
               {currentStep < 3 && (
                 <Button
                   onClick={handleNextStep}
-                  className="px-8 py-3 bg-primary hover:bg-primary/90 font-medium"
+                  className="px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white"
                 >
-                  Next Step
+                  Continue
                   <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
                 </Button>
               )}
               {currentStep === 3 && (
-                <div className="text-center text-gray-600 max-w-xs">
-                  <p className="text-sm">Complete your secure payment above to finalize your order</p>
+                <div className="text-sm text-slate-600 max-w-xs text-right">
+                  Click the payment button above to complete your secure purchase
                 </div>
               )}
             </div>
