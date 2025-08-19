@@ -282,12 +282,12 @@ const Enterprise = () => {
                       ))}
                     </div>
                     <blockquote className="text-muted-foreground italic">
-                      "MyFuze helped us create beautiful custom water bottles for our corporate event. 
+                      "MyFuze helped us create beautiful custom water bottles for our corporate event.
                       The label designer was incredibly easy to use, and the quality exceeded our expectations."
                     </blockquote>
                     <div className="mt-3">
-                      <div className="font-medium">Sarah Johnson</div>
-                      <div className="text-sm text-muted-foreground">Event Manager, TechCorp SA</div>
+                      <div className="font-medium">Simelwe Ngcobo</div>
+                      <div className="text-sm text-muted-foreground">Founder, ReBooked Solutions</div>
                     </div>
                   </CardContent>
                 </Card>
