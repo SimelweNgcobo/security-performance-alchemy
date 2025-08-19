@@ -1067,3 +1067,4 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
 };
 
 export default LabelEditor;
+export type { LabelEditorProps };
