@@ -116,28 +116,29 @@ const Layout2Hero = () => {
             <DialogTitle className="text-2xl font-bold text-center mb-4">Our Story</DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
-            <div className="text-center">
-              <img
-                src="https://images.pexels.com/photos/3736302/pexels-photo-3736302.jpeg"
-                alt="MyFuze Story"
-                className="w-full max-w-md mx-auto rounded-lg shadow-lg mb-6"
-              />
-            </div>
-
             <div className="prose prose-lg max-w-none">
-              <h3 className="text-xl font-semibold text-primary mb-4">The Journey Begins</h3>
+              <h3 className="text-xl font-semibold text-primary mb-4">Our Water Purification Process</h3>
               <p className="text-muted-foreground leading-relaxed">
-                MyFuze was born from a simple belief: everyone deserves access to pure, premium water
-                that not only hydrates but elevates their daily experience. Founded in 2020, our journey
-                started with a mission to revolutionize the bottled water industry through innovation,
-                sustainability, and uncompromising quality.
+                At MyFuze, our water undergoes a comprehensive multi-stage filtration and purification process
+                to ensure exceptional quality and taste. We start with natural spring water from protected sources,
+                then apply advanced filtration technologies including reverse osmosis, UV sterilization, and mineral
+                enhancement to create perfectly balanced, pure water.
               </p>
 
-              <h3 className="text-xl font-semibold text-primary mb-4 mt-6">Our Mission</h3>
+              <h3 className="text-xl font-semibold text-primary mb-4 mt-6">Advanced Filtration Technology</h3>
               <p className="text-muted-foreground leading-relaxed">
-                We source our water from pristine natural springs, ensuring every drop meets the highest
-                standards of purity and taste. Our state-of-the-art filtration process preserves essential
-                minerals while removing impurities, delivering water that's not just clean, but truly premium.
+                Our state-of-the-art facility uses a 7-stage purification process: sediment filtration removes
+                particles, activated carbon filters eliminate chlorine and organic compounds, reverse osmosis
+                removes 99.9% of contaminants, UV sterilization destroys harmful microorganisms, mineral enhancement
+                adds back essential electrolytes, ozonation provides final disinfection, and quality testing ensures
+                every batch meets our premium standards.
+              </p>
+
+              <h3 className="text-xl font-semibold text-primary mb-4 mt-6">Quality You Can Taste</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                The result is exceptionally pure water with a crisp, clean taste and optimal mineral balance.
+                Our process preserves beneficial minerals like calcium and magnesium while removing harmful
+                contaminants, creating water that not only hydrates but nourishes your body with every sip.
               </p>
 
               <h3 className="text-xl font-semibold text-primary mb-4 mt-6">Sustainability First</h3>
