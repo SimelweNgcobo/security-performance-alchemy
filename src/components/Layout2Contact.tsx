@@ -106,22 +106,6 @@ const Layout2Contact = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                    <MapPin className="w-8 h-8 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-2">Visit Us</h3>
-                    <p className="text-muted-foreground text-sm mb-3">
-                      Our headquarters
-                    </p>
-                    <p className="text-primary font-medium">Mountain View, CA</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Response Time Info */}
             <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/5 to-primary/10">
