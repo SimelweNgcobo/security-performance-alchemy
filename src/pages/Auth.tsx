@@ -173,6 +173,7 @@ export default function Auth() {
                           onChange={(e) => handleInputChange("password", e.target.value)}
                           className="pr-10"
                           required
+                          maxLength={72}
                         />
                         <Button
                           type="button"
