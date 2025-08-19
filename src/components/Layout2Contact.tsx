@@ -98,9 +98,9 @@ const Layout2Contact = () => {
                   <div>
                     <h3 className="font-semibold text-foreground mb-2">Call Us</h3>
                     <p className="text-muted-foreground text-sm mb-3">
-                      Mon-Fri 9am-6pm PST
+                      Available 9am – 5pm
                     </p>
-                    <p className="text-primary font-medium">1-800-PURE-H2O</p>
+                    <p className="text-primary font-medium">060-565-4664</p>
                   </div>
                 </div>
               </CardContent>

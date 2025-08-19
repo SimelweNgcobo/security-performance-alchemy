@@ -13,7 +13,9 @@ import {
   Star,
   Users,
   Award,
-  ShoppingCart
+  ShoppingCart,
+  RefreshCw,
+  Tag
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -31,12 +33,19 @@ const Enterprise = () => {
   const [requirements, setRequirements] = useState("");
   const [loading, setLoading] = useState(false);
   const [savedDesigns, setSavedDesigns] = useState<any[]>([]);
+  const [profileLabels, setProfileLabels] = useState<any[]>([]);
 
   useEffect(() => {
     // Load saved designs from localStorage
     const designs = JSON.parse(localStorage.getItem('quoteDesigns') || '[]');
     setSavedDesigns(designs);
-  }, []);
+
+    // Load profile labels if user is logged in
+    if (user?.id) {
+      const labels = JSON.parse(localStorage.getItem(`labels_${user.id}`) || '[]');
+      setProfileLabels(labels);
+    }
+  }, [user]);
 
   const handleEnterpriseRequest = async () => {
     if (!companyName || !contactEmail) {
@@ -73,6 +82,21 @@ const Enterprise = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadLabelFromProfile = (label: any) => {
+    // This would integrate with the LabelEditor component
+    // For now, we'll just add it to requirements
+    setRequirements(prev =>
+      prev + (prev ? '\n\n' : '') +
+      `Custom Label: "${label.name}"\n${label.description}\nDesign: ${label.design}`
+    );
+    toast.success(`Label "${label.name}" loaded from profile`);
+  };
+
+  const resetToDefaultBranding = () => {
+    setRequirements("Please use MyFuze default branding for this order.");
+    toast.success("Reset to default branding");
   };
 
   return (
@@ -213,6 +237,35 @@ const Enterprise = () => {
                       rows={4}
                       className="mt-1"
                     />
+
+                    {/* Profile Labels and Default Branding Options */}
+                    <div className="flex gap-2 mt-2">
+                      {profileLabels.length > 0 && (
+                        <div className="flex gap-2 flex-wrap">
+                          {profileLabels.map((label) => (
+                            <Button
+                              key={label.id}
+                              variant="outline"
+                              size="sm"
+                              onClick={() => loadLabelFromProfile(label)}
+                              className="text-xs"
+                            >
+                              <Tag className="w-3 h-3 mr-1" />
+                              {label.name}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={resetToDefaultBranding}
+                        className="text-xs"
+                      >
+                        <RefreshCw className="w-3 h-3 mr-1" />
+                        Default Branding
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Saved Designs Preview */}

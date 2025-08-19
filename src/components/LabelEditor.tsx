@@ -450,9 +450,10 @@ const LabelEditor: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    setZoom(prev => Math.max(50, prev - 25));
+                    setZoom(prev => Math.max(25, prev - 25));
                   }}
                   className="no-scroll"
+                  disabled={zoom <= 25}
                 >
                   <ZoomOut className="w-4 h-4" />
                 </Button>
@@ -463,18 +464,32 @@ const LabelEditor: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    setZoom(prev => Math.min(200, prev + 25));
+                    setZoom(prev => Math.min(300, prev + 25));
                   }}
                   className="no-scroll"
+                  disabled={zoom >= 300}
                 >
                   <ZoomIn className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setZoom(100);
+                  }}
+                  className="no-scroll"
+                  title="Reset zoom to 100%"
+                >
+                  100%
                 </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 overflow-auto max-h-[70vh]">
-              <div className="flex items-center justify-center min-h-[400px]">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 overflow-auto max-h-[70vh] smooth-scroll">
+              <div className="flex items-center justify-center min-h-[400px] transition-all duration-200 ease-in-out">
                 <div
                   ref={canvasRef}
                   className="relative border border-gray-400 shadow-lg cursor-crosshair"

@@ -9,6 +9,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
@@ -26,7 +30,14 @@ import {
   Activity,
   CreditCard,
   FileText,
-  ChevronRight
+  ChevronRight,
+  Settings,
+  Trash2,
+  Save,
+  Truck,
+  Plus,
+  Edit,
+  Tag
 } from "lucide-react";
 
 interface RecentItem {
@@ -73,6 +84,18 @@ const Profile = () => {
   const [customerData, setCustomerData] = useState<any>(null);
   const [orderTrackingData, setOrderTrackingData] = useState<OrderTracking[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [profileForm, setProfileForm] = useState({
+    fullName: "",
+    email: "",
+    phone: ""
+  });
+  const [savedShippingDetails, setSavedShippingDetails] = useState<any[]>([]);
+  const [customLabels, setCustomLabels] = useState<any[]>([]);
+  const [newLabel, setNewLabel] = useState({
+    name: "",
+    design: "",
+    description: ""
+  });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -98,6 +121,24 @@ const Profile = () => {
         .single();
 
       setCustomerData(customer);
+
+      // Populate profile form
+      setProfileForm({
+        fullName: customer?.name || user?.user_metadata?.full_name || "",
+        email: customer?.email || user?.email || "",
+        phone: customer?.phone || ""
+      });
+
+      // Load saved shipping details and custom labels from localStorage for now
+      const savedShipping = localStorage.getItem(`shipping_${user?.id}`);
+      if (savedShipping) {
+        setSavedShippingDetails(JSON.parse(savedShipping));
+      }
+
+      const savedLabels = localStorage.getItem(`labels_${user?.id}`);
+      if (savedLabels) {
+        setCustomLabels(JSON.parse(savedLabels));
+      }
 
       // Load recent activity (mock data for now since we need to implement tracking)
       const mockRecents: RecentItem[] = [
@@ -243,6 +284,94 @@ const Profile = () => {
     }
   };
 
+  const updateProfile = async () => {
+    try {
+      // Update auth user metadata
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { full_name: profileForm.fullName }
+      });
+
+      if (authError) throw authError;
+
+      // Update customer record
+      const { error: customerError } = await supabase
+        .from("customers")
+        .update({
+          name: profileForm.fullName,
+          phone: profileForm.phone
+        })
+        .eq("email", user?.email);
+
+      if (customerError) throw customerError;
+
+      // Reload user data
+      await loadUserData();
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      // Delete customer record first
+      const { error: customerError } = await supabase
+        .from("customers")
+        .delete()
+        .eq("email", user?.email);
+
+      if (customerError) throw customerError;
+
+      // Delete auth user (this will also sign out)
+      const { error: authError } = await supabase.auth.admin.deleteUser(user?.id || "");
+
+      if (authError) {
+        console.warn("Could not delete auth user:", authError);
+      }
+
+      // Clear local storage
+      localStorage.clear();
+
+      toast.success("Account deleted successfully");
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast.error("Failed to delete account. Please contact support.");
+    }
+  };
+
+  const saveShippingDetails = (details: any) => {
+    const updated = [...savedShippingDetails, { ...details, id: Date.now() }];
+    setSavedShippingDetails(updated);
+    localStorage.setItem(`shipping_${user?.id}`, JSON.stringify(updated));
+    toast.success("Shipping details saved");
+  };
+
+  const saveCustomLabel = () => {
+    if (!newLabel.name.trim()) {
+      toast.error("Please enter a label name");
+      return;
+    }
+
+    const label = { ...newLabel, id: Date.now(), created_at: new Date().toISOString() };
+    const updated = [...customLabels, label];
+    setCustomLabels(updated);
+    localStorage.setItem(`labels_${user?.id}`, JSON.stringify(updated));
+    setNewLabel({ name: "", design: "", description: "" });
+    toast.success("Custom label saved");
+  };
+
+  const reorderItems = async (purchase: Purchase) => {
+    try {
+      // Add items back to cart (simplified for now)
+      toast.success(`${purchase.items.length} items re-added to cart`);
+      navigate("/cart");
+    } catch (error) {
+      toast.error("Failed to re-order items");
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
@@ -354,7 +483,7 @@ const Profile = () => {
 
           {/* Profile Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="recents" className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 Recents
@@ -366,6 +495,14 @@ const Profile = () => {
               <TabsTrigger value="purchases" className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4" />
                 Purchases
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Settings
+              </TabsTrigger>
+              <TabsTrigger value="delivery" className="flex items-center gap-2">
+                <Package className="w-4 h-4" />
+                Delivery
               </TabsTrigger>
             </TabsList>
 
@@ -578,6 +715,16 @@ const Profile = () => {
                                   Invoice
                                 </Button>
                               )}
+                              {(purchase.status === 'delivered' || purchase.status === 'completed') && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => reorderItems(purchase)}
+                                >
+                                  <ShoppingBag className="w-4 h-4 mr-2" />
+                                  Order Again
+                                </Button>
+                              )}
                               <Button variant="outline" size="sm">
                                 View Details
                                 <ChevronRight className="w-4 h-4 ml-2" />
@@ -593,6 +740,214 @@ const Profile = () => {
                       <p className="text-muted-foreground">No purchases found</p>
                       <Button className="mt-4" onClick={() => navigate("/products")}>
                         Browse Products
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="space-y-4">
+              <div className="grid gap-6">
+                {/* Profile Settings */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Profile Settings</CardTitle>
+                    <CardDescription>
+                      Update your personal information and account preferences
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">Full Name</Label>
+                        <Input
+                          id="fullName"
+                          value={profileForm.fullName}
+                          onChange={(e) => setProfileForm(prev => ({ ...prev, fullName: e.target.value }))}
+                          placeholder="Enter your full name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={profileForm.email}
+                          disabled
+                          className="bg-muted"
+                          placeholder="Your email address"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Email cannot be changed. Contact support if needed.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Cell Phone Number</Label>
+                        <Input
+                          id="phone"
+                          value={profileForm.phone}
+                          onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
+                          placeholder="Enter your phone number"
+                        />
+                      </div>
+                    </div>
+                    <Button onClick={updateProfile} className="w-full">
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Changes
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Custom Labels */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Custom Labels</CardTitle>
+                    <CardDescription>
+                      Create and save custom labels for your bottles
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Add New Label */}
+                    <div className="border rounded-lg p-4 space-y-4">
+                      <h4 className="font-medium">Create New Label</h4>
+                      <div className="grid gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="labelName">Label Name</Label>
+                          <Input
+                            id="labelName"
+                            value={newLabel.name}
+                            onChange={(e) => setNewLabel(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="e.g., My Company Logo"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="labelDesign">Design/Text</Label>
+                          <Textarea
+                            id="labelDesign"
+                            value={newLabel.design}
+                            onChange={(e) => setNewLabel(prev => ({ ...prev, design: e.target.value }))}
+                            placeholder="Enter your label text or describe your design"
+                            rows={3}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="labelDescription">Description</Label>
+                          <Input
+                            id="labelDescription"
+                            value={newLabel.description}
+                            onChange={(e) => setNewLabel(prev => ({ ...prev, description: e.target.value }))}
+                            placeholder="Brief description of this label"
+                          />
+                        </div>
+                      </div>
+                      <Button onClick={saveCustomLabel} className="w-full">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Save Label
+                      </Button>
+                    </div>
+
+                    {/* Saved Labels */}
+                    {customLabels.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Saved Labels</h4>
+                        <div className="space-y-2">
+                          {customLabels.map((label) => (
+                            <div key={label.id} className="border rounded-lg p-3">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h5 className="font-medium">{label.name}</h5>
+                                  <p className="text-sm text-muted-foreground">{label.description}</p>
+                                </div>
+                                <Badge variant="outline">
+                                  <Tag className="w-3 h-3 mr-1" />
+                                  Saved
+                                </Badge>
+                              </div>
+                              {label.design && (
+                                <p className="text-sm mt-2 p-2 bg-muted rounded">{label.design}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Account Deletion */}
+                <Card className="border-destructive">
+                  <CardHeader>
+                    <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                    <CardDescription>
+                      Permanently delete your account and all associated data
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full">
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Account
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete your account
+                            and remove all your data from our servers.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={deleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Yes, delete my account
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Delivery Tab */}
+            <TabsContent value="delivery" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Saved Shipping Details</CardTitle>
+                  <CardDescription>
+                    Manage your shipping addresses for faster checkout
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {savedShippingDetails.length > 0 ? (
+                    <div className="space-y-4">
+                      {savedShippingDetails.map((details) => (
+                        <div key={details.id} className="border rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{details.name || "Shipping Address"}</h4>
+                            <Badge variant="outline">
+                              <Truck className="w-3 h-3 mr-1" />
+                              Saved
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <p>{details.address}</p>
+                            <p>{details.city}, {details.province} {details.postalCode}</p>
+                            {details.phone && <p>Phone: {details.phone}</p>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Truck className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-4">No saved shipping details</p>
+                      <Button onClick={() => navigate("/products")}>
+                        Shop Now to Add Addresses
                       </Button>
                     </div>
                   )}

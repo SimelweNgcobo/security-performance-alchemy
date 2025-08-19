@@ -183,11 +183,9 @@ export class OrderTrackingService {
       };
 
       console.log('Sending order confirmation email:', emailContent);
-      
-      // Simulate email sending delay
+
+      // Simulate email sending delay (removing the toast notification)
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success(`Order confirmation email sent to ${orderData.customer_email}`);
     } catch (error) {
       console.error('Error sending order confirmation email:', error);
       toast.error('Failed to send order confirmation email');

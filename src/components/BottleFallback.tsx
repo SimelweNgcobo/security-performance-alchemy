@@ -6,7 +6,6 @@ interface BottleFallbackProps {
 }
 
 const bottleSizes = [
-  { id: "250ml", size: "250ml", volume: "Small", dimensions: { width: 56, height: 165 } },
   { id: "500ml", size: "500ml", volume: "Regular", dimensions: { width: 66, height: 210 } },
   { id: "1L", size: "1L", volume: "Large", dimensions: { width: 84, height: 260 } },
   { id: "1.5L", size: "1.5L", volume: "Family", dimensions: { width: 100, height: 300 } },

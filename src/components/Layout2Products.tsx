@@ -21,16 +21,6 @@ const Layout2Products = () => {
 
   const products = [
     {
-      name: "Mini Bottle",
-      size: "250ml",
-      description: "Perfect for on-the-go hydration. Compact design that fits in your pocket or small bag.",
-      image: "https://images.pexels.com/photos/3736302/pexels-photo-3736302.jpeg",
-      badge: "Portable",
-      gradient: "from-blue-500/20 to-blue-600/5",
-      volume: "250ml",
-      dimensions: "Compact & Lightweight"
-    },
-    {
       name: "Classic Bottle",
       size: "500ml",
       description: "Our most popular size. Ideal for daily hydration, workouts, and office use.",
@@ -97,7 +87,7 @@ const Layout2Products = () => {
           </div>
           <div className="w-24 sm:w-32 h-px bg-gradient-to-r from-transparent via-primary to-transparent mx-auto"></div>
           <p className="text-base sm:text-lg lg:text-xl text-muted-foreground font-light max-w-2xl lg:max-w-3xl mx-auto leading-relaxed px-4">
-            From portable 250ml bottles to commercial 6-litre containers, discover the perfect size for every hydration need.
+            From standard 500ml bottles to commercial 6-litre containers, discover the perfect size for every hydration need.
           </p>
         </div>
 
