@@ -40,7 +40,6 @@ import {
 
 // Lazy load heavy components
 const LabelEditor = lazy(() => import("@/components/LabelEditor"));
-const AccountDeletion = lazy(() => import("@/components/AccountDeletion"));
 
 interface BasicProfile {
   name: string;
