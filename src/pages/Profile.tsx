@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,7 @@ import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import LabelEditor from "@/components/LabelEditor";
+import { ProfileHeaderSkeleton, ActivitySkeleton, PurchasesSkeleton, RecentItemsSkeleton } from "@/components/ProfileSkeleton";
 import {
   User,
   Clock,
@@ -76,20 +77,42 @@ interface Purchase {
   shipping_address?: string;
 }
 
+interface BasicProfile {
+  name: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+}
+
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("recents");
-  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
-  const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [customerData, setCustomerData] = useState<any>(null);
-  const [loadingData, setLoadingData] = useState(false);
+  
+  // Basic profile state (loads instantly)
+  const [basicProfile, setBasicProfile] = useState<BasicProfile | null>(null);
   const [profileForm, setProfileForm] = useState({
     fullName: "",
     email: "",
     phone: ""
   });
+
+  // Heavy data states (loads progressively)
+  const [activeTab, setActiveTab] = useState("recents");
+  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [customerData, setCustomerData] = useState<any>(null);
+  
+  // Loading states for different sections
+  const [loadingStates, setLoadingStates] = useState({
+    basic: false,
+    activity: false,
+    purchases: false,
+    recents: false,
+    customer: false
+  });
+
+  // UI states
   const [savedShippingDetails, setSavedShippingDetails] = useState<any[]>([]);
   const [customLabels, setCustomLabels] = useState<any[]>([]);
   const [newLabel, setNewLabel] = useState({
@@ -97,229 +120,305 @@ const Profile = () => {
     design: "",
     description: ""
   });
+  const [saving, setSaving] = useState(false);
 
-  // Check authentication first
+  // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       console.log("No user found, redirecting to auth");
-      toast.error("Please sign in to access your profile");
       navigate("/auth");
       return;
     }
   }, [user, authLoading, navigate]);
 
-  // Load user data when user is available
+  // Load basic profile instantly when user is available
   useEffect(() => {
     if (user && !authLoading) {
-      console.log("User available, loading data for:", user.email);
-      loadUserData();
+      loadBasicProfile();
+      loadLocalStorageData();
     }
   }, [user, authLoading]);
 
-  const loadUserData = useCallback(async () => {
-    if (!user?.email) {
-      console.log("No user email available");
-      return;
-    }
+  // Load basic profile data instantly (< 100ms)
+  const loadBasicProfile = useCallback(async () => {
+    if (!user?.email) return;
 
     try {
-      console.log("Starting to load user data...");
-      setLoadingData(true);
+      setLoadingStates(prev => ({ ...prev, basic: true }));
 
-      // Set basic form data immediately from user
+      // Set immediate basic profile from auth user
+      const immediate = {
+        name: user.user_metadata?.full_name || "User",
+        email: user.email,
+        phone: "",
+        avatar: user.user_metadata?.avatar_url
+      };
+      
+      setBasicProfile(immediate);
       setProfileForm({
-        fullName: user?.user_metadata?.full_name || "",
-        email: user?.email || "",
+        fullName: immediate.name,
+        email: immediate.email,
         phone: ""
       });
 
-      // Load localStorage data efficiently
-      if (user.id) {
-        try {
-          const savedShipping = localStorage.getItem(`shipping_${user.id}`);
-          if (savedShipping) {
-            setSavedShippingDetails(JSON.parse(savedShipping));
-          }
+      console.log("Basic profile loaded instantly");
 
-          const savedLabels = localStorage.getItem(`labels_${user.id}`);
-          if (savedLabels) {
-            setCustomLabels(JSON.parse(savedLabels));
-          }
-        } catch (e) {
-          console.log("Error loading localStorage data:", e);
-        }
+      // Then enhance with customer data in background
+      loadCustomerData();
+
+    } catch (error) {
+      console.error("Error loading basic profile:", error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, basic: false }));
+    }
+  }, [user]);
+
+  // Load customer data in background (no blocking)
+  const loadCustomerData = useCallback(async () => {
+    if (!user?.email) return;
+
+    try {
+      setLoadingStates(prev => ({ ...prev, customer: true }));
+
+      const { data: customer } = await supabase
+        .from("customers")
+        .select("name, phone, address")
+        .eq("email", user.email)
+        .maybeSingle();
+
+      if (customer) {
+        setCustomerData(customer);
+        
+        // Update basic profile with customer data
+        setBasicProfile(prev => prev ? {
+          ...prev,
+          name: customer.name || prev.name,
+          phone: customer.phone || prev.phone
+        } : null);
+
+        // Update form
+        setProfileForm(prev => ({
+          ...prev,
+          fullName: customer.name || prev.fullName,
+          phone: customer.phone || ""
+        }));
       }
 
-      // Optimized data loading - handle errors gracefully
-      try {
-        const [customerResponse, ordersResponse] = await Promise.all([
-          supabase
-            .from("customers")
-            .select("*")
-            .eq("email", user.email)
-            .maybeSingle(),
-          supabase
-            .from("orders")
-            .select(`
-              id,
-              order_number,
-              total_amount,
-              status,
-              payment_status,
-              delivery_status,
-              created_at,
-              metadata,
-              shipping_address,
-              order_items (
-                quantity,
-                unit_price,
-                products (name, size, type)
-              ),
-              invoices (id, invoice_number)
-            `)
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false })
-            .limit(10)
-        ]);
+    } catch (error) {
+      console.error("Error loading customer data:", error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, customer: false }));
+    }
+  }, [user]);
 
-        console.log("Database queries completed");
+  // Load localStorage data instantly
+  const loadLocalStorageData = useCallback(() => {
+    if (!user?.id) return;
 
-        const customer = customerResponse.data;
-        setCustomerData(customer);
+    try {
+      const savedShipping = localStorage.getItem(`shipping_${user.id}`);
+      if (savedShipping) {
+        setSavedShippingDetails(JSON.parse(savedShipping));
+      }
 
-        // Update profile form with customer data
-        if (customer) {
-          setProfileForm(prev => ({
-            ...prev,
-            fullName: customer.name || prev.fullName,
-            phone: customer.phone || ""
-          }));
-        }
+      const savedLabels = localStorage.getItem(`labels_${user.id}`);
+      if (savedLabels) {
+        setCustomLabels(JSON.parse(savedLabels));
+      }
+    } catch (e) {
+      console.log("Error loading localStorage data:", e);
+    }
+  }, [user]);
 
-        // Generate real activity from actual data
-        const realActivity: ActivityItem[] = [];
-        
-        // Add account creation activity
-        realActivity.push({
+  // Lazy load activity data when tab is accessed
+  const loadActivityData = useCallback(async () => {
+    if (!user || activityItems.length > 0 || loadingStates.activity) return;
+
+    try {
+      setLoadingStates(prev => ({ ...prev, activity: true }));
+
+      // Generate basic activity items
+      const basicActivity: ActivityItem[] = [
+        {
           id: "account-created",
           type: "account_created",
           title: "Account Created",
           description: "Welcome to MyFuze! Your account has been successfully created",
           timestamp: user.created_at || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
           status: "completed"
-        });
-
-        // Add login activity
-        realActivity.push({
+        },
+        {
           id: "current-login",
           type: "login",
           title: "Recent Sign In",
           description: "Signed in to your account",
           timestamp: new Date().toISOString(),
           status: "completed"
-        });
-
-        // Process orders data
-        const orders = ordersResponse.data || [];
-        console.log("Processing orders:", orders.length);
-        
-        if (orders.length > 0) {
-          const processedPurchases = orders.map(order => {
-            let items = order.order_items || [];
-
-            // For bulk orders, create virtual items from metadata
-            if (order.metadata && order.order_number?.startsWith('BLK')) {
-              try {
-                const metadata = JSON.parse(order.metadata);
-                items = [{
-                  quantity: metadata.quantity,
-                  unit_price: metadata.unit_price,
-                  products: {
-                    name: `${metadata.bottle_size} Water Bottle`,
-                    size: metadata.bottle_size,
-                    type: 'bulk'
-                  }
-                }];
-              } catch (e) {
-                console.log('Could not parse bulk order metadata:', e);
-              }
-            }
-
-            // Add order activities
-            realActivity.push({
-              id: `order-${order.id}`,
-              type: "order_created",
-              title: `Order ${order.order_number}`,
-              description: `Created order with ${items.length} item(s) - R${order.total_amount.toFixed(2)}`,
-              timestamp: order.created_at,
-              status: order.status === 'completed' || order.status === 'delivered' ? 'completed' : 'processing'
-            });
-
-            if (order.payment_status === 'paid') {
-              realActivity.push({
-                id: `payment-${order.id}`,
-                type: "payment_processed",
-                title: `Payment Processed`,
-                description: `Payment of R${order.total_amount.toFixed(2)} processed for order ${order.order_number}`,
-                timestamp: order.created_at,
-                status: 'completed'
-              });
-            }
-
-            return {
-              id: order.id,
-              order_number: order.order_number,
-              total_amount: order.total_amount,
-              status: order.status,
-              payment_status: order.payment_status,
-              delivery_status: order.delivery_status,
-              created_at: order.created_at,
-              items: items,
-              invoice_id: order.invoices?.[0]?.id,
-              metadata: order.metadata,
-              shipping_address: order.shipping_address
-            };
-          });
-
-          setPurchases(processedPurchases);
-
-          // Generate recent items from actual orders
-          const orderRecents: RecentItem[] = processedPurchases.slice(0, 3).map(order => ({
-            id: `order-${order.id}`,
-            type: 'order' as const,
-            name: order.order_number,
-            description: `${order.items.length} item(s) - R${order.total_amount.toFixed(2)}`,
-            timestamp: order.created_at,
-            status: order.status
-          }));
-
-          setRecentItems(orderRecents);
-        } else {
-          // No orders found
-          setPurchases([]);
-          setRecentItems([]);
         }
+      ];
 
-        // Sort activities by timestamp (newest first)
-        const sortedActivities = realActivity.sort((a, b) => 
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-        
-        setActivityItems(sortedActivities.slice(0, 10));
+      setActivityItems(basicActivity);
 
-      } catch (dbError) {
-        console.error("Database error:", dbError);
-        toast.error("Some profile data could not be loaded");
+    } catch (error) {
+      console.error("Error loading activity:", error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, activity: false }));
+    }
+  }, [user, activityItems.length, loadingStates.activity]);
+
+  // Lazy load purchases data when tab is accessed
+  const loadPurchasesData = useCallback(async () => {
+    if (!user || purchases.length > 0 || loadingStates.purchases) return;
+
+    try {
+      setLoadingStates(prev => ({ ...prev, purchases: true }));
+
+      const { data: orders } = await supabase
+        .from("orders")
+        .select(`
+          id,
+          order_number,
+          total_amount,
+          status,
+          payment_status,
+          delivery_status,
+          created_at,
+          metadata,
+          shipping_address,
+          order_items!inner (
+            quantity,
+            unit_price,
+            products (name, size, type)
+          ),
+          invoices (id, invoice_number)
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (orders) {
+        const processedPurchases = orders.map(order => ({
+          id: order.id,
+          order_number: order.order_number,
+          total_amount: order.total_amount,
+          status: order.status,
+          payment_status: order.payment_status,
+          delivery_status: order.delivery_status,
+          created_at: order.created_at,
+          items: order.order_items || [],
+          invoice_id: order.invoices?.[0]?.id,
+          metadata: order.metadata,
+          shipping_address: order.shipping_address
+        }));
+
+        setPurchases(processedPurchases);
       }
 
     } catch (error) {
-      console.error("Error loading user data:", error);
-      toast.error("Failed to load profile data");
+      console.error("Error loading purchases:", error);
     } finally {
-      console.log("Loading complete, setting loadingData to false");
-      setLoadingData(false);
+      setLoadingStates(prev => ({ ...prev, purchases: false }));
     }
-  }, [user]);
+  }, [user, purchases.length, loadingStates.purchases]);
+
+  // Lazy load recent items when tab is accessed
+  const loadRecentItems = useCallback(async () => {
+    if (!user || recentItems.length > 0 || loadingStates.recents) return;
+
+    try {
+      setLoadingStates(prev => ({ ...prev, recents: true }));
+
+      // For now, generate from purchases data
+      if (purchases.length > 0) {
+        const orderRecents: RecentItem[] = purchases.slice(0, 3).map(order => ({
+          id: `order-${order.id}`,
+          type: 'order' as const,
+          name: order.order_number,
+          description: `${order.items.length} item(s) - R${order.total_amount.toFixed(2)}`,
+          timestamp: order.created_at,
+          status: order.status
+        }));
+
+        setRecentItems(orderRecents);
+      }
+
+    } catch (error) {
+      console.error("Error loading recent items:", error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, recents: false }));
+    }
+  }, [user, recentItems.length, loadingStates.recents, purchases]);
+
+  // Handle tab changes with lazy loading
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    
+    switch (tab) {
+      case "activity":
+        loadActivityData();
+        break;
+      case "purchases":
+        loadPurchasesData();
+        break;
+      case "recents":
+        loadRecentItems();
+        break;
+    }
+  };
+
+  // Optimistic profile update
+  const updateProfile = useCallback(async () => {
+    if (saving) return;
+
+    try {
+      setSaving(true);
+
+      // Optimistic update - update UI immediately
+      const newProfile = {
+        ...basicProfile!,
+        name: profileForm.fullName,
+        phone: profileForm.phone
+      };
+      setBasicProfile(newProfile);
+
+      // Show immediate success
+      toast.success("Profile updated!");
+
+      // Background update to server
+      const [authUpdate, customerUpdate] = await Promise.all([
+        supabase.auth.updateUser({
+          data: { full_name: profileForm.fullName }
+        }),
+        supabase
+          .from("customers")
+          .upsert({
+            email: user!.email,
+            name: profileForm.fullName,
+            phone: profileForm.phone
+          })
+          .eq("email", user!.email)
+      ]);
+
+      if (authUpdate.error) throw authUpdate.error;
+      if (customerUpdate.error) throw customerUpdate.error;
+
+      console.log("Profile updated successfully in background");
+
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      
+      // Revert optimistic update on error
+      setBasicProfile(prev => prev ? {
+        ...prev,
+        name: customerData?.name || user?.user_metadata?.full_name || "User",
+        phone: customerData?.phone || ""
+      } : null);
+
+      toast.error("Failed to update profile. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }, [basicProfile, profileForm, customerData, user, saving]);
 
   const downloadInvoice = async (invoiceId: string) => {
     try {
@@ -329,38 +428,8 @@ const Profile = () => {
     }
   };
 
-  const updateProfile = async () => {
-    try {
-      // Update auth user metadata
-      const { error: authError } = await supabase.auth.updateUser({
-        data: { full_name: profileForm.fullName }
-      });
-
-      if (authError) throw authError;
-
-      // Update customer record
-      const { error: customerError } = await supabase
-        .from("customers")
-        .upsert({
-          email: user?.email,
-          name: profileForm.fullName,
-          phone: profileForm.phone
-        })
-        .eq("email", user?.email);
-
-      if (customerError) throw customerError;
-
-      await loadUserData();
-      toast.success("Profile updated successfully");
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Failed to update profile");
-    }
-  };
-
   const deleteAccount = async () => {
     try {
-      // Delete customer record first
       const { error: customerError } = await supabase
         .from("customers")
         .delete()
@@ -368,22 +437,13 @@ const Profile = () => {
 
       if (customerError) throw customerError;
 
-      // Clear local storage
       localStorage.clear();
-
       toast.success("Account deletion request processed. Please contact support to complete the process.");
       navigate("/");
     } catch (error) {
       console.error("Error deleting account:", error);
       toast.error("Failed to delete account. Please contact support.");
     }
-  };
-
-  const saveShippingDetails = (details: any) => {
-    const updated = [...savedShippingDetails, { ...details, id: Date.now() }];
-    setSavedShippingDetails(updated);
-    localStorage.setItem(`shipping_${user?.id}`, JSON.stringify(updated));
-    toast.success("Shipping details saved");
   };
 
   const saveCustomLabel = () => {
@@ -466,16 +526,16 @@ const Profile = () => {
     toast.success(`Viewing details for ${item.name}`);
   };
 
-  // Show loading only when auth is loading or when we're actively loading data
-  if (authLoading || (user && loadingData)) {
+  // Show loading only for auth
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner message="Loading your profile..." size="lg" />
+        <LoadingSpinner message="Authenticating..." size="lg" />
       </div>
     );
   }
 
-  // If no user and auth isn't loading, don't render anything (redirect will happen)
+  // If no user, don't render anything (redirect will happen)
   if (!user) {
     return null;
   }
@@ -485,49 +545,47 @@ const Profile = () => {
       <Navbar />
       <div className="pt-20 pb-12">
         <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
-          {/* Profile Header */}
+          {/* Profile Header - Shows immediately with basic data */}
           <div className="mb-8">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                      {user.email?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <CardTitle className="text-2xl">
-                      {customerData?.name || user.user_metadata?.full_name || "User"}
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1">
-                        <Mail className="w-4 h-4" />
-                        {user.email}
-                      </span>
-                      {customerData?.phone && (
+            {loadingStates.basic && !basicProfile ? (
+              <ProfileHeaderSkeleton />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="h-16 w-16">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                        {basicProfile?.email?.charAt(0).toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <CardTitle className="text-2xl">
+                        {basicProfile?.name || "Loading..."}
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-4 mt-2">
                         <span className="flex items-center gap-1">
-                          <Phone className="w-4 h-4" />
-                          {customerData.phone}
+                          <Mail className="w-4 h-4" />
+                          {basicProfile?.email || "Loading..."}
                         </span>
-                      )}
-                      {customerData?.address && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          {customerData.address}
-                        </span>
-                      )}
-                    </CardDescription>
+                        {basicProfile?.phone && (
+                          <span className="flex items-center gap-1">
+                            <Phone className="w-4 h-4" />
+                            {basicProfile.phone}
+                          </span>
+                        )}
+                      </CardDescription>
+                    </div>
+                    <Badge variant="outline" className="text-primary border-primary">
+                      Active Member
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="text-primary border-primary">
-                    Active Member
-                  </Badge>
-                </div>
-              </CardHeader>
-            </Card>
+                </CardHeader>
+              </Card>
+            )}
           </div>
 
           {/* Profile Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="recents" className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
@@ -561,24 +619,17 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {recentItems.length > 0 ? (
+                  {loadingStates.recents ? (
+                    <RecentItemsSkeleton />
+                  ) : recentItems.length > 0 ? (
                     <div className="space-y-4">
                       {recentItems.map((item) => (
                         <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                          {item.image && (
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="w-12 h-12 rounded-lg object-cover"
-                            />
-                          )}
-                          {!item.image && (
-                            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                              {item.type === 'product' && <Package className="w-6 h-6 text-primary" />}
-                              {item.type === 'order' && <ShoppingBag className="w-6 h-6 text-primary" />}
-                              {item.type === 'quote' && <FileText className="w-6 h-6 text-primary" />}
-                            </div>
-                          )}
+                          <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                            {item.type === 'product' && <Package className="w-6 h-6 text-primary" />}
+                            {item.type === 'order' && <ShoppingBag className="w-6 h-6 text-primary" />}
+                            {item.type === 'quote' && <FileText className="w-6 h-6 text-primary" />}
+                          </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <h3 className="font-medium">{item.name}</h3>
@@ -626,7 +677,9 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {activityItems.length > 0 ? (
+                  {loadingStates.activity ? (
+                    <ActivitySkeleton />
+                  ) : activityItems.length > 0 ? (
                     <div className="space-y-4">
                       {activityItems.map((item, index) => (
                         <div key={item.id} className="relative">
@@ -687,7 +740,9 @@ const Profile = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {purchases.length > 0 ? (
+                  {loadingStates.purchases ? (
+                    <PurchasesSkeleton />
+                  ) : purchases.length > 0 ? (
                     <div className="space-y-4">
                       {purchases.map((purchase) => (
                         <div key={purchase.id} className="border rounded-lg p-6">
@@ -732,31 +787,6 @@ const Profile = () => {
                                 ))}
                               </div>
                             </div>
-
-                            {purchase.shipping_address && (
-                              <div>
-                                <h4 className="font-medium">Shipping Address:</h4>
-                                <div className="text-sm text-muted-foreground mt-1">
-                                  {(() => {
-                                    try {
-                                      const address = JSON.parse(purchase.shipping_address);
-                                      return (
-                                        <div>
-                                          <p className="font-medium text-foreground">{address.fullName}</p>
-                                          {address.company && <p>{address.company}</p>}
-                                          <p>{address.address1}</p>
-                                          {address.address2 && <p>{address.address2}</p>}
-                                          <p>{address.city}, {address.province} {address.postalCode}</p>
-                                          <p>{address.phone}</p>
-                                        </div>
-                                      );
-                                    } catch {
-                                      return <p>Address information available</p>;
-                                    }
-                                  })()}
-                                </div>
-                              </div>
-                            )}
                           </div>
 
                           <Separator className="my-4" />
@@ -856,14 +886,18 @@ const Profile = () => {
                         />
                       </div>
                     </div>
-                    <Button onClick={updateProfile} className="w-full">
+                    <Button 
+                      onClick={updateProfile} 
+                      className="w-full"
+                      disabled={saving}
+                    >
                       <Save className="w-4 h-4 mr-2" />
-                      Save Changes
+                      {saving ? "Saving..." : "Save Changes"}
                     </Button>
                   </CardContent>
                 </Card>
 
-                {/* Custom Label Editor - Full Featured */}
+                {/* Custom Label Editor */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -888,7 +922,6 @@ const Profile = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* Add New Label */}
                     <div className="border rounded-lg p-4 space-y-4">
                       <h4 className="font-medium">Create Quick Label</h4>
                       <div className="grid gap-4">
@@ -927,7 +960,6 @@ const Profile = () => {
                       </Button>
                     </div>
 
-                    {/* Saved Labels */}
                     {customLabels.length > 0 && (
                       <div className="space-y-2">
                         <h4 className="font-medium">Your Saved Labels</h4>
@@ -955,7 +987,7 @@ const Profile = () => {
                   </CardContent>
                 </Card>
 
-                {/* Account Deletion - Softer Red */}
+                {/* Account Deletion */}
                 <Card className="border-red-200 dark:border-red-900/50">
                   <CardHeader>
                     <CardTitle className="text-red-600 dark:text-red-400">Account Management</CardTitle>
