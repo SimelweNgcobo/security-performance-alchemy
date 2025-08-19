@@ -226,7 +226,7 @@ export const EnterpriseRequests = () => {
                         <div>
                           <div className="font-medium">{request.company_name}</div>
                           <div className="text-sm text-muted-foreground truncate max-w-xs">
-                            {request.requirements}
+                            {request.requirements || 'No requirements specified'}
                           </div>
                         </div>
                       </TableCell>
