@@ -16,7 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
-import WaterFillingAnimation from "@/components/WaterFillingAnimation";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import {
   User,
   Clock,
