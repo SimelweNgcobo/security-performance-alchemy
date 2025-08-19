@@ -482,12 +482,14 @@ export type Database = {
           delivery_postal_code: string | null
           delivery_status: string | null
           id: string
+          metadata: Json | null
           notes: string | null
           order_number: string
           payment_status: string
           status: string
           total_amount: number
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -497,12 +499,14 @@ export type Database = {
           delivery_postal_code?: string | null
           delivery_status?: string | null
           id?: string
+          metadata?: Json | null
           notes?: string | null
           order_number: string
           payment_status?: string
           status?: string
           total_amount: number
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -512,12 +516,14 @@ export type Database = {
           delivery_postal_code?: string | null
           delivery_status?: string | null
           id?: string
+          metadata?: Json | null
           notes?: string | null
           order_number?: string
           payment_status?: string
           status?: string
           total_amount?: number
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
