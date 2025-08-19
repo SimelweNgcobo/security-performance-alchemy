@@ -132,7 +132,14 @@ const Enterprise = () => {
                 Choose from our standard bottle sizes with volume discounts.
               </p>
               <Button
-                onClick={() => navigate('/bulk-checkout')}
+                onClick={() => {
+                  if (!user) {
+                    toast.error("Please sign in to access bulk purchasing");
+                    navigate('/auth');
+                    return;
+                  }
+                  navigate('/bulk-checkout');
+                }}
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-medium"
               >
