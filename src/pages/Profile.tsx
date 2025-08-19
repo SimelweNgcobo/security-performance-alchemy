@@ -623,10 +623,22 @@ const Profile = () => {
             <TabsContent value="purchases" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Purchase History</CardTitle>
-                  <CardDescription>
-                    View and manage your order history and invoices
-                  </CardDescription>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Purchase History</CardTitle>
+                      <CardDescription>
+                        View and manage your order history and invoices
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/orders")}
+                      className="shrink-0"
+                    >
+                      <Package className="w-4 h-4 mr-2" />
+                      View All Orders
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {purchases.length > 0 ? (
