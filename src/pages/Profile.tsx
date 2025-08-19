@@ -485,7 +485,7 @@ const Profile = () => {
     if (success) {
       await loadUserLabels(); // Refresh labels
     }
-  }, [user, loadUserLabels]);
+  }, [user]);
 
   const handleDeleteLabel = useCallback(async (labelId: string) => {
     const success = await userLabelsService.deleteLabel(labelId);
