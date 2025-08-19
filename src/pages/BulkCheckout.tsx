@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -117,41 +117,41 @@ const BulkCheckout = () => {
   }, [user, navigate]);
 
   // Calculate pricing for a given size and quantity
-  const calculatePrice = (size: BottleSize, qty: number) => {
+  const calculatePrice = useCallback((size: BottleSize, qty: number) => {
     const pricing = pricingData[size];
     const tier = pricing.find(p => qty >= p.min && qty <= p.max);
     return tier ? tier.price : 0;
-  };
+  }, []);
 
   // Get current price for selected size and quantity
-  const getCurrentPrice = () => {
+  const getCurrentPrice = useCallback(() => {
     return calculatePrice(selectedSize, quantity);
-  };
+  }, [calculatePrice, selectedSize, quantity]);
 
   // Get current pricing tier for selected size and quantity
-  const getCurrentPriceTier = () => {
+  const getCurrentPriceTier = useCallback(() => {
     const pricing = pricingData[selectedSize];
     return pricing.find(p => quantity >= p.min && quantity <= p.max);
-  };
+  }, [selectedSize, quantity]);
 
   // Calculate total for all cart items
-  const getCartTotal = () => {
+  const cartTotal = useMemo(() => {
     return cartItems.reduce((total, item) => total + item.subtotal, 0);
-  };
+  }, [cartItems]);
 
   // Get total quantity across all cart items
-  const getTotalQuantity = () => {
+  const totalQuantity = useMemo(() => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
-  };
+  }, [cartItems]);
 
-  const handleSizeChange = (size: BottleSize) => {
+  const handleSizeChange = useCallback((size: BottleSize) => {
     setSelectedSize(size);
-  };
+  }, []);
 
-  const handleQuantityChange = (value: string) => {
+  const handleQuantityChange = useCallback((value: string) => {
     const num = parseInt(value) || 0;
     setQuantity(Math.max(0, num));
-  };
+  }, []);
 
   const addToCart = () => {
     if (quantity < 1) {
@@ -189,27 +189,27 @@ const BulkCheckout = () => {
         unitPrice,
         subtotal
       };
-      
-      setCartItems([...cartItems, newItem]);
+
+      setCartItems(prev => [...prev, newItem]);
       toast.success(`Added ${quantity} × ${selectedSize} bottles to cart`);
     }
-    
+
     // Reset form
     setQuantity(500);
   };
 
-  const removeFromCart = (id: string) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
+  const removeFromCart = useCallback((id: string) => {
+    setCartItems(prev => prev.filter(item => item.id !== id));
     toast.success("Item removed from cart");
-  };
+  }, []);
 
-  const updateCartItemQuantity = (id: string, newQuantity: number) => {
+  const updateCartItemQuantity = useCallback((id: string, newQuantity: number) => {
     if (newQuantity < 1) {
       removeFromCart(id);
       return;
     }
 
-    const updatedItems = cartItems.map(item => {
+    setCartItems(prev => prev.map(item => {
       if (item.id === id) {
         const newUnitPrice = calculatePrice(item.size, newQuantity);
         return {
@@ -220,21 +220,19 @@ const BulkCheckout = () => {
         };
       }
       return item;
-    });
-    
-    setCartItems(updatedItems);
-  };
+    }));
+  }, [calculatePrice, removeFromCart]);
 
-  const handleShippingChange = (field: keyof ShippingAddress, value: string) => {
+  const handleShippingChange = useCallback((field: keyof ShippingAddress, value: string) => {
     setShippingAddress(prev => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
-  const validateShipping = () => {
+  const validateShipping = useCallback(() => {
     const required = ['fullName', 'address1', 'city', 'province', 'postalCode', 'phone'];
     return required.every(field => shippingAddress[field as keyof ShippingAddress].trim() !== '');
-  };
+  }, [shippingAddress]);
 
-  const handleNextStep = () => {
+  const handleNextStep = useCallback(() => {
     if (currentStep === 1 && cartItems.length === 0) {
       toast.error("Please add items to your cart");
       return;
@@ -249,18 +247,15 @@ const BulkCheckout = () => {
       // Scroll to top of page
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  };
+  }, [currentStep, cartItems.length, validateShipping]);
 
-  const handlePrevStep = () => {
+  const handlePrevStep = useCallback(() => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
       // Scroll to top of page
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  };
-
-  const cartTotal = getCartTotal();
-  const totalQuantity = getTotalQuantity();
+  }, [currentStep]);
 
   // Paystack configuration
   const paystackConfig = {
