@@ -113,6 +113,14 @@ const BulkCheckout = () => {
     cardholderName: ""
   });
 
+  // Check authentication on component mount
+  useEffect(() => {
+    if (!user) {
+      toast.error("Please sign in to access bulk purchasing");
+      navigate('/auth');
+    }
+  }, [user, navigate]);
+
   // Calculate price based on quantity and size
   useEffect(() => {
     const pricing = pricingData[selectedSize];
