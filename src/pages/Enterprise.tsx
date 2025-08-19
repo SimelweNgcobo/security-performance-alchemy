@@ -25,6 +25,7 @@ import LabelEditor from "@/components/LabelEditor";
 
 const Enterprise = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [companyName, setCompanyName] = useState("");
   const [contactEmail, setContactEmail] = useState(user?.email || "");
   const [requirements, setRequirements] = useState("");
