@@ -715,6 +715,16 @@ const Profile = () => {
                                   Invoice
                                 </Button>
                               )}
+                              {(purchase.status === 'delivered' || purchase.status === 'completed') && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => reorderItems(purchase)}
+                                >
+                                  <ShoppingBag className="w-4 h-4 mr-2" />
+                                  Order Again
+                                </Button>
+                              )}
                               <Button variant="outline" size="sm">
                                 View Details
                                 <ChevronRight className="w-4 h-4 ml-2" />
