@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowRight, Play, Circle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Layout2Hero = () => {
   const [showOurStory, setShowOurStory] = useState(false);
