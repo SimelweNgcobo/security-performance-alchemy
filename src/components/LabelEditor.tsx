@@ -8,7 +8,11 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { userLabelsService } from '@/services/userLabels';
 import {
   Upload,
   Type,
@@ -31,7 +35,9 @@ import {
   EyeOff,
   Copy,
   Settings,
-  Send
+  Send,
+  Save,
+  Star
 } from 'lucide-react';
 
 // Convert mm to pixels (at 96 DPI: 1mm = 3.78 pixels)
