@@ -651,17 +651,82 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                   className="text-xs sm:text-sm no-scroll bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  Add to Request Custom Quote
+                  Add to Quote Request
                 </Button>
                 <Button variant="outline" size="sm" onClick={resetCanvas} className="text-xs sm:text-sm no-scroll">
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Reset Canvas
                 </Button>
               </div>
-              <Button onClick={exportDesign} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm no-scroll">
-                <Download className="w-4 h-4 mr-2" />
-                Export Design
-              </Button>
+              <div className="flex gap-2">
+                <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      onClick={openSaveDialog}
+                      className="text-xs sm:text-sm no-scroll"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save to Profile
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Save Label to Profile</DialogTitle>
+                      <DialogDescription>
+                        Save this design to your profile for use in enterprise orders
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="label-name">Label Name *</Label>
+                        <Input
+                          id="label-name"
+                          value={saveForm.name}
+                          onChange={(e) => setSaveForm(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="My Custom Label"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="label-description">Description</Label>
+                        <Textarea
+                          id="label-description"
+                          value={saveForm.description}
+                          onChange={(e) => setSaveForm(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Brief description of this label design..."
+                          rows={3}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="set-default"
+                          checked={saveForm.isDefault}
+                          onCheckedChange={(checked) => setSaveForm(prev => ({ ...prev, isDefault: !!checked }))}
+                        />
+                        <Label htmlFor="set-default" className="flex items-center gap-2 text-sm">
+                          <Star className="w-4 h-4" />
+                          Set as my default label
+                        </Label>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleSaveToProfile}>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Label
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <Button onClick={exportDesign} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm no-scroll">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Design
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
