@@ -662,67 +662,23 @@ const BulkCheckout = () => {
           </Card>
         </div>
 
-        {/* Payment Form */}
+        {/* Payment Instructions */}
         <div className="space-y-6">
           <Card className="shadow-lg border-0">
             <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-              <CardTitle>Payment Information</CardTitle>
+              <CardTitle>Secure Payment with Paystack</CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              <div className="space-y-3">
-                <Label htmlFor="cardholderName" className="text-sm font-semibold text-gray-700">
-                  Cardholder Name *
-                </Label>
-                <Input
-                  id="cardholderName"
-                  value={paymentDetails.cardholderName}
-                  onChange={(e) => handlePaymentChange('cardholderName', e.target.value)}
-                  placeholder="Name as it appears on card"
-                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label htmlFor="cardNumber" className="text-sm font-semibold text-gray-700">
-                  Card Number *
-                </Label>
-                <Input
-                  id="cardNumber"
-                  value={paymentDetails.cardNumber}
-                  onChange={(e) => handlePaymentChange('cardNumber', e.target.value)}
-                  placeholder="1234 5678 9012 3456"
-                  maxLength={19}
-                  className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <Label htmlFor="expiryDate" className="text-sm font-semibold text-gray-700">
-                    Expiry Date *
-                  </Label>
-                  <Input
-                    id="expiryDate"
-                    value={paymentDetails.expiryDate}
-                    onChange={(e) => handlePaymentChange('expiryDate', e.target.value)}
-                    placeholder="MM/YY"
-                    maxLength={5}
-                    className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
-                  />
+            <CardContent className="p-8 text-center">
+              <div className="space-y-4">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                  <CreditCard className="h-10 w-10 text-green-600" />
                 </div>
-
-                <div className="space-y-3">
-                  <Label htmlFor="cvv" className="text-sm font-semibold text-gray-700">
-                    CVV *
-                  </Label>
-                  <Input
-                    id="cvv"
-                    value={paymentDetails.cvv}
-                    onChange={(e) => handlePaymentChange('cvv', e.target.value)}
-                    placeholder="123"
-                    maxLength={4}
-                    className="p-4 border-2 rounded-lg focus:ring-2 focus:ring-primary/20"
-                  />
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Ready to Complete Your Order?</h3>
+                  <p className="text-gray-600">
+                    Click the payment button below to securely process your payment through Paystack.
+                    You'll be able to enter your card details on Paystack's secure payment page.
+                  </p>
                 </div>
               </div>
             </CardContent>
