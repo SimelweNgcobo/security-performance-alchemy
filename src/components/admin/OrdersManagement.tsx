@@ -58,7 +58,8 @@ export function OrdersManagement() {
             products (name, type)
           )
         `)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(50); // Limit to 50 orders for better performance
 
       if (error) throw error;
       setOrders(data || []);
