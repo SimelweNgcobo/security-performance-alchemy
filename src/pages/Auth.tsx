@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import Layout2Footer from "@/components/Layout2Footer";
 
 export default function Auth() {
   const { signIn, signUp } = useAuth();
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,8 +31,9 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      await signIn(formData.email, formData.password);
-      // Navigation will be handled by auth state change
+      await signIn(formData.email, formData.password, () => {
+        navigate("/profile");
+      });
     } catch (error) {
       // Error handling is done in the auth context
     } finally {
