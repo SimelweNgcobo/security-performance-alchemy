@@ -106,6 +106,12 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
   const [zoom, setZoom] = useState(100);
   const [isResizing, setIsResizing] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveForm, setSaveForm] = useState({
+    name: '',
+    description: '',
+    isDefault: false
+  });
 
   // Font options
   const fontFamilies = [
