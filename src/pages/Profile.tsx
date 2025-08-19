@@ -485,14 +485,14 @@ const Profile = () => {
     if (success) {
       await loadUserLabels(); // Refresh labels
     }
-  }, [user]);
+  }, [user, loadUserLabels]);
 
   const handleDeleteLabel = useCallback(async (labelId: string) => {
     const success = await userLabelsService.deleteLabel(labelId);
     if (success) {
       await loadUserLabels(); // Refresh labels
     }
-  }, []);
+  }, [loadUserLabels]);
 
   const viewItemDetails = useCallback((item: RecentItem) => {
     if (item.type === 'order') {
