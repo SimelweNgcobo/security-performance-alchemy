@@ -62,8 +62,8 @@ const Layout2Hero = () => {
             {/* Sophisticated stats */}
             <div className="grid grid-cols-3 gap-8 pt-8 border-t border-border/20 fade-in-delay-3">
               <div className="text-center">
-                <div className="text-3xl font-light text-primary mb-1">50K+</div>
-                <div className="text-sm text-muted-foreground font-medium">Connoisseurs</div>
+                <div className="text-3xl font-light text-primary mb-1">Many</div>
+                <div className="text-sm text-muted-foreground font-medium">Satisfied Customers</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-light text-primary mb-1">99.9%</div>
