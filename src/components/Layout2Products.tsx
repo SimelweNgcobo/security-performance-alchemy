@@ -8,8 +8,14 @@ import { toast } from "sonner";
 
 const Layout2Products = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleBulkPurchase = () => {
+    if (!user) {
+      toast.error("Please sign in to access bulk purchasing");
+      navigate('/auth');
+      return;
+    }
     navigate('/bulk-checkout');
   };
 
