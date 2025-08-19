@@ -492,7 +492,7 @@ const Profile = () => {
     if (success) {
       await loadUserLabels(); // Refresh labels
     }
-  }, [loadUserLabels]);
+  }, []);
 
   const viewItemDetails = useCallback((item: RecentItem) => {
     if (item.type === 'order') {
