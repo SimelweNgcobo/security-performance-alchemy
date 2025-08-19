@@ -29,20 +29,9 @@ const WaterFillingAnimation = ({ className = "" }: { className?: string }) => {
             cy="28"
             r="2"
             fill="#3b82f6"
-            className="animate-pulse"
-            style={{
-              animation: "waterDrop 1s ease-in-out infinite"
-            }}
+            className="water-drop-animation"
           />
         </svg>
-        
-        <style>{`
-          @keyframes waterDrop {
-            0% { opacity: 0; transform: translateY(0); }
-            50% { opacity: 1; transform: translateY(10px); }
-            100% { opacity: 0; transform: translateY(20px); }
-          }
-        `}</style>
       </div>
 
       {/* Glass */}
