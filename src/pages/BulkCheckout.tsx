@@ -80,12 +80,7 @@ interface ShippingAddress {
   phone: string;
 }
 
-interface PaymentDetails {
-  cardNumber: string;
-  expiryDate: string;
-  cvv: string;
-  cardholderName: string;
-}
+// Removed PaymentDetails interface since we use Paystack for all payment processing
 
 const BulkCheckout = () => {
   const navigate = useNavigate();
