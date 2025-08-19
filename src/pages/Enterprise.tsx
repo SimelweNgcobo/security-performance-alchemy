@@ -110,6 +110,15 @@ const Enterprise = () => {
 
       toast.success("Enterprise request sent successfully! We'll contact you within 24 hours.");
 
+      // Trigger email automation
+      if (data) {
+        // Send confirmation email to user
+        await emailService.triggerQuoteEmailAutomation(data.id);
+
+        // Notify admin about new request
+        await emailService.notifyAdminNewRequest(data.id);
+      }
+
       // Reset form
       setCompanyName("");
       setContactEmail(user?.email || "");
