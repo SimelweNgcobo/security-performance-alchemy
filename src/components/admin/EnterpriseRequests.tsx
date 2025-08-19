@@ -249,10 +249,10 @@ export const EnterpriseRequests = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {request.label_design_url ? (
+                        {request.designs && Array.isArray(request.designs) && request.designs.length > 0 ? (
                           <Button variant="outline" size="sm">
                             <ImageIcon className="w-4 h-4 mr-2" />
-                            View Design
+                            {request.designs.length} Design{request.designs.length > 1 ? 's' : ''}
                           </Button>
                         ) : (
                           <span className="text-sm text-muted-foreground">No design</span>
