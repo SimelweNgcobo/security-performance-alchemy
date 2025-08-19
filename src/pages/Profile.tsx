@@ -432,7 +432,7 @@ const Profile = () => {
   if (loading || loadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <WaterFillingAnimation />
+        <LoadingSpinner message="Loading your profile..." size="lg" />
       </div>
     );
   }
