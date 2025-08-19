@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { 
   Building2, 
   Mail, 
@@ -175,7 +176,7 @@ export const EnterpriseRequests = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <LoadingSpinner message="Loading enterprise requests..." size="md" />
       </div>
     );
   }

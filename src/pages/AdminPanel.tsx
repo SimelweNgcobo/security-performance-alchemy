@@ -26,6 +26,7 @@ import { ReportsAnalytics } from "@/components/admin/ReportsAnalytics";
 import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { EnterpriseRequests } from "@/components/admin/EnterpriseRequests";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function AdminPanel() {
   const navigate = useNavigate();
@@ -110,10 +111,7 @@ export default function AdminPanel() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Verifying admin access...</p>
-        </div>
+        <LoadingSpinner message="Verifying admin access..." size="lg" />
       </div>
     );
   }

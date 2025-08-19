@@ -19,4 +19,33 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
+          supabase: ['@supabase/supabase-js'],
+          router: ['react-router-dom'],
+          query: ['@tanstack/react-query'],
+          // Admin chunk (separate heavy admin components)
+          admin: [
+            './src/pages/AdminPanel.tsx',
+            './src/pages/AdminAuth.tsx',
+            './src/components/admin/OrdersManagement.tsx',
+            './src/components/admin/ProductsManagement.tsx',
+            './src/components/admin/CustomersManagement.tsx'
+          ]
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
+    target: 'esnext',
+    minify: 'esbuild'
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@supabase/supabase-js', 'react-router-dom'],
+    exclude: ['@vite/client', '@vite/env']
+  }
 }));

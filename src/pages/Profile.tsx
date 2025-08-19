@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import {
   User,
   Clock,
@@ -109,17 +110,38 @@ const Profile = () => {
     }
   }, [user, loading, navigate]);
 
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
+    if (!user?.email) return;
+
     try {
       setLoadingData(true);
 
-      // Load customer data
-      const { data: customer } = await supabase
-        .from("customers")
-        .select("*")
-        .eq("email", user?.email)
-        .single();
+      // Parallel data loading for better performance
+      const [
+        customerResponse,
+        ordersResponse
+      ] = await Promise.all([
+        supabase
+          .from("customers")
+          .select("*")
+          .eq("email", user.email)
+          .single(),
+        supabase
+          .from("orders")
+          .select(`
+            *,
+            order_items (
+              *,
+              products (name, size, type)
+            ),
+            invoices (id, invoice_number)
+          `)
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(10) // Only load recent 10 orders for performance
+      ]);
 
+      const customer = customerResponse.data;
       setCustomerData(customer);
 
       // Populate profile form
@@ -129,13 +151,13 @@ const Profile = () => {
         phone: customer?.phone || ""
       });
 
-      // Load saved shipping details and custom labels from localStorage for now
-      const savedShipping = localStorage.getItem(`shipping_${user?.id}`);
+      // Load localStorage data
+      const savedShipping = localStorage.getItem(`shipping_${user.id}`);
       if (savedShipping) {
         setSavedShippingDetails(JSON.parse(savedShipping));
       }
 
-      const savedLabels = localStorage.getItem(`labels_${user?.id}`);
+      const savedLabels = localStorage.getItem(`labels_${user.id}`);
       if (savedLabels) {
         setCustomLabels(JSON.parse(savedLabels));
       }
@@ -215,20 +237,8 @@ const Profile = () => {
 
       setActivityItems(allActivities);
 
-      // Load purchases (orders) - including bulk orders
-      const { data: orders } = await supabase
-        .from("orders")
-        .select(`
-          *,
-          order_items (
-            *,
-            products (name, size, type)
-          ),
-          invoices (id, invoice_number)
-        `)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
+      // Process orders data that was loaded in parallel
+      const orders = ordersResponse.data;
       if (orders) {
         setPurchases(orders.map(order => {
           let items = order.order_items || [];
@@ -273,7 +283,7 @@ const Profile = () => {
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [user]);
 
   const downloadInvoice = async (invoiceId: string) => {
     try {
@@ -423,10 +433,7 @@ const Profile = () => {
   if (loading || loadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading your profile...</p>
-        </div>
+        <LoadingSpinner message="Loading your profile..." size="lg" />
       </div>
     );
   }
@@ -617,10 +624,22 @@ const Profile = () => {
             <TabsContent value="purchases" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Purchase History</CardTitle>
-                  <CardDescription>
-                    View and manage your order history and invoices
-                  </CardDescription>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Purchase History</CardTitle>
+                      <CardDescription>
+                        View and manage your order history and invoices
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/orders")}
+                      className="shrink-0"
+                    >
+                      <Package className="w-4 h-4 mr-2" />
+                      View All Orders
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {purchases.length > 0 ? (

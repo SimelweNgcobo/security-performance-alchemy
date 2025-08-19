@@ -13,5 +13,25 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'myfuze-app'
+    }
   }
 });
+
+// Test connection on initialization
+if (typeof window !== 'undefined') {
+  supabase.auth.getSession().then(({ data, error }) => {
+    if (error) {
+      console.warn('⚠️ Supabase connection issue:', error.message);
+    } else {
+      console.log('✅ Supabase connected successfully');
+    }
+  }).catch((error) => {
+    console.error('❌ Failed to connect to Supabase:', error);
+  });
+}
