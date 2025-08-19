@@ -324,17 +324,45 @@ export const EnterpriseRequests = () => {
                                 <div>
                                   <h4 className="font-medium mb-2">Requirements</h4>
                                   <div className="bg-gray-50 p-3 rounded-lg text-sm">
-                                    {selectedRequest.requirements}
+                                    {selectedRequest.requirements || 'No requirements specified'}
                                   </div>
                                 </div>
 
-                                {selectedRequest.label_design_url && (
+                                {selectedRequest.designs && Array.isArray(selectedRequest.designs) && selectedRequest.designs.length > 0 && (
                                   <div>
-                                    <h4 className="font-medium mb-2">Label Design</h4>
-                                    <Button variant="outline">
-                                      <ImageIcon className="w-4 h-4 mr-2" />
-                                      View Uploaded Design
-                                    </Button>
+                                    <h4 className="font-medium mb-2">Label Designs ({selectedRequest.designs.length})</h4>
+                                    <div className="space-y-2">
+                                      {selectedRequest.designs.map((design: any, index: number) => (
+                                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                          <div>
+                                            <p className="text-sm font-medium">{design.name || `Design ${index + 1}`}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                              {design.dimensions?.width || 264} × {design.dimensions?.height || 60}mm
+                                            </p>
+                                          </div>
+                                          <Button variant="outline" size="sm">
+                                            <ImageIcon className="w-4 h-4 mr-2" />
+                                            View Design
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {selectedRequest.quote_amount && (
+                                  <div>
+                                    <h4 className="font-medium mb-2">Quote Information</h4>
+                                    <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                                      <p className="text-sm">
+                                        <strong>Amount:</strong> R{selectedRequest.quote_amount.toFixed(2)}
+                                      </p>
+                                      {selectedRequest.quote_valid_until && (
+                                        <p className="text-sm">
+                                          <strong>Valid Until:</strong> {formatDate(selectedRequest.quote_valid_until)}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
                                 )}
 
