@@ -28,6 +28,8 @@ const AdminAuth = lazy(() => import("./pages/AdminAuth"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Orders = lazy(() => import("./pages/Orders"));
 const BulkCheckout = lazy(() => import("./pages/BulkCheckout"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsConditions = lazy(() => import("./pages/TermsConditions"));
 
 // Optimized QueryClient configuration
 const queryClient = new QueryClient({
