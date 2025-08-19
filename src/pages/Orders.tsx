@@ -21,6 +21,7 @@ import {
   Calendar,
   CreditCard
 } from "lucide-react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface Order {
   id: string;
@@ -158,10 +159,7 @@ const Orders = () => {
         <div className="pt-20 pb-12">
           <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
             <div className="flex justify-center items-center py-12">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                <p>Loading your orders...</p>
-              </div>
+              <LoadingSpinner message="Loading your orders..." size="lg" />
             </div>
           </div>
         </div>
