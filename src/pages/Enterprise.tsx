@@ -237,6 +237,35 @@ const Enterprise = () => {
                       rows={4}
                       className="mt-1"
                     />
+
+                    {/* Profile Labels and Default Branding Options */}
+                    <div className="flex gap-2 mt-2">
+                      {profileLabels.length > 0 && (
+                        <div className="flex gap-2 flex-wrap">
+                          {profileLabels.map((label) => (
+                            <Button
+                              key={label.id}
+                              variant="outline"
+                              size="sm"
+                              onClick={() => loadLabelFromProfile(label)}
+                              className="text-xs"
+                            >
+                              <Tag className="w-3 h-3 mr-1" />
+                              {label.name}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={resetToDefaultBranding}
+                        className="text-xs"
+                      >
+                        <RefreshCw className="w-3 h-3 mr-1" />
+                        Default Branding
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Saved Designs Preview */}
