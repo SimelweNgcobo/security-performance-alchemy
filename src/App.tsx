@@ -23,6 +23,7 @@ import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
 import AdminAuth from "./pages/AdminAuth";
 import Profile from "./pages/Profile";
+import BulkCheckout from "./pages/BulkCheckout";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => {
               <Route path="/contact" element={<Contact />} />
               <Route path="/enterprise" element={<Enterprise />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/bulk-checkout" element={<BulkCheckout />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/shipping" element={<Shipping />} />
               <Route path="/sustainability" element={<Sustainability />} />

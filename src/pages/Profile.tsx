@@ -59,6 +59,8 @@ interface Purchase {
   created_at: string;
   items: any[];
   invoice_id?: string;
+  metadata?: string;
+  shipping_address?: string;
 }
 
 const Profile = () => {
@@ -172,23 +174,43 @@ const Profile = () => {
 
       setActivityItems(allActivities);
 
-      // Load purchases (orders)
-      if (customer) {
-        const { data: orders } = await supabase
-          .from("orders")
-          .select(`
+      // Load purchases (orders) - including bulk orders
+      const { data: orders } = await supabase
+        .from("orders")
+        .select(`
+          *,
+          order_items (
             *,
-            order_items (
-              *,
-              products (name, size, type)
-            ),
-            invoices (id, invoice_number)
-          `)
-          .eq("customer_id", customer.id)
-          .order("created_at", { ascending: false });
+            products (name, size, type)
+          ),
+          invoices (id, invoice_number)
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
-        if (orders) {
-          setPurchases(orders.map(order => ({
+      if (orders) {
+        setPurchases(orders.map(order => {
+          let items = order.order_items || [];
+
+          // For bulk orders, create virtual items from metadata
+          if (order.metadata && order.order_number?.startsWith('BLK')) {
+            try {
+              const metadata = JSON.parse(order.metadata);
+              items = [{
+                quantity: metadata.quantity,
+                unit_price: metadata.unit_price,
+                products: {
+                  name: `${metadata.bottle_size} Water Bottle`,
+                  size: metadata.bottle_size,
+                  type: 'bulk'
+                }
+              }];
+            } catch (e) {
+              console.log('Could not parse bulk order metadata');
+            }
+          }
+
+          return {
             id: order.id,
             order_number: order.order_number,
             total_amount: order.total_amount,
@@ -196,10 +218,12 @@ const Profile = () => {
             payment_status: order.payment_status,
             delivery_status: order.delivery_status,
             created_at: order.created_at,
-            items: order.order_items || [],
-            invoice_id: order.invoices?.[0]?.id
-          })));
-        }
+            items: items,
+            invoice_id: order.invoices?.[0]?.id,
+            metadata: order.metadata,
+            shipping_address: order.shipping_address
+          };
+        }));
       }
 
     } catch (error) {
@@ -468,7 +492,14 @@ const Profile = () => {
                         <div key={purchase.id} className="border rounded-lg p-6">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h3 className="font-medium text-lg">{purchase.order_number}</h3>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-medium text-lg">{purchase.order_number}</h3>
+                                {purchase.order_number?.startsWith('BLK') && (
+                                  <Badge variant="default" className="bg-blue-600">
+                                    Bulk Order
+                                  </Badge>
+                                )}
+                              </div>
                               <p className="text-sm text-muted-foreground">
                                 Ordered on {new Date(purchase.created_at).toLocaleDateString()}
                               </p>
@@ -488,14 +519,44 @@ const Profile = () => {
 
                           <Separator className="my-4" />
 
-                          <div className="space-y-2">
-                            <h4 className="font-medium">Items:</h4>
-                            {purchase.items.map((item: any, index: number) => (
-                              <div key={index} className="flex justify-between text-sm">
-                                <span>{item.quantity}x {item.products?.name} ({item.products?.size})</span>
-                                <span>R{(item.unit_price * item.quantity).toFixed(2)}</span>
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className="font-medium">Items:</h4>
+                              <div className="space-y-1 mt-2">
+                                {purchase.items.map((item: any, index: number) => (
+                                  <div key={index} className="flex justify-between text-sm">
+                                    <span>{item.quantity}x {item.products?.name} {item.products?.size && `(${item.products.size})`}</span>
+                                    <span>R{(item.unit_price * item.quantity).toFixed(2)}</span>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            </div>
+
+                            {/* Shipping Address for Bulk Orders */}
+                            {purchase.shipping_address && (
+                              <div>
+                                <h4 className="font-medium">Shipping Address:</h4>
+                                <div className="text-sm text-muted-foreground mt-1">
+                                  {(() => {
+                                    try {
+                                      const address = JSON.parse(purchase.shipping_address);
+                                      return (
+                                        <div>
+                                          <p className="font-medium text-foreground">{address.fullName}</p>
+                                          {address.company && <p>{address.company}</p>}
+                                          <p>{address.address1}</p>
+                                          {address.address2 && <p>{address.address2}</p>}
+                                          <p>{address.city}, {address.province} {address.postalCode}</p>
+                                          <p>{address.phone}</p>
+                                        </div>
+                                      );
+                                    } catch {
+                                      return <p>Address information available</p>;
+                                    }
+                                  })()}
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           <Separator className="my-4" />

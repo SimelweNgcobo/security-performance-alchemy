@@ -12,8 +12,10 @@ import {
   Palette,
   Star,
   Users,
-  Award
+  Award,
+  ShoppingCart
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +25,7 @@ import LabelEditor from "@/components/LabelEditor";
 
 const Enterprise = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [companyName, setCompanyName] = useState("");
   const [contactEmail, setContactEmail] = useState(user?.email || "");
   const [requirements, setRequirements] = useState("");
@@ -115,6 +118,34 @@ const Enterprise = () => {
               </div>
               <h3 className="font-semibold text-foreground mb-2">Premium Quality</h3>
               <p className="text-sm text-muted-foreground">Food-grade materials with high-resolution label printing</p>
+            </div>
+          </div>
+
+          {/* Bulk Purchase CTA */}
+          <div className="text-center mb-12">
+            <div className="bg-gradient-to-r from-primary/10 to-blue-500/10 rounded-2xl p-8 max-w-2xl mx-auto border border-primary/20">
+              <h3 className="text-2xl font-bold text-foreground mb-4">
+                Ready for Bulk Orders?
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Skip the custom design process and place your bulk order directly.
+                Choose from our standard bottle sizes with volume discounts.
+              </p>
+              <Button
+                onClick={() => {
+                  if (!user) {
+                    toast.error("Please sign in to access bulk purchasing");
+                    navigate('/auth');
+                    return;
+                  }
+                  navigate('/bulk-checkout');
+                }}
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-medium"
+              >
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                Start Bulk Purchase
+              </Button>
             </div>
           </div>
 
@@ -282,12 +313,12 @@ const Enterprise = () => {
                       ))}
                     </div>
                     <blockquote className="text-muted-foreground italic">
-                      "MyFuze helped us create beautiful custom water bottles for our corporate event. 
+                      "MyFuze helped us create beautiful custom water bottles for our corporate event.
                       The label designer was incredibly easy to use, and the quality exceeded our expectations."
                     </blockquote>
                     <div className="mt-3">
-                      <div className="font-medium">Sarah Johnson</div>
-                      <div className="text-sm text-muted-foreground">Event Manager, TechCorp SA</div>
+                      <div className="font-medium">Simelwe Ngcobo</div>
+                      <div className="text-sm text-muted-foreground">Founder, ReBooked Solutions</div>
                     </div>
                   </CardContent>
                 </Card>

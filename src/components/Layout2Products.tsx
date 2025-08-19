@@ -1,7 +1,24 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const Layout2Products = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleBulkPurchase = () => {
+    if (!user) {
+      toast.error("Please sign in to access bulk purchasing");
+      navigate('/auth');
+      return;
+    }
+    navigate('/bulk-checkout');
+  };
+
   const products = [
     {
       name: "Mini Bottle",
@@ -169,8 +186,29 @@ const Layout2Products = () => {
           ))}
         </div>
 
-        {/* Bottom Features */}
+        {/* Bulk Purchase Section */}
         <div className="text-center mt-16 sm:mt-20 lg:mt-24 fade-in-delay-3">
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-3xl px-8 py-12 border border-primary/20">
+            <h3 className="text-2xl sm:text-3xl font-light text-foreground mb-4">
+              Need Bulk Quantities?
+            </h3>
+            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Get the best prices for bulk orders. Perfect for events, offices, schools, and commercial use.
+              Special pricing tiers available from 10 bottles to 10,000+.
+            </p>
+            <Button
+              onClick={handleBulkPurchase}
+              size="lg"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-medium"
+            >
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              Purchase Bulk
+            </Button>
+          </div>
+        </div>
+
+        {/* Bottom Features */}
+        <div className="text-center mt-16 sm:mt-20 lg:mt-24 fade-in-delay-4">
           <div className="inline-flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl px-6 sm:px-8 py-6 sm:py-4 border border-primary/20">
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>

@@ -17,6 +17,9 @@ interface Order {
   delivery_status: string;
   total_amount: number;
   created_at: string;
+  payment_reference?: string;
+  shipping_address?: string;
+  metadata?: string;
   customers: {
     name: string;
     email: string;
@@ -124,9 +127,44 @@ export function OrdersManagement() {
   };
 
   const hasCustomBranding = (order: Order) => {
-    return order.order_items.some(item => 
+    return order.order_items.some(item =>
       item.products.type === "custom" && item.custom_branding_data
     );
+  };
+
+  const isBulkOrder = (order: Order) => {
+    // Check if it's a bulk order based on metadata or order pattern
+    if (order.metadata) {
+      try {
+        const metadata = JSON.parse(order.metadata);
+        return metadata.bottle_size && metadata.quantity;
+      } catch {
+        return false;
+      }
+    }
+    return order.order_number?.startsWith('BLK');
+  };
+
+  const getBulkOrderDetails = (order: Order) => {
+    if (order.metadata) {
+      try {
+        return JSON.parse(order.metadata);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const getShippingAddress = (order: Order) => {
+    if (order.shipping_address) {
+      try {
+        return JSON.parse(order.shipping_address);
+      } catch {
+        return null;
+      }
+    }
+    return null;
   };
 
   if (loading) {
@@ -155,7 +193,7 @@ export function OrdersManagement() {
                 <TableHead>Status</TableHead>
                 <TableHead>Payment</TableHead>
                 <TableHead>Delivery</TableHead>
-                <TableHead>Custom</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -207,7 +245,9 @@ export function OrdersManagement() {
                     </Select>
                   </TableCell>
                   <TableCell>
-                    {hasCustomBranding(order) ? (
+                    {isBulkOrder(order) ? (
+                      <Badge variant="default" className="bg-blue-600">Bulk</Badge>
+                    ) : hasCustomBranding(order) ? (
                       <Badge variant="secondary">Custom</Badge>
                     ) : (
                       <Badge variant="outline">Standard</Badge>
@@ -232,7 +272,21 @@ export function OrdersManagement() {
                           </DialogDescription>
                         </DialogHeader>
                         {selectedOrder && (
-                          <div className="space-y-4">
+                          <div className="space-y-6">
+                            {/* Order Type Badge */}
+                            <div className="flex items-center gap-2">
+                              {isBulkOrder(selectedOrder) && (
+                                <Badge variant="default" className="bg-blue-600">
+                                  Bulk Order
+                                </Badge>
+                              )}
+                              {hasCustomBranding(selectedOrder) && (
+                                <Badge variant="secondary">
+                                  Custom Branding
+                                </Badge>
+                              )}
+                            </div>
+
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <label className="font-medium">Customer:</label>
@@ -243,47 +297,122 @@ export function OrdersManagement() {
                                 <label className="font-medium">Order Date:</label>
                                 <p>{new Date(selectedOrder.created_at).toLocaleDateString()}</p>
                               </div>
+                              <div>
+                                <label className="font-medium">Total Amount:</label>
+                                <p className="text-lg font-semibold text-green-600">
+                                  R{parseFloat(selectedOrder.total_amount.toString()).toFixed(2)}
+                                </p>
+                              </div>
+                              {selectedOrder.payment_reference && (
+                                <div>
+                                  <label className="font-medium">Payment Reference:</label>
+                                  <p className="text-sm font-mono">{selectedOrder.payment_reference}</p>
+                                </div>
+                              )}
                             </div>
-                            
-                            <div>
-                              <label className="font-medium">Order Items:</label>
-                              <div className="space-y-2 mt-2">
-                                {selectedOrder.order_items.map((item, index) => (
-                                  <Card key={index}>
-                                    <CardContent className="p-4">
-                                      <div className="flex justify-between items-start">
+
+                            {/* Bulk Order Details */}
+                            {isBulkOrder(selectedOrder) && getBulkOrderDetails(selectedOrder) && (
+                              <Card className="border-blue-200 bg-blue-50">
+                                <CardHeader className="pb-3">
+                                  <CardTitle className="text-lg text-blue-800">Bulk Order Details</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  {(() => {
+                                    const bulkDetails = getBulkOrderDetails(selectedOrder);
+                                    return (
+                                      <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                          <p className="font-medium">{item.products.name}</p>
-                                          <p className="text-sm text-muted-foreground">
-                                            Quantity: {item.quantity} × R{parseFloat(item.unit_price.toString()).toFixed(2)}
-                                          </p>
-                                          {item.custom_branding_data && (
-                                            <div className="mt-2 p-2 bg-muted rounded">
-                                              <p className="text-sm font-medium">Custom Branding:</p>
-                                              <pre className="text-xs text-muted-foreground">
-                                                {JSON.stringify(item.custom_branding_data, null, 2)}
-                                              </pre>
+                                          <label className="font-medium text-blue-700">Bottle Size:</label>
+                                          <p className="text-lg font-semibold">{bulkDetails?.bottle_size}</p>
+                                        </div>
+                                        <div>
+                                          <label className="font-medium text-blue-700">Quantity:</label>
+                                          <p className="text-lg font-semibold">{bulkDetails?.quantity} bottles</p>
+                                        </div>
+                                        <div>
+                                          <label className="font-medium text-blue-700">Unit Price:</label>
+                                          <p>R{bulkDetails?.unit_price?.toFixed(2)} per bottle</p>
+                                        </div>
+                                        <div>
+                                          <label className="font-medium text-blue-700">Payment Method:</label>
+                                          <p className="capitalize">{bulkDetails?.payment_method || "Card"}</p>
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+                                </CardContent>
+                              </Card>
+                            )}
+
+                            {/* Shipping Address */}
+                            {getShippingAddress(selectedOrder) && (
+                              <Card>
+                                <CardHeader className="pb-3">
+                                  <CardTitle className="text-lg">Shipping Address</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  {(() => {
+                                    const address = getShippingAddress(selectedOrder);
+                                    return (
+                                      <div className="space-y-2">
+                                        <p className="font-medium">{address?.fullName}</p>
+                                        {address?.company && <p className="text-sm text-muted-foreground">{address.company}</p>}
+                                        <div className="text-sm">
+                                          <p>{address?.address1}</p>
+                                          {address?.address2 && <p>{address.address2}</p>}
+                                          <p>{address?.city}, {address?.province} {address?.postalCode}</p>
+                                          <p>Phone: {address?.phone}</p>
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+                                </CardContent>
+                              </Card>
+                            )}
+
+                            {/* Regular Order Items (for non-bulk orders or custom items) */}
+                            {(selectedOrder.order_items.length > 0 && !isBulkOrder(selectedOrder)) && (
+                              <div>
+                                <label className="font-medium">Order Items:</label>
+                                <div className="space-y-2 mt-2">
+                                  {selectedOrder.order_items.map((item, index) => (
+                                    <Card key={index}>
+                                      <CardContent className="p-4">
+                                        <div className="flex justify-between items-start">
+                                          <div>
+                                            <p className="font-medium">{item.products.name}</p>
+                                            <p className="text-sm text-muted-foreground">
+                                              Quantity: {item.quantity} × R{parseFloat(item.unit_price.toString()).toFixed(2)}
+                                            </p>
+                                            {item.custom_branding_data && (
+                                              <div className="mt-2 p-2 bg-muted rounded">
+                                                <p className="text-sm font-medium">Custom Branding:</p>
+                                                <pre className="text-xs text-muted-foreground">
+                                                  {JSON.stringify(item.custom_branding_data, null, 2)}
+                                                </pre>
+                                              </div>
+                                            )}
+                                          </div>
+                                          {item.products.type === "custom" && (
+                                            <div className="space-x-2">
+                                              <Button size="sm" variant="outline">
+                                                <CheckCircle className="h-4 w-4 mr-1" />
+                                                Approve
+                                              </Button>
+                                              <Button size="sm" variant="destructive">
+                                                <XCircle className="h-4 w-4 mr-1" />
+                                                Decline
+                                              </Button>
                                             </div>
                                           )}
                                         </div>
-                                        {item.products.type === "custom" && (
-                                          <div className="space-x-2">
-                                            <Button size="sm" variant="outline">
-                                              <CheckCircle className="h-4 w-4 mr-1" />
-                                              Approve
-                                            </Button>
-                                            <Button size="sm" variant="destructive">
-                                              <XCircle className="h-4 w-4 mr-1" />
-                                              Decline
-                                            </Button>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                ))}
+                                      </CardContent>
+                                    </Card>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                         )}
                       </DialogContent>

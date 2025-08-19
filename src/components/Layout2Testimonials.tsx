@@ -3,11 +3,11 @@ import { Star, Quote } from "lucide-react";
 const Layout2Testimonials = () => {
   const testimonials = [
     {
-      name: "Sarah Johnson",
-      role: "Wellness Coach",
+      name: "Simelwe Ngcobo",
+      role: "Founder, ReBooked Solutions",
       content: "MyFuze has completely transformed my daily routine. The purity is unmatched.",
       rating: 5,
-      location: "California"
+      location: "South Africa"
     },
     {
       name: "Michael Chen",
