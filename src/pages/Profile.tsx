@@ -110,17 +110,37 @@ const Profile = () => {
     }
   }, [user, loading, navigate]);
 
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
+    if (!user?.email) return;
+
     try {
       setLoadingData(true);
 
-      // Load customer data
-      const { data: customer } = await supabase
-        .from("customers")
-        .select("*")
-        .eq("email", user?.email)
-        .single();
+      // Parallel data loading for better performance
+      const [
+        customerResponse,
+        ordersResponse
+      ] = await Promise.all([
+        supabase
+          .from("customers")
+          .select("*")
+          .eq("email", user.email)
+          .single(),
+        supabase
+          .from("orders")
+          .select(`
+            *,
+            order_items (
+              *,
+              products (name, size, type)
+            ),
+            invoices (id, invoice_number)
+          `)
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+      ]);
 
+      const customer = customerResponse.data;
       setCustomerData(customer);
 
       // Populate profile form
@@ -130,13 +150,13 @@ const Profile = () => {
         phone: customer?.phone || ""
       });
 
-      // Load saved shipping details and custom labels from localStorage for now
-      const savedShipping = localStorage.getItem(`shipping_${user?.id}`);
+      // Load localStorage data
+      const savedShipping = localStorage.getItem(`shipping_${user.id}`);
       if (savedShipping) {
         setSavedShippingDetails(JSON.parse(savedShipping));
       }
 
-      const savedLabels = localStorage.getItem(`labels_${user?.id}`);
+      const savedLabels = localStorage.getItem(`labels_${user.id}`);
       if (savedLabels) {
         setCustomLabels(JSON.parse(savedLabels));
       }
@@ -216,20 +236,8 @@ const Profile = () => {
 
       setActivityItems(allActivities);
 
-      // Load purchases (orders) - including bulk orders
-      const { data: orders } = await supabase
-        .from("orders")
-        .select(`
-          *,
-          order_items (
-            *,
-            products (name, size, type)
-          ),
-          invoices (id, invoice_number)
-        `)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
+      // Process orders data that was loaded in parallel
+      const orders = ordersResponse.data;
       if (orders) {
         setPurchases(orders.map(order => {
           let items = order.order_items || [];
@@ -274,7 +282,7 @@ const Profile = () => {
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [user]);
 
   const downloadInvoice = async (invoiceId: string) => {
     try {
@@ -424,10 +432,7 @@ const Profile = () => {
   if (loading || loadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading your profile...</p>
-        </div>
+        <WaterFillingAnimation />
       </div>
     );
   }
