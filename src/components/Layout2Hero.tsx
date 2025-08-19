@@ -44,6 +44,7 @@ const Layout2Hero = () => {
             <div className="flex flex-col sm:flex-row items-start gap-6 fade-in-delay-2">
               <Button
                 size="lg"
+                onClick={() => navigate('/products')}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-6 text-lg font-medium rounded-full transition-all duration-500 hover:scale-105 hover:shadow-xl group border-0"
               >
                 Discover Collection
