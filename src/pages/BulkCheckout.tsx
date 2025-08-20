@@ -394,9 +394,18 @@ const BulkCheckout = () => {
                       <div className="flex items-center gap-2 lg:gap-3 mb-1 lg:mb-2">
                         <span className="font-semibold text-sm lg:text-base">{item.size} Bottles</span>
                         <Badge variant="secondary" className="text-xs">{item.quantity} bottles</Badge>
+                        {item.hasCustomLabel && (
+                          <Badge variant="outline" className="text-xs border-primary text-primary">
+                            <Palette className="w-3 h-3 mr-1" />
+                            Custom Label
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-xs lg:text-sm text-slate-600">
                         R{item.unitPrice.toFixed(2)} per bottle
+                        {item.hasCustomLabel && (
+                          <span className="text-primary"> (includes +R5 custom label)</span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 lg:gap-3">
