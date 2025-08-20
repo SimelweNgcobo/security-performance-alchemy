@@ -25,7 +25,6 @@ const Layout2Products = () => {
       size: "500ml",
       description: "Our most popular size. Ideal for daily hydration, workouts, and office use.",
       image: "https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg",
-      badge: "Popular",
       gradient: "from-emerald-500/20 to-emerald-600/5",
       volume: "500ml",
       dimensions: "Standard & Versatile"
@@ -35,7 +34,6 @@ const Layout2Products = () => {
       size: "1 litre",
       description: "Perfect for family outings, picnics, and extended activities. Great value for sharing.",
       image: "https://images.pexels.com/photos/6314334/pexels-photo-6314334.jpeg",
-      badge: "Family",
       gradient: "from-amber-500/20 to-amber-600/5",
       volume: "1L",
       dimensions: "Family Size"
@@ -45,7 +43,6 @@ const Layout2Products = () => {
       size: "1.5 litre",
       description: "Extended hydration for long days. Perfect for sports, hiking, and outdoor adventures.",
       image: "https://images.pexels.com/photos/3736302/pexels-photo-3736302.jpeg",
-      badge: "Sports",
       gradient: "from-purple-500/20 to-purple-600/5",
       volume: "1.5L",
       dimensions: "Sports & Outdoor"
@@ -55,7 +52,6 @@ const Layout2Products = () => {
       size: "2 litre",
       description: "Maximum hydration capacity. Ideal for all-day events, camping, and group activities.",
       image: "https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg",
-      badge: "XL",
       gradient: "from-red-500/20 to-red-600/5",
       volume: "2L",
       dimensions: "Extra Large"
@@ -65,7 +61,6 @@ const Layout2Products = () => {
       size: "5 litre",
       description: "Commercial grade bottle for offices, events, and large gatherings. Perfect for sharing.",
       image: "https://images.pexels.com/photos/6314334/pexels-photo-6314334.jpeg",
-      badge: "Commercial",
       gradient: "from-indigo-500/20 to-indigo-600/5",
       volume: "5L",
       dimensions: "Bulk & Commercial"
