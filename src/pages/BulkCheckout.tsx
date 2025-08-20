@@ -1049,11 +1049,25 @@ const BulkCheckout = () => {
           {cartItems.map((item) => (
             <div key={item.id} className="flex items-center gap-3 lg:gap-4 p-3 lg:p-4 bg-slate-50 rounded-lg">
               <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-                <Package className="h-6 w-6 lg:h-8 lg:w-8 text-slate-600" />
+                {item.hasCustomLabel ? (
+                  <Palette className="h-6 w-6 lg:h-8 lg:w-8 text-primary" />
+                ) : (
+                  <Package className="h-6 w-6 lg:h-8 lg:w-8 text-slate-600" />
+                )}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-sm lg:text-base">{item.size} Water Bottles</h4>
-                <p className="text-xs lg:text-sm text-slate-600">{item.quantity} bottles × R{item.unitPrice.toFixed(2)} each</p>
+                <h4 className="font-semibold text-sm lg:text-base">
+                  {item.size} Water Bottles
+                  {item.hasCustomLabel && (
+                    <Badge variant="outline" className="ml-2 text-xs border-primary text-primary">
+                      Custom Label
+                    </Badge>
+                  )}
+                </h4>
+                <p className="text-xs lg:text-sm text-slate-600">
+                  {item.quantity} bottles × R{item.unitPrice.toFixed(2)} each
+                  {item.hasCustomLabel && ' (includes custom label)'}
+                </p>
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="text-lg lg:text-xl font-bold">R{item.subtotal.toFixed(2)}</p>
