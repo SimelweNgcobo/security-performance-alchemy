@@ -751,21 +751,11 @@ const Profile = () => {
               {/* Saved Labels Management */}
               <Card>
                 <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle>My Saved Labels</CardTitle>
-                      <CardDescription>
-                        Manage your custom bottle label designs
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate('/enterprise')}
-                      className="shrink-0"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create New
-                    </Button>
+                  <div>
+                    <CardTitle>My Saved Labels</CardTitle>
+                    <CardDescription>
+                      Manage your custom bottle label designs. Use the Labels tab to create new designs.
+                    </CardDescription>
                   </div>
                 </CardHeader>
                 <CardContent>
