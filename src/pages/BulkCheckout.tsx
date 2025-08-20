@@ -562,7 +562,12 @@ const BulkCheckout = () => {
                       </Badge>
                     </div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm lg:text-base font-medium">Unit Price</span>
+                      <span className="text-sm lg:text-base font-medium">
+                        Unit Price
+                        {useCustomLabel && (
+                          <span className="text-xs text-primary ml-1">(+R5 custom)</span>
+                        )}
+                      </span>
                       <span className="font-semibold">R{getCurrentPrice().toFixed(2)}</span>
                     </div>
                     <Separator className="my-2" />
@@ -570,6 +575,11 @@ const BulkCheckout = () => {
                       <span className="font-semibold">Subtotal for {quantity} bottles</span>
                       <span className="text-base lg:text-lg font-bold text-slate-900">R{(quantity * getCurrentPrice()).toFixed(2)}</span>
                     </div>
+                    {useCustomLabel && (
+                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                        Custom label adds R{(quantity * 5).toFixed(2)} to your total
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
