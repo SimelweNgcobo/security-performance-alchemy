@@ -98,6 +98,7 @@ const BulkCheckout = () => {
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [showPricingTiers, setShowPricingTiers] = useState(false);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [useCustomLabel, setUseCustomLabel] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: "",
     company: "",
