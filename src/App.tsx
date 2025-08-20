@@ -46,12 +46,23 @@ const queryClient = new QueryClient({
   },
 });
 
-// Page loading fallback component
+// Page loading fallback component with smart loading
 const PageLoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
-    <LoadingSpinner message="Loading page..." size="lg" />
+    <SmartLoadingSpinner message="Loading page..." size="lg" />
   </div>
 );
+
+// Navigation tracker component to track route changes
+const NavigationTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    loadingStateManager.onNavigation(location.pathname);
+  }, [location]);
+
+  return null;
+};
 
 const App = () => {
   useEffect(() => {
