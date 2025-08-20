@@ -673,6 +673,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_labels: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          design_data: Json
+          dimensions: Json
+          id: string
+          is_default: boolean | null
+          name: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          design_data?: Json
+          dimensions?: Json
+          id?: string
+          is_default?: boolean | null
+          name: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          design_data?: Json
+          dimensions?: Json
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
