@@ -1089,41 +1089,214 @@ const Profile = () => {
             <TabsContent value="delivery" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Saved Addresses</CardTitle>
-                  <CardDescription>
-                    Manage your delivery addresses
-                  </CardDescription>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Delivery Addresses</CardTitle>
+                      <CardDescription>
+                        Manage your encrypted delivery addresses securely
+                      </CardDescription>
+                    </div>
+                    <Button onClick={handleNewAddress}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Address
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  {savedShippingDetails.length > 0 ? (
-                    <div className="space-y-3">
-                      {savedShippingDetails.map((details, index) => (
-                        <div key={index} className="border rounded-lg p-3">
-                          <div className="flex items-center justify-between mb-1">
-                            <h4 className="font-medium text-sm">{details.name || "Address"}</h4>
-                            <Badge variant="outline">
-                              <Truck className="w-3 h-3 mr-1" />
-                              Saved
-                            </Badge>
+                  {loadingAddresses ? (
+                    <div className="h-32 flex items-center justify-center">
+                      <LoadingSpinner message="Loading addresses..." />
+                    </div>
+                  ) : encryptedAddresses.length > 0 ? (
+                    <div className="space-y-4">
+                      {encryptedAddresses.map((address) => (
+                        <div key={address.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <Truck className="w-5 h-5 text-primary" />
+                              </div>
+                              <div>
+                                <h3 className="font-medium">
+                                  {encryptedAddressService.getAddressPreview(address)}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  Added {new Date(address.created_at!).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {address.is_default ? (
+                                <Badge variant="default" className="bg-primary/10 text-primary">
+                                  <Star className="w-3 h-3 mr-1" />
+                                  Default
+                                </Badge>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleSetDefaultAddress(address.id!)}
+                                >
+                                  <Settings className="w-4 h-4 mr-1" />
+                                  Set Default
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditAddress(address)}
+                              >
+                                <Settings className="w-4 h-4 mr-1" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteAddress(address.id!)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            <p>{details.address}</p>
-                            <p>{details.city}, {details.province}</p>
+                            <p>🔒 Address data is encrypted and secure</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <Truck className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground mb-4">No saved addresses</p>
-                      <Button onClick={() => navigate("/products")}>
-                        Shop to Add Addresses
+                    <div className="text-center py-12">
+                      <Truck className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No Delivery Addresses</h3>
+                      <p className="text-muted-foreground mb-6">
+                        Add your delivery addresses to make checkout faster. All addresses are encrypted for security.
+                      </p>
+                      <Button onClick={handleNewAddress} size="lg">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Your First Address
                       </Button>
                     </div>
                   )}
                 </CardContent>
               </Card>
+
+              {/* Address Form Dialog */}
+              <Dialog open={showAddressForm} onOpenChange={setShowAddressForm}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingAddress ? 'Edit Address' : 'Add New Address'}
+                    </DialogTitle>
+                    <DialogDescription>
+                      Your address information will be encrypted before saving.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="fullName">Full Name *</Label>
+                        <Input
+                          id="fullName"
+                          value={addressForm.fullName}
+                          onChange={(e) => handleAddressChange('fullName', e.target.value)}
+                          placeholder="Enter full name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="company">Company</Label>
+                        <Input
+                          id="company"
+                          value={addressForm.company}
+                          onChange={(e) => handleAddressChange('company', e.target.value)}
+                          placeholder="Company name"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="address1">Address Line 1 *</Label>
+                      <Input
+                        id="address1"
+                        value={addressForm.address1}
+                        onChange={(e) => handleAddressChange('address1', e.target.value)}
+                        placeholder="Street address"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="address2">Address Line 2</Label>
+                      <Input
+                        id="address2"
+                        value={addressForm.address2}
+                        onChange={(e) => handleAddressChange('address2', e.target.value)}
+                        placeholder="Apartment, suite, etc."
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="city">City *</Label>
+                        <Input
+                          id="city"
+                          value={addressForm.city}
+                          onChange={(e) => handleAddressChange('city', e.target.value)}
+                          placeholder="City"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="province">Province *</Label>
+                        <Select value={addressForm.province} onValueChange={(value) => handleAddressChange('province', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select province" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gauteng">Gauteng</SelectItem>
+                            <SelectItem value="western-cape">Western Cape</SelectItem>
+                            <SelectItem value="kwazulu-natal">KwaZulu-Natal</SelectItem>
+                            <SelectItem value="eastern-cape">Eastern Cape</SelectItem>
+                            <SelectItem value="free-state">Free State</SelectItem>
+                            <SelectItem value="limpopo">Limpopo</SelectItem>
+                            <SelectItem value="mpumalanga">Mpumalanga</SelectItem>
+                            <SelectItem value="north-west">North West</SelectItem>
+                            <SelectItem value="northern-cape">Northern Cape</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="postalCode">Postal Code *</Label>
+                        <Input
+                          id="postalCode"
+                          value={addressForm.postalCode}
+                          onChange={(e) => handleAddressChange('postalCode', e.target.value)}
+                          placeholder="Postal code"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Phone Number *</Label>
+                        <Input
+                          id="phone"
+                          value={addressForm.phone}
+                          onChange={(e) => handleAddressChange('phone', e.target.value)}
+                          placeholder="Phone number"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowAddressForm(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={saveAddress}>
+                      <Save className="w-4 h-4 mr-2" />
+                      {editingAddress ? 'Update' : 'Save'} Address
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </TabsContent>
           </Tabs>
         </div>
