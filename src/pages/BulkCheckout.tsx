@@ -216,7 +216,7 @@ const BulkCheckout = () => {
 
     setCartItems(prev => prev.map(item => {
       if (item.id === id) {
-        const newUnitPrice = calculatePrice(item.size, newQuantity);
+        const newUnitPrice = calculatePrice(item.size, newQuantity, item.hasCustomLabel);
         return {
           ...item,
           quantity: newQuantity,
