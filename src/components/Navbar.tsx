@@ -112,12 +112,6 @@ const Navbar = () => {
                         My Orders
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/wishlist" className="w-full flex items-center">
-                        <Heart className="mr-2 h-4 w-4" />
-                        Wishlist
-                      </Link>
-                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
                       <LogOut className="mr-2 h-4 w-4" />
