@@ -813,7 +813,7 @@ const Profile = () => {
                     <div className="text-center py-8">
                       <Tag className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground mb-4">No custom labels created yet</p>
-                      <Button onClick={() => navigate('/enterprise')}>Create Your First Label</Button>
+                      <p className="text-sm text-muted-foreground">Switch to the Labels tab to create your first custom label design.</p>
                     </div>
                   )}
                 </CardContent>
