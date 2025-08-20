@@ -3,12 +3,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { initializeGlobalScrollToTop } from "@/hooks/use-scroll-to-top";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { orderTrackingService } from "@/services/orderTracking";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import SmartLoadingSpinner from "@/components/SmartLoadingSpinner";
+import { pagePreloader } from "@/utils/preloader";
+import { loadingStateManager } from "@/utils/loadingStateManager";
 
 // Lazy load all pages for better performance
 const Index = lazy(() => import("./pages/Index"));
