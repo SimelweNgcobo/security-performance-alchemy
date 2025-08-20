@@ -625,38 +625,50 @@ export type Database = {
           },
         ]
       }
-      user_labels: {
+      user_addresses: {
         Row: {
-          created_at: string
-          description: string | null
-          design_data: Json
-          dimensions: Json | null
+          address_line_1: string
+          address_line_2: string | null
+          city: string
+          company: string | null
+          created_at: string | null
+          full_name: string
           id: string
           is_default: boolean | null
-          name: string
-          updated_at: string
+          phone: string | null
+          postal_code: string
+          province: string
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
-          created_at?: string
-          description?: string | null
-          design_data: Json
-          dimensions?: Json | null
+          address_line_1: string
+          address_line_2?: string | null
+          city: string
+          company?: string | null
+          created_at?: string | null
+          full_name: string
           id?: string
           is_default?: boolean | null
-          name: string
-          updated_at?: string
+          phone?: string | null
+          postal_code: string
+          province: string
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
-          created_at?: string
-          description?: string | null
-          design_data?: Json | null
-          dimensions?: Json | null
+          address_line_1?: string
+          address_line_2?: string | null
+          city?: string
+          company?: string | null
+          created_at?: string | null
+          full_name?: string
           id?: string
           is_default?: boolean | null
-          name?: string
-          updated_at?: string
+          phone?: string | null
+          postal_code?: string
+          province?: string
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: []
