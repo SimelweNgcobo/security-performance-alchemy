@@ -118,11 +118,12 @@ const BulkCheckout = () => {
     }
   }, [user, navigate]);
 
-  // Calculate pricing for a given size and quantity
-  const calculatePrice = useCallback((size: BottleSize, qty: number) => {
+  // Calculate pricing for a given size and quantity (with optional custom label)
+  const calculatePrice = useCallback((size: BottleSize, qty: number, hasCustomLabel: boolean = false) => {
     const pricing = pricingData[size];
     const tier = pricing.find(p => qty >= p.min && qty <= p.max);
-    return tier ? tier.price : 0;
+    const basePrice = tier ? tier.price : 0;
+    return hasCustomLabel ? basePrice + 5 : basePrice; // Add R5 for custom label
   }, []);
 
   // Get current price for selected size and quantity
