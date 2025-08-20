@@ -913,54 +913,6 @@ const Profile = () => {
               </Card>
             </TabsContent>
 
-            {/* Recent Items Tab */}
-            <TabsContent value="recents" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                  <CardDescription>
-                    Your recent orders and interactions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {loadingStates.recents ? (
-                    <RecentItemsSkeleton />
-                  ) : recentItems.length > 0 ? (
-                    <div className="space-y-3">
-                      {recentItems.map((item) => (
-                        <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <ShoppingBag className="w-5 h-5 text-primary" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-medium text-sm">{item.name}</h3>
-                            <p className="text-xs text-muted-foreground">{item.description}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDateTime(item.timestamp)}
-                            </p>
-                          </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => viewItemDetails(item)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">No recent activity</p>
-                      <Button className="mt-4" onClick={() => navigate("/products")}>
-                        Browse Products
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             {/* Activity Tab */}
             <TabsContent value="activity" className="space-y-4">
