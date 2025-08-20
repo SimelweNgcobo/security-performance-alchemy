@@ -255,6 +255,9 @@ const Profile = () => {
 
       // Load user labels from Supabase instead of localStorage
       await loadUserLabels();
+
+      // Load encrypted addresses
+      await loadEncryptedAddresses();
     } catch (e) {
       console.log("Error loading localStorage data:", e);
     }
