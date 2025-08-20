@@ -69,7 +69,14 @@ const App = () => {
     // Initialize global scroll to top for all button clicks
     initializeGlobalScrollToTop();
 
+    // Start page preloading for instant navigation
+    pagePreloader.startPreloading();
+
+    // Initialize loading state manager
+    loadingStateManager.initialize();
+
     // App initialization complete
+    console.log('🚀 MyFuze App initialized with preloading');
   }, []);
 
   return (
