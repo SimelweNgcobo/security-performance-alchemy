@@ -372,20 +372,81 @@ const Enterprise = () => {
             </div>
           </div>
 
-          {/* Label Designer Section */}
+          {/* Label Design Section */}
           <div className="mb-12">
             <div className="text-center mb-8">
               <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
-                Professional Label Designer
+                Custom Label Design
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Create stunning custom labels with our intuitive design tool. Upload your logo, add text, 
-                and customize every element to match your brand perfectly.
+                Create your own label design in your profile. Design stunning custom labels with our intuitive design tool,
+                then use them for your enterprise orders.
               </p>
             </div>
-            
-            {/* Label Editor Component */}
-            <LabelEditor />
+
+            {/* Profile Redirect Card */}
+            <Card className="max-w-2xl mx-auto">
+              <CardHeader className="text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Palette className="w-8 h-8 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Label Design Studio</CardTitle>
+                <CardDescription>
+                  Access our professional label editor in your profile to create custom designs
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <User className="w-4 h-4 text-primary" />
+                    </div>
+                    <h4 className="font-medium text-sm mb-1">Create</h4>
+                    <p className="text-xs text-muted-foreground">Design labels in your profile</p>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Star className="w-4 h-4 text-primary" />
+                    </div>
+                    <h4 className="font-medium text-sm mb-1">Save</h4>
+                    <p className="text-xs text-muted-foreground">Set as default for orders</p>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <ShoppingCart className="w-4 h-4 text-primary" />
+                    </div>
+                    <h4 className="font-medium text-sm mb-1">Use</h4>
+                    <p className="text-xs text-muted-foreground">Apply to enterprise orders</p>
+                  </div>
+                </div>
+
+                <div className="text-center pt-4">
+                  <Button
+                    onClick={() => {
+                      if (!user) {
+                        toast.error("Please sign in to access label design");
+                        navigate('/auth');
+                        return;
+                      }
+                      navigate('/profile', { state: { openTab: 'labels' } });
+                      toast.success("Redirecting to your profile label designer...");
+                    }}
+                    size="lg"
+                    className="w-full sm:w-auto"
+                  >
+                    <Palette className="w-4 h-4 mr-2" />
+                    Go to Label Design Studio
+                  </Button>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">
+                    Design 264mm × 60mm labels with professional tools, save multiple designs,
+                    and set your favorites as defaults for quick ordering.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           <Separator className="my-12" />
