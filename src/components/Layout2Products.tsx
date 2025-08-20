@@ -96,11 +96,6 @@ const Layout2Products = () => {
               <CardContent className="p-0 space-y-4 sm:space-y-6">
                 {/* Image Section with Triangle Arrangement */}
                 <div className="relative overflow-hidden">
-                  <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-20">
-                    <div className={`inline-block bg-gradient-to-r ${product.gradient} border border-primary/20 rounded-full px-2 sm:px-3 py-1`}>
-                      <span className="text-xs font-semibold text-primary">{product.badge}</span>
-                    </div>
-                  </div>
 
                   {/* Triangle Arrangement of Bottles */}
                   <div className="aspect-[4/3] sm:aspect-[4/4] bg-gradient-to-br from-primary/5 to-primary/10 relative flex items-center justify-center p-4 sm:p-6">
