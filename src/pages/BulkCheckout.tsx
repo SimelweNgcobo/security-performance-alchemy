@@ -128,8 +128,8 @@ const BulkCheckout = () => {
 
   // Get current price for selected size and quantity
   const getCurrentPrice = useCallback(() => {
-    return calculatePrice(selectedSize, quantity);
-  }, [calculatePrice, selectedSize, quantity]);
+    return calculatePrice(selectedSize, quantity, useCustomLabel);
+  }, [calculatePrice, selectedSize, quantity, useCustomLabel]);
 
   // Get current pricing tier for selected size and quantity
   const getCurrentPriceTier = useCallback(() => {
