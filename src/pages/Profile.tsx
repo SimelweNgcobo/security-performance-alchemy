@@ -510,6 +510,119 @@ const Profile = () => {
     }
   }, [loadUserLabels]);
 
+  // Load encrypted addresses
+  const loadEncryptedAddresses = useCallback(async () => {
+    if (!user?.id) return;
+
+    setLoadingAddresses(true);
+    try {
+      const [addresses, defaultAddr] = await Promise.all([
+        encryptedAddressService.getUserAddresses(user.id),
+        encryptedAddressService.getDefaultAddress(user.id)
+      ]);
+
+      setEncryptedAddresses(addresses);
+      setDefaultAddress(defaultAddr);
+    } catch (error) {
+      console.error('Error loading encrypted addresses:', error);
+    } finally {
+      setLoadingAddresses(false);
+    }
+  }, [user]);
+
+  // Initialize address form
+  const initializeAddressForm = useCallback((address?: EncryptedAddress) => {
+    if (address) {
+      // If editing, decrypt and populate form
+      encryptedAddressService.getDecryptedAddress(address.id!, user!.id).then(decrypted => {
+        if (decrypted) {
+          setAddressForm(decrypted);
+        }
+      });
+    } else {
+      // New address form
+      setAddressForm({
+        fullName: basicProfile?.name || "",
+        company: "",
+        address1: "",
+        address2: "",
+        city: "",
+        province: "",
+        postalCode: "",
+        phone: basicProfile?.phone || ""
+      });
+    }
+  }, [user, basicProfile]);
+
+  // Handle address form changes
+  const handleAddressChange = useCallback((field: keyof AddressData, value: string) => {
+    setAddressForm(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  // Save address
+  const saveAddress = useCallback(async () => {
+    if (!user?.id) return;
+
+    if (editingAddress) {
+      // Update existing address
+      const updated = await encryptedAddressService.updateAddress(
+        editingAddress.id!,
+        user.id,
+        addressForm
+      );
+      if (updated) {
+        setShowAddressForm(false);
+        setEditingAddress(null);
+        await loadEncryptedAddresses();
+      }
+    } else {
+      // Create new address
+      const created = await encryptedAddressService.saveAddress(
+        user.id,
+        addressForm,
+        encryptedAddresses.length === 0 // Set as default if it's the first address
+      );
+      if (created) {
+        setShowAddressForm(false);
+        await loadEncryptedAddresses();
+      }
+    }
+  }, [user, editingAddress, addressForm, encryptedAddresses.length, loadEncryptedAddresses]);
+
+  // Set default address
+  const handleSetDefaultAddress = useCallback(async (addressId: string) => {
+    if (!user?.id) return;
+
+    const success = await encryptedAddressService.setDefaultAddress(addressId, user.id);
+    if (success) {
+      await loadEncryptedAddresses();
+    }
+  }, [user, loadEncryptedAddresses]);
+
+  // Delete address
+  const handleDeleteAddress = useCallback(async (addressId: string) => {
+    if (!user?.id) return;
+
+    const success = await encryptedAddressService.deleteAddress(addressId, user.id);
+    if (success) {
+      await loadEncryptedAddresses();
+    }
+  }, [user, loadEncryptedAddresses]);
+
+  // Edit address
+  const handleEditAddress = useCallback((address: EncryptedAddress) => {
+    setEditingAddress(address);
+    initializeAddressForm(address);
+    setShowAddressForm(true);
+  }, [initializeAddressForm]);
+
+  // Start new address
+  const handleNewAddress = useCallback(() => {
+    setEditingAddress(null);
+    initializeAddressForm();
+    setShowAddressForm(true);
+  }, [initializeAddressForm]);
+
   const viewItemDetails = useCallback((item: RecentItem) => {
     if (item.type === 'order') {
       navigate("/orders");
