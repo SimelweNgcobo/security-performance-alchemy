@@ -74,6 +74,7 @@ interface CartItem {
   quantity: number;
   unitPrice: number;
   subtotal: number;
+  hasCustomLabel: boolean;
 }
 
 interface ShippingAddress {
