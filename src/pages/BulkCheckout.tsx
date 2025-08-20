@@ -493,6 +493,28 @@ const BulkCheckout = () => {
                 </div>
               </div>
 
+              {/* Custom Label Option */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="custom-label"
+                    checked={useCustomLabel}
+                    onCheckedChange={setUseCustomLabel}
+                  />
+                  <Label htmlFor="custom-label" className="text-sm font-medium flex items-center gap-2">
+                    <Palette className="w-4 h-4 text-primary" />
+                    Add Custom Label (+R5 per bottle)
+                  </Label>
+                </div>
+                {useCustomLabel && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-800">
+                      Design your custom label in your profile. The R5 additional cost covers premium label printing and application.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {/* Quantity Input */}
               <div>
                 <Label className="text-sm font-medium mb-2 lg:mb-3 block">Quantity</Label>
