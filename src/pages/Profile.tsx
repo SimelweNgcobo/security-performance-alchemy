@@ -115,6 +115,23 @@ const Profile = () => {
   const [savedShippingDetails, setSavedShippingDetails] = useState<any[]>([]);
   const [loadingLabels, setLoadingLabels] = useState(false);
 
+  // Encrypted address state
+  const [encryptedAddresses, setEncryptedAddresses] = useState<EncryptedAddress[]>([]);
+  const [defaultAddress, setDefaultAddress] = useState<EncryptedAddress | null>(null);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<EncryptedAddress | null>(null);
+  const [addressForm, setAddressForm] = useState<AddressData>({
+    fullName: "",
+    company: "",
+    address1: "",
+    address2: "",
+    city: "",
+    province: "",
+    postalCode: "",
+    phone: ""
+  });
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
