@@ -8,7 +8,11 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { userLabelsService } from '@/services/userLabels';
 import {
   Upload,
   Type,
@@ -31,7 +35,9 @@ import {
   EyeOff,
   Copy,
   Settings,
-  Send
+  Send,
+  Save,
+  Star
 } from 'lucide-react';
 
 // Convert mm to pixels (at 96 DPI: 1mm = 3.78 pixels)
@@ -82,7 +88,12 @@ interface LabelDesign {
   backgroundImage?: string;
 }
 
-const LabelEditor: React.FC = () => {
+interface LabelEditorProps {
+  onSave?: () => void; // Callback when a label is saved
+}
+
+const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
+  const { user } = useAuth();
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [design, setDesign] = useState<LabelDesign>({
@@ -95,6 +106,12 @@ const LabelEditor: React.FC = () => {
   const [zoom, setZoom] = useState(100);
   const [isResizing, setIsResizing] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveForm, setSaveForm] = useState({
+    name: '',
+    description: '',
+    isDefault: false
+  });
 
   // Font options
   const fontFamilies = [
@@ -381,6 +398,60 @@ const LabelEditor: React.FC = () => {
     toast.success("Design exported successfully!");
   };
 
+  const handleSaveToProfile = async () => {
+    if (!user) {
+      toast.error('Please sign in to save labels to your profile');
+      return;
+    }
+
+    if (!saveForm.name.trim()) {
+      toast.error('Please enter a name for your label');
+      return;
+    }
+
+    if (design.elements.length === 0) {
+      toast.error('Please add some elements to your design before saving');
+      return;
+    }
+
+    const designData = {
+      backgroundColor: design.backgroundColor,
+      elements: design.elements
+    };
+
+    const savedLabel = await userLabelsService.saveLabel(
+      user.id,
+      saveForm.name.trim(),
+      designData,
+      saveForm.description.trim() || undefined,
+      saveForm.isDefault
+    );
+
+    if (savedLabel) {
+      setShowSaveDialog(false);
+      setSaveForm({ name: '', description: '', isDefault: false });
+
+      // Call the onSave callback to refresh the parent component
+      if (onSave) {
+        onSave();
+      }
+    }
+  };
+
+  const openSaveDialog = () => {
+    if (!user) {
+      toast.error('Please sign in to save labels');
+      return;
+    }
+
+    if (design.elements.length === 0) {
+      toast.error('Please add some elements to your design first');
+      return;
+    }
+
+    setShowSaveDialog(true);
+  };
+
   const selectedElementData = selectedElement 
     ? design.elements.find(el => el.id === selectedElement)
     : null;
@@ -580,17 +651,82 @@ const LabelEditor: React.FC = () => {
                   className="text-xs sm:text-sm no-scroll bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  Add to Request Custom Quote
+                  Add to Quote Request
                 </Button>
                 <Button variant="outline" size="sm" onClick={resetCanvas} className="text-xs sm:text-sm no-scroll">
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Reset Canvas
                 </Button>
               </div>
-              <Button onClick={exportDesign} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm no-scroll">
-                <Download className="w-4 h-4 mr-2" />
-                Export Design
-              </Button>
+              <div className="flex gap-2">
+                <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      onClick={openSaveDialog}
+                      className="text-xs sm:text-sm no-scroll"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save to Profile
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Save Label to Profile</DialogTitle>
+                      <DialogDescription>
+                        Save this design to your profile for use in enterprise orders
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="label-name">Label Name *</Label>
+                        <Input
+                          id="label-name"
+                          value={saveForm.name}
+                          onChange={(e) => setSaveForm(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="My Custom Label"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="label-description">Description</Label>
+                        <Textarea
+                          id="label-description"
+                          value={saveForm.description}
+                          onChange={(e) => setSaveForm(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Brief description of this label design..."
+                          rows={3}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="set-default"
+                          checked={saveForm.isDefault}
+                          onCheckedChange={(checked) => setSaveForm(prev => ({ ...prev, isDefault: !!checked }))}
+                        />
+                        <Label htmlFor="set-default" className="flex items-center gap-2 text-sm">
+                          <Star className="w-4 h-4" />
+                          Set as my default label
+                        </Label>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleSaveToProfile}>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Label
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <Button onClick={exportDesign} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm no-scroll">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Design
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -931,3 +1067,4 @@ const LabelEditor: React.FC = () => {
 };
 
 export default LabelEditor;
+export type { LabelEditorProps };

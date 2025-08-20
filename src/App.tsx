@@ -28,6 +28,8 @@ const AdminAuth = lazy(() => import("./pages/AdminAuth"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Orders = lazy(() => import("./pages/Orders"));
 const BulkCheckout = lazy(() => import("./pages/BulkCheckout"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsConditions = lazy(() => import("./pages/TermsConditions"));
 
 // Optimized QueryClient configuration
 const queryClient = new QueryClient({
@@ -87,6 +89,8 @@ const App = () => {
                   <Route path="/panel1973" element={<AdminPanel />} />
                   <Route path="/admin" element={<AdminAuth />} />
                   <Route path="/admin-panel" element={<AdminPanel />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/terms-conditions" element={<TermsConditions />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

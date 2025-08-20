@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { 
   Building2, 
@@ -26,13 +27,15 @@ interface EnterpriseRequest {
   id: string;
   company_name: string;
   contact_email: string;
-  requirements: string;
-  status: 'pending' | 'reviewing' | 'quoted' | 'approved' | 'rejected';
-  user_id?: string;
-  label_design_url?: string;
+  requirements: string | null;
+  status: string;
+  user_id: string | null;
+  designs: any | null;
   created_at: string;
-  updated_at?: string;
-  notes?: string;
+  updated_at: string;
+  notes: string | null;
+  quote_amount: number | null;
+  quote_valid_until: string | null;
 }
 
 export const EnterpriseRequests = () => {
@@ -84,17 +87,23 @@ export const EnterpriseRequests = () => {
   const loadRequests = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual Supabase query when table exists
-      // const { data, error } = await supabase
-      //   .from("enterprise_requests")
-      //   .select("*")
-      //   .order("created_at", { ascending: false });
 
-      // For now, use mock data
-      setRequests(mockRequests);
+      const { data, error } = await supabase
+        .from("enterprise_requests")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      setRequests(data || []);
     } catch (error) {
       console.error("Error loading enterprise requests:", error);
       toast.error("Failed to load enterprise requests");
+
+      // Fallback to mock data in case of error
+      setRequests(mockRequests);
     } finally {
       setLoading(false);
     }
@@ -102,20 +111,23 @@ export const EnterpriseRequests = () => {
 
   const updateRequestStatus = async (requestId: string, status: string, notes?: string) => {
     try {
-      // TODO: Replace with actual Supabase update when table exists
-      // const { error } = await supabase
-      //   .from("enterprise_requests")
-      //   .update({ 
-      //     status,
-      //     notes: notes || "",
-      //     updated_at: new Date().toISOString()
-      //   })
-      //   .eq("id", requestId);
+      const { error } = await supabase
+        .from("enterprise_requests")
+        .update({
+          status,
+          notes: notes || "",
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", requestId);
 
-      // Mock update for now
-      setRequests(prev => prev.map(req => 
-        req.id === requestId 
-          ? { ...req, status: status as any, notes: notes || req.notes, updated_at: new Date().toISOString() }
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setRequests(prev => prev.map(req =>
+        req.id === requestId
+          ? { ...req, status, notes: notes || req.notes, updated_at: new Date().toISOString() }
           : req
       ));
 
@@ -214,7 +226,7 @@ export const EnterpriseRequests = () => {
                         <div>
                           <div className="font-medium">{request.company_name}</div>
                           <div className="text-sm text-muted-foreground truncate max-w-xs">
-                            {request.requirements}
+                            {request.requirements || 'No requirements specified'}
                           </div>
                         </div>
                       </TableCell>
@@ -237,10 +249,10 @@ export const EnterpriseRequests = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {request.label_design_url ? (
+                        {request.designs && Array.isArray(request.designs) && request.designs.length > 0 ? (
                           <Button variant="outline" size="sm">
                             <ImageIcon className="w-4 h-4 mr-2" />
-                            View Design
+                            {request.designs.length} Design{request.designs.length > 1 ? 's' : ''}
                           </Button>
                         ) : (
                           <span className="text-sm text-muted-foreground">No design</span>
@@ -312,17 +324,45 @@ export const EnterpriseRequests = () => {
                                 <div>
                                   <h4 className="font-medium mb-2">Requirements</h4>
                                   <div className="bg-gray-50 p-3 rounded-lg text-sm">
-                                    {selectedRequest.requirements}
+                                    {selectedRequest.requirements || 'No requirements specified'}
                                   </div>
                                 </div>
 
-                                {selectedRequest.label_design_url && (
+                                {selectedRequest.designs && Array.isArray(selectedRequest.designs) && selectedRequest.designs.length > 0 && (
                                   <div>
-                                    <h4 className="font-medium mb-2">Label Design</h4>
-                                    <Button variant="outline">
-                                      <ImageIcon className="w-4 h-4 mr-2" />
-                                      View Uploaded Design
-                                    </Button>
+                                    <h4 className="font-medium mb-2">Label Designs ({selectedRequest.designs.length})</h4>
+                                    <div className="space-y-2">
+                                      {selectedRequest.designs.map((design: any, index: number) => (
+                                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                          <div>
+                                            <p className="text-sm font-medium">{design.name || `Design ${index + 1}`}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                              {design.dimensions?.width || 264} × {design.dimensions?.height || 60}mm
+                                            </p>
+                                          </div>
+                                          <Button variant="outline" size="sm">
+                                            <ImageIcon className="w-4 h-4 mr-2" />
+                                            View Design
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {selectedRequest.quote_amount && (
+                                  <div>
+                                    <h4 className="font-medium mb-2">Quote Information</h4>
+                                    <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                                      <p className="text-sm">
+                                        <strong>Amount:</strong> R{selectedRequest.quote_amount.toFixed(2)}
+                                      </p>
+                                      {selectedRequest.quote_valid_until && (
+                                        <p className="text-sm">
+                                          <strong>Valid Until:</strong> {formatDate(selectedRequest.quote_valid_until)}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
                                 )}
 

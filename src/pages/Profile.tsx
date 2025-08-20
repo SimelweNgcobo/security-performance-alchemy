@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { userLabelsService, UserLabel } from "@/services/userLabels";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -30,12 +31,15 @@ import {
   ChevronRight,
   Save,
   Truck,
-  Tag
+  Tag,
+  Star,
+  Trash2,
+  Settings,
+  Plus
 } from "lucide-react";
 
 // Lazy load heavy components
 const LabelEditor = lazy(() => import("@/components/LabelEditor"));
-const AccountDeletion = lazy(() => import("@/components/AccountDeletion"));
 
 interface BasicProfile {
   name: string;
@@ -104,8 +108,10 @@ const Profile = () => {
 
   // UI states
   const [saving, setSaving] = useState(false);
-  const [customLabels, setCustomLabels] = useState<any[]>([]);
+  const [userLabels, setUserLabels] = useState<UserLabel[]>([]);
+  const [defaultLabel, setDefaultLabel] = useState<UserLabel | null>(null);
   const [savedShippingDetails, setSavedShippingDetails] = useState<any[]>([]);
+  const [loadingLabels, setLoadingLabels] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -189,8 +195,37 @@ const Profile = () => {
     }
   }, [user]);
 
-  // Load localStorage data
-  const loadLocalStorageData = useCallback(() => {
+  // Load user labels from Supabase
+  const loadUserLabels = useCallback(async () => {
+    if (!user?.id) return;
+
+    setLoadingLabels(true);
+    try {
+      const [labels, defaultLabelData] = await Promise.all([
+        userLabelsService.getUserLabels(user.id),
+        userLabelsService.getDefaultLabel(user.id)
+      ]);
+
+      setUserLabels(labels);
+      setDefaultLabel(defaultLabelData);
+
+      // If no labels exist, create a default one
+      if (labels.length === 0) {
+        const newDefaultLabel = await userLabelsService.createDefaultMyFuzeLabel(user.id);
+        if (newDefaultLabel) {
+          setUserLabels([newDefaultLabel]);
+          setDefaultLabel(newDefaultLabel);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user labels:', error);
+    } finally {
+      setLoadingLabels(false);
+    }
+  }, [user]);
+
+  // Load localStorage data and user labels
+  const loadLocalStorageData = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -199,14 +234,12 @@ const Profile = () => {
         setSavedShippingDetails(JSON.parse(savedShipping));
       }
 
-      const savedLabels = localStorage.getItem(`labels_${user.id}`);
-      if (savedLabels) {
-        setCustomLabels(JSON.parse(savedLabels));
-      }
+      // Load user labels from Supabase instead of localStorage
+      await loadUserLabels();
     } catch (e) {
       console.log("Error loading localStorage data:", e);
     }
-  }, [user]);
+  }, [user, loadUserLabels]);
 
   // Lazy load activity data
   const loadActivityData = useCallback(async () => {
@@ -444,6 +477,23 @@ const Profile = () => {
     navigate("/products");
   }, [navigate]);
 
+  // Label management functions
+  const handleSetDefaultLabel = useCallback(async (labelId: string) => {
+    if (!user?.id) return;
+
+    const success = await userLabelsService.setDefaultLabel(labelId, user.id);
+    if (success) {
+      await loadUserLabels(); // Refresh labels
+    }
+  }, [user, loadUserLabels]);
+
+  const handleDeleteLabel = useCallback(async (labelId: string) => {
+    const success = await userLabelsService.deleteLabel(labelId);
+    if (success) {
+      await loadUserLabels(); // Refresh labels
+    }
+  }, [loadUserLabels]);
+
   const viewItemDetails = useCallback((item: RecentItem) => {
     if (item.type === 'order') {
       navigate("/orders");
@@ -513,10 +563,14 @@ const Profile = () => {
 
           {/* Profile Tabs */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Settings
+              </TabsTrigger>
+              <TabsTrigger value="labels" className="flex items-center gap-2">
+                <Tag className="w-4 h-4" />
+                Labels
               </TabsTrigger>
               <TabsTrigger value="purchases" className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4" />
@@ -535,6 +589,129 @@ const Profile = () => {
                 Delivery
               </TabsTrigger>
             </TabsList>
+
+            {/* Labels Tab - New dedicated tab */}
+            <TabsContent value="labels" className="space-y-6">
+              {/* Saved Labels Management */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>My Saved Labels</CardTitle>
+                      <CardDescription>
+                        Manage your custom bottle label designs for enterprise orders
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate('/enterprise')}
+                      className="shrink-0"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create New
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {loadingLabels ? (
+                    <div className="h-32 flex items-center justify-center">
+                      <LoadingSpinner message="Loading labels..." />
+                    </div>
+                  ) : userLabels.length > 0 ? (
+                    <div className="space-y-4">
+                      {userLabels.map((label) => (
+                        <div key={label.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <Tag className="w-5 h-5 text-primary" />
+                              </div>
+                              <div>
+                                <h3 className="font-medium">{label.name}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {label.description || 'No description'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {label.is_default ? (
+                                <Badge variant="default" className="bg-primary/10 text-primary">
+                                  <Star className="w-3 h-3 mr-1" />
+                                  Default
+                                </Badge>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleSetDefaultLabel(label.id)}
+                                >
+                                  <Settings className="w-4 h-4 mr-1" />
+                                  Set Default
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteLabel(label.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium">Elements:</span>
+                              <span>{label.design_data.elements?.length || 0}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium">Background:</span>
+                              <div className="w-4 h-4 rounded border" style={{ backgroundColor: label.design_data.backgroundColor || '#ffffff' }}></div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium">Size:</span>
+                              <span>{label.dimensions?.width || 264}×{label.dimensions?.height || 60}mm</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium">Updated:</span>
+                              <span>{new Date(label.updated_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Tag className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No Custom Labels Yet</h3>
+                      <p className="text-muted-foreground mb-6">
+                        Create custom labels for your enterprise orders. These will be available
+                        when requesting quotes and can be set as your default branding.
+                      </p>
+                      <Button onClick={() => navigate('/enterprise')} size="lg">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Your First Label
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Label Designer */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Label Designer</CardTitle>
+                  <CardDescription>
+                    Create new custom labels directly from your profile
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Suspense fallback={<div className="h-64 flex items-center justify-center"><LoadingSpinner /></div>}>
+                    <LabelEditor onSave={loadUserLabels} />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             {/* Settings Tab - Default and fastest */}
             <TabsContent value="settings" className="space-y-6">
@@ -592,18 +769,84 @@ const Profile = () => {
                 </CardContent>
               </Card>
 
-              {/* Custom Label Editor - Lazy loaded */}
+              {/* Saved Labels Management */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Custom Label Designer</CardTitle>
-                  <CardDescription>
-                    Create and design custom labels for your bottles
-                  </CardDescription>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>My Saved Labels</CardTitle>
+                      <CardDescription>
+                        Manage your custom bottle label designs
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate('/enterprise')}
+                      className="shrink-0"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create New
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <Suspense fallback={<div className="h-64 flex items-center justify-center"><LoadingSpinner /></div>}>
-                    <LabelEditor />
-                  </Suspense>
+                  {loadingLabels ? (
+                    <div className="h-32 flex items-center justify-center">
+                      <LoadingSpinner message="Loading labels..." />
+                    </div>
+                  ) : userLabels.length > 0 ? (
+                    <div className="space-y-4">
+                      {userLabels.map((label) => (
+                        <div key={label.id} className="border rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-medium">{label.name}</h3>
+                              {label.is_default && (
+                                <Badge variant="default" className="bg-primary/10 text-primary">
+                                  <Star className="w-3 h-3 mr-1" />
+                                  Default
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex gap-2">
+                              {!label.is_default && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleSetDefaultLabel(label.id)}
+                                >
+                                  <Settings className="w-4 h-4 mr-1" />
+                                  Set Default
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteLabel(label.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          {label.description && (
+                            <p className="text-sm text-muted-foreground mb-2">{label.description}</p>
+                          )}
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span>{label.design_data.elements?.length || 0} design elements</span>
+                            <span>Background: {label.design_data.backgroundColor || '#ffffff'}</span>
+                            <span>Updated: {new Date(label.updated_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Tag className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-4">No custom labels created yet</p>
+                      <Button onClick={() => navigate('/enterprise')}>Create Your First Label</Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

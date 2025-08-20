@@ -23,6 +23,10 @@ const Layout2Footer = () => {
       { name: "Contact", href: "/contact" },
       { name: "FAQ", href: "/faq" },
       { name: "Shipping", href: "/shipping" }
+    ],
+    legal: [
+      { name: "Privacy Policy", href: "/privacy-policy" },
+      { name: "Terms & Conditions", href: "/terms-conditions" }
     ]
   };
 
@@ -44,8 +48,8 @@ const Layout2Footer = () => {
             </p>
           </div>
 
-          {/* Three-column navigation */}
-          <div className="grid md:grid-cols-3 gap-12 max-w-4xl mx-auto">
+          {/* Four-column navigation */}
+          <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
             <div className="space-y-4">
               <h4 className="text-base font-medium text-foreground">Products</h4>
               <ul className="space-y-3">
@@ -84,6 +88,23 @@ const Layout2Footer = () => {
               <h4 className="text-base font-medium text-foreground">Support</h4>
               <ul className="space-y-3">
                 {links.support.map((link, index) => (
+                  <li key={index}>
+                    <Link
+                      to={link.href}
+                      onClick={handleLinkClick}
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors font-light"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-base font-medium text-foreground">Legal</h4>
+              <ul className="space-y-3">
+                {links.legal.map((link, index) => (
                   <li key={index}>
                     <Link
                       to={link.href}
