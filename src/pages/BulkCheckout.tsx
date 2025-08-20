@@ -16,7 +16,7 @@ import { PaystackButton } from 'react-paystack';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Pricing data structure
+// Pricing data structure - max 10,000 bottles
 const pricingData = {
   "500ml": [
     { min: 1, max: 10, price: 10, notes: "Retail / single bottle" },
@@ -26,7 +26,7 @@ const pricingData = {
     { min: 501, max: 1000, price: 7.00, notes: "Entry bulk" },
     { min: 1001, max: 2500, price: 6.80, notes: "Corporate" },
     { min: 2501, max: 5000, price: 6.50, notes: "Large bulk" },
-    { min: 5001, max: 10000, price: 6.00, notes: "Mass supply" }
+    { min: 5001, max: 10000, price: 6.00, notes: "Maximum bulk (Enterprise custom quote for higher quantities)" }
   ],
   "1L": [
     { min: 1, max: 10, price: 15, notes: "" },
@@ -35,7 +35,7 @@ const pricingData = {
     { min: 101, max: 500, price: 12.00, notes: "" },
     { min: 501, max: 1000, price: 11.50, notes: "" },
     { min: 1001, max: 5000, price: 11.00, notes: "" },
-    { min: 5001, max: 10000, price: 10.50, notes: "" }
+    { min: 5001, max: 10000, price: 10.50, notes: "Maximum bulk" }
   ],
   "1.5L": [
     { min: 1, max: 10, price: 14, notes: "" },
@@ -44,7 +44,7 @@ const pricingData = {
     { min: 101, max: 500, price: 12.50, notes: "" },
     { min: 501, max: 1000, price: 12, notes: "" },
     { min: 1001, max: 5000, price: 11.80, notes: "" },
-    { min: 5001, max: 10000, price: 11.50, notes: "" }
+    { min: 5001, max: 10000, price: 11.50, notes: "Maximum bulk" }
   ],
   "2L": [
     { min: 1, max: 10, price: 16, notes: "" },
@@ -53,7 +53,7 @@ const pricingData = {
     { min: 101, max: 500, price: 14.50, notes: "" },
     { min: 501, max: 1000, price: 14, notes: "" },
     { min: 1001, max: 5000, price: 13.80, notes: "" },
-    { min: 5001, max: 10000, price: 13.50, notes: "" }
+    { min: 5001, max: 10000, price: 13.50, notes: "Maximum bulk" }
   ],
   "5L": [
     { min: 1, max: 10, price: 25, notes: "" },
@@ -62,7 +62,7 @@ const pricingData = {
     { min: 101, max: 500, price: 22.50, notes: "" },
     { min: 501, max: 1000, price: 22, notes: "" },
     { min: 1001, max: 5000, price: 21.50, notes: "" },
-    { min: 5001, max: 10000, price: 21, notes: "" }
+    { min: 5001, max: 10000, price: 21, notes: "Maximum bulk" }
   ]
 };
 
