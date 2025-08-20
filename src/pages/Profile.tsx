@@ -563,7 +563,7 @@ const Profile = () => {
 
           {/* Profile Tabs */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Settings
@@ -575,10 +575,6 @@ const Profile = () => {
               <TabsTrigger value="purchases" className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4" />
                 Orders
-              </TabsTrigger>
-              <TabsTrigger value="recents" className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Recent
               </TabsTrigger>
               <TabsTrigger value="activity" className="flex items-center gap-2">
                 <Activity className="w-4 h-4" />
@@ -595,21 +591,11 @@ const Profile = () => {
               {/* Saved Labels Management */}
               <Card>
                 <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle>My Saved Labels</CardTitle>
-                      <CardDescription>
-                        Manage your custom bottle label designs for enterprise orders
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate('/enterprise')}
-                      className="shrink-0"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create New
-                    </Button>
+                  <div>
+                    <CardTitle>My Saved Labels</CardTitle>
+                    <CardDescription>
+                      Manage your custom bottle label designs for enterprise orders
+                    </CardDescription>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -685,13 +671,9 @@ const Profile = () => {
                       <Tag className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                       <h3 className="text-lg font-medium mb-2">No Custom Labels Yet</h3>
                       <p className="text-muted-foreground mb-6">
-                        Create custom labels for your enterprise orders. These will be available
-                        when requesting quotes and can be set as your default branding.
+                        Create custom labels using the designer below. These will be available
+                        for your enterprise orders and can be set as your default branding.
                       </p>
-                      <Button onClick={() => navigate('/enterprise')} size="lg">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Your First Label
-                      </Button>
                     </div>
                   )}
                 </CardContent>
@@ -700,9 +682,9 @@ const Profile = () => {
               {/* Label Designer */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Label Designer</CardTitle>
+                  <CardTitle>Custom Label Designer</CardTitle>
                   <CardDescription>
-                    Create new custom labels directly from your profile
+                    Create and save custom labels for your bottles. Design with text, images, and branding elements.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
