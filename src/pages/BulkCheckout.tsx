@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Truck, CreditCard, CheckCircle, ArrowLeft, Package, MapPin, Shield, Clock, Award, Star, Plus, Trash2, Eye, Save } from "lucide-react";
+import { Truck, CreditCard, CheckCircle, ArrowLeft, Package, MapPin, Shield, Clock, Award, Star, Plus, Trash2, Eye, Save, Palette } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import { toast } from "sonner";
@@ -16,7 +17,7 @@ import { PaystackButton } from 'react-paystack';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Pricing data structure
+// Pricing data structure - max 10,000 bottles
 const pricingData = {
   "500ml": [
     { min: 1, max: 10, price: 10, notes: "Retail / single bottle" },
@@ -26,7 +27,7 @@ const pricingData = {
     { min: 501, max: 1000, price: 7.00, notes: "Entry bulk" },
     { min: 1001, max: 2500, price: 6.80, notes: "Corporate" },
     { min: 2501, max: 5000, price: 6.50, notes: "Large bulk" },
-    { min: 5001, max: 10000, price: 6.00, notes: "Mass supply" }
+    { min: 5001, max: 10000, price: 6.00, notes: "Maximum bulk (Enterprise custom quote for higher quantities)" }
   ],
   "1L": [
     { min: 1, max: 10, price: 15, notes: "" },
@@ -35,7 +36,7 @@ const pricingData = {
     { min: 101, max: 500, price: 12.00, notes: "" },
     { min: 501, max: 1000, price: 11.50, notes: "" },
     { min: 1001, max: 5000, price: 11.00, notes: "" },
-    { min: 5001, max: 10000, price: 10.50, notes: "" }
+    { min: 5001, max: 10000, price: 10.50, notes: "Maximum bulk" }
   ],
   "1.5L": [
     { min: 1, max: 10, price: 14, notes: "" },
@@ -44,7 +45,7 @@ const pricingData = {
     { min: 101, max: 500, price: 12.50, notes: "" },
     { min: 501, max: 1000, price: 12, notes: "" },
     { min: 1001, max: 5000, price: 11.80, notes: "" },
-    { min: 5001, max: 10000, price: 11.50, notes: "" }
+    { min: 5001, max: 10000, price: 11.50, notes: "Maximum bulk" }
   ],
   "2L": [
     { min: 1, max: 10, price: 16, notes: "" },
@@ -53,7 +54,7 @@ const pricingData = {
     { min: 101, max: 500, price: 14.50, notes: "" },
     { min: 501, max: 1000, price: 14, notes: "" },
     { min: 1001, max: 5000, price: 13.80, notes: "" },
-    { min: 5001, max: 10000, price: 13.50, notes: "" }
+    { min: 5001, max: 10000, price: 13.50, notes: "Maximum bulk" }
   ],
   "5L": [
     { min: 1, max: 10, price: 25, notes: "" },
@@ -62,7 +63,7 @@ const pricingData = {
     { min: 101, max: 500, price: 22.50, notes: "" },
     { min: 501, max: 1000, price: 22, notes: "" },
     { min: 1001, max: 5000, price: 21.50, notes: "" },
-    { min: 5001, max: 10000, price: 21, notes: "" }
+    { min: 5001, max: 10000, price: 21, notes: "Maximum bulk" }
   ]
 };
 
@@ -74,6 +75,7 @@ interface CartItem {
   quantity: number;
   unitPrice: number;
   subtotal: number;
+  hasCustomLabel: boolean;
 }
 
 interface ShippingAddress {
@@ -97,6 +99,7 @@ const BulkCheckout = () => {
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [showPricingTiers, setShowPricingTiers] = useState(false);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [useCustomLabel, setUseCustomLabel] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: "",
     company: "",
@@ -116,17 +119,18 @@ const BulkCheckout = () => {
     }
   }, [user, navigate]);
 
-  // Calculate pricing for a given size and quantity
-  const calculatePrice = useCallback((size: BottleSize, qty: number) => {
+  // Calculate pricing for a given size and quantity (with optional custom label)
+  const calculatePrice = useCallback((size: BottleSize, qty: number, hasCustomLabel: boolean = false) => {
     const pricing = pricingData[size];
     const tier = pricing.find(p => qty >= p.min && qty <= p.max);
-    return tier ? tier.price : 0;
+    const basePrice = tier ? tier.price : 0;
+    return hasCustomLabel ? basePrice + 5 : basePrice; // Add R5 for custom label
   }, []);
 
   // Get current price for selected size and quantity
   const getCurrentPrice = useCallback(() => {
-    return calculatePrice(selectedSize, quantity);
-  }, [calculatePrice, selectedSize, quantity]);
+    return calculatePrice(selectedSize, quantity, useCustomLabel);
+  }, [calculatePrice, selectedSize, quantity, useCustomLabel]);
 
   // Get current pricing tier for selected size and quantity
   const getCurrentPriceTier = useCallback(() => {
@@ -161,41 +165,43 @@ const BulkCheckout = () => {
 
     const unitPrice = getCurrentPrice();
     const subtotal = quantity * unitPrice;
-    
+
     // Check if same size already exists in cart
-    const existingItemIndex = cartItems.findIndex(item => item.size === selectedSize);
-    
+    const existingItemIndex = cartItems.findIndex(item => item.size === selectedSize && item.hasCustomLabel === useCustomLabel);
+
     if (existingItemIndex >= 0) {
       // Update existing item
       const updatedItems = [...cartItems];
       const newQuantity = updatedItems[existingItemIndex].quantity + quantity;
-      const newUnitPrice = calculatePrice(selectedSize, newQuantity);
-      
+      const newUnitPrice = calculatePrice(selectedSize, newQuantity, useCustomLabel);
+
       updatedItems[existingItemIndex] = {
         ...updatedItems[existingItemIndex],
         quantity: newQuantity,
         unitPrice: newUnitPrice,
         subtotal: newQuantity * newUnitPrice
       };
-      
+
       setCartItems(updatedItems);
       toast.success(`Updated ${selectedSize} bottles in cart`);
     } else {
       // Add new item
       const newItem: CartItem = {
-        id: `${selectedSize}-${Date.now()}`,
+        id: `${selectedSize}-${useCustomLabel ? 'custom' : 'standard'}-${Date.now()}`,
         size: selectedSize,
         quantity,
         unitPrice,
-        subtotal
+        subtotal,
+        hasCustomLabel: useCustomLabel
       };
 
       setCartItems(prev => [...prev, newItem]);
-      toast.success(`Added ${quantity} × ${selectedSize} bottles to cart`);
+      toast.success(`Added ${quantity} × ${selectedSize} bottles${useCustomLabel ? ' with custom label' : ''} to cart`);
     }
 
     // Reset form
     setQuantity(500);
+    setUseCustomLabel(false);
   };
 
   const removeFromCart = useCallback((id: string) => {
@@ -211,7 +217,7 @@ const BulkCheckout = () => {
 
     setCartItems(prev => prev.map(item => {
       if (item.id === id) {
-        const newUnitPrice = calculatePrice(item.size, newQuantity);
+        const newUnitPrice = calculatePrice(item.size, newQuantity, item.hasCustomLabel);
         return {
           ...item,
           quantity: newQuantity,
@@ -388,9 +394,18 @@ const BulkCheckout = () => {
                       <div className="flex items-center gap-2 lg:gap-3 mb-1 lg:mb-2">
                         <span className="font-semibold text-sm lg:text-base">{item.size} Bottles</span>
                         <Badge variant="secondary" className="text-xs">{item.quantity} bottles</Badge>
+                        {item.hasCustomLabel && (
+                          <Badge variant="outline" className="text-xs border-primary text-primary">
+                            <Palette className="w-3 h-3 mr-1" />
+                            Custom Label
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-xs lg:text-sm text-slate-600">
                         R{item.unitPrice.toFixed(2)} per bottle
+                        {item.hasCustomLabel && (
+                          <span className="text-primary"> (includes +R5 custom label)</span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 lg:gap-3">
@@ -487,6 +502,28 @@ const BulkCheckout = () => {
                 </div>
               </div>
 
+              {/* Custom Label Option */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="custom-label"
+                    checked={useCustomLabel}
+                    onCheckedChange={setUseCustomLabel}
+                  />
+                  <Label htmlFor="custom-label" className="text-sm font-medium flex items-center gap-2">
+                    <Palette className="w-4 h-4 text-primary" />
+                    Add Custom Label (+R5 per bottle)
+                  </Label>
+                </div>
+                {useCustomLabel && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-800">
+                      Design your custom label in your profile. The R5 additional cost covers premium label printing and application.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {/* Quantity Input */}
               <div>
                 <Label className="text-sm font-medium mb-2 lg:mb-3 block">Quantity</Label>
@@ -525,7 +562,12 @@ const BulkCheckout = () => {
                       </Badge>
                     </div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm lg:text-base font-medium">Unit Price</span>
+                      <span className="text-sm lg:text-base font-medium">
+                        Unit Price
+                        {useCustomLabel && (
+                          <span className="text-xs text-primary ml-1">(+R5 custom)</span>
+                        )}
+                      </span>
                       <span className="font-semibold">R{getCurrentPrice().toFixed(2)}</span>
                     </div>
                     <Separator className="my-2" />
@@ -533,6 +575,11 @@ const BulkCheckout = () => {
                       <span className="font-semibold">Subtotal for {quantity} bottles</span>
                       <span className="text-base lg:text-lg font-bold text-slate-900">R{(quantity * getCurrentPrice()).toFixed(2)}</span>
                     </div>
+                    {useCustomLabel && (
+                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                        Custom label adds R{(quantity * 5).toFixed(2)} to your total
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -845,16 +892,33 @@ const BulkCheckout = () => {
               {cartItems.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 lg:gap-4 p-3 lg:p-4 bg-slate-50 rounded-lg">
                   <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-                    <Package className="h-6 w-6 lg:h-8 lg:w-8 text-slate-600" />
+                    {item.hasCustomLabel ? (
+                      <Palette className="h-6 w-6 lg:h-8 lg:w-8 text-primary" />
+                    ) : (
+                      <Package className="h-6 w-6 lg:h-8 lg:w-8 text-slate-600" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-sm lg:text-base">{item.size} Water Bottles</h4>
-                    <p className="text-xs lg:text-sm text-slate-600">Premium grade, BPA-free</p>
+                    <h4 className="font-semibold text-sm lg:text-base">
+                      {item.size} Water Bottles
+                      {item.hasCustomLabel && (
+                        <Badge variant="outline" className="ml-2 text-xs border-primary text-primary">
+                          Custom Label
+                        </Badge>
+                      )}
+                    </h4>
+                    <p className="text-xs lg:text-sm text-slate-600">
+                      Premium grade, BPA-free
+                      {item.hasCustomLabel && ', custom branded'}
+                    </p>
                     <p className="text-xs lg:text-sm text-slate-500">Quantity: {item.quantity} bottles</p>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-base lg:text-lg font-bold">R{item.subtotal.toFixed(2)}</p>
-                    <p className="text-xs lg:text-sm text-slate-500">R{item.unitPrice.toFixed(2)} each</p>
+                    <p className="text-xs lg:text-sm text-slate-500">
+                      R{item.unitPrice.toFixed(2)} each
+                      {item.hasCustomLabel && ' (incl. custom label)'}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -985,11 +1049,25 @@ const BulkCheckout = () => {
           {cartItems.map((item) => (
             <div key={item.id} className="flex items-center gap-3 lg:gap-4 p-3 lg:p-4 bg-slate-50 rounded-lg">
               <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-                <Package className="h-6 w-6 lg:h-8 lg:w-8 text-slate-600" />
+                {item.hasCustomLabel ? (
+                  <Palette className="h-6 w-6 lg:h-8 lg:w-8 text-primary" />
+                ) : (
+                  <Package className="h-6 w-6 lg:h-8 lg:w-8 text-slate-600" />
+                )}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-sm lg:text-base">{item.size} Water Bottles</h4>
-                <p className="text-xs lg:text-sm text-slate-600">{item.quantity} bottles × R{item.unitPrice.toFixed(2)} each</p>
+                <h4 className="font-semibold text-sm lg:text-base">
+                  {item.size} Water Bottles
+                  {item.hasCustomLabel && (
+                    <Badge variant="outline" className="ml-2 text-xs border-primary text-primary">
+                      Custom Label
+                    </Badge>
+                  )}
+                </h4>
+                <p className="text-xs lg:text-sm text-slate-600">
+                  {item.quantity} bottles × R{item.unitPrice.toFixed(2)} each
+                  {item.hasCustomLabel && ' (includes custom label)'}
+                </p>
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="text-lg lg:text-xl font-bold">R{item.subtotal.toFixed(2)}</p>

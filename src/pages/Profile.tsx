@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { userLabelsService, UserLabel } from "@/services/userLabels";
+import { encryptedAddressService } from "@/services/encryptedAddressService";
+import { AddressData, EncryptedAddress } from "@/utils/encryption";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -11,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
@@ -112,6 +116,23 @@ const Profile = () => {
   const [defaultLabel, setDefaultLabel] = useState<UserLabel | null>(null);
   const [savedShippingDetails, setSavedShippingDetails] = useState<any[]>([]);
   const [loadingLabels, setLoadingLabels] = useState(false);
+
+  // Encrypted address state
+  const [encryptedAddresses, setEncryptedAddresses] = useState<EncryptedAddress[]>([]);
+  const [defaultAddress, setDefaultAddress] = useState<EncryptedAddress | null>(null);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<EncryptedAddress | null>(null);
+  const [addressForm, setAddressForm] = useState<AddressData>({
+    fullName: "",
+    company: "",
+    address1: "",
+    address2: "",
+    city: "",
+    province: "",
+    postalCode: "",
+    phone: ""
+  });
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -236,6 +257,9 @@ const Profile = () => {
 
       // Load user labels from Supabase instead of localStorage
       await loadUserLabels();
+
+      // Load encrypted addresses
+      await loadEncryptedAddresses();
     } catch (e) {
       console.log("Error loading localStorage data:", e);
     }
@@ -373,9 +397,6 @@ const Profile = () => {
         case "purchases":
           loadPurchasesData();
           break;
-        case "recents":
-          loadRecentItems();
-          break;
       }
     }, 50);
   }, [loadActivityData, loadPurchasesData, loadRecentItems]);
@@ -494,6 +515,119 @@ const Profile = () => {
     }
   }, [loadUserLabels]);
 
+  // Load encrypted addresses
+  const loadEncryptedAddresses = useCallback(async () => {
+    if (!user?.id) return;
+
+    setLoadingAddresses(true);
+    try {
+      const [addresses, defaultAddr] = await Promise.all([
+        encryptedAddressService.getUserAddresses(user.id),
+        encryptedAddressService.getDefaultAddress(user.id)
+      ]);
+
+      setEncryptedAddresses(addresses);
+      setDefaultAddress(defaultAddr);
+    } catch (error) {
+      console.error('Error loading encrypted addresses:', error);
+    } finally {
+      setLoadingAddresses(false);
+    }
+  }, [user]);
+
+  // Initialize address form
+  const initializeAddressForm = useCallback((address?: EncryptedAddress) => {
+    if (address) {
+      // If editing, decrypt and populate form
+      encryptedAddressService.getDecryptedAddress(address.id!, user!.id).then(decrypted => {
+        if (decrypted) {
+          setAddressForm(decrypted);
+        }
+      });
+    } else {
+      // New address form
+      setAddressForm({
+        fullName: basicProfile?.name || "",
+        company: "",
+        address1: "",
+        address2: "",
+        city: "",
+        province: "",
+        postalCode: "",
+        phone: basicProfile?.phone || ""
+      });
+    }
+  }, [user, basicProfile]);
+
+  // Handle address form changes
+  const handleAddressChange = useCallback((field: keyof AddressData, value: string) => {
+    setAddressForm(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  // Save address
+  const saveAddress = useCallback(async () => {
+    if (!user?.id) return;
+
+    if (editingAddress) {
+      // Update existing address
+      const updated = await encryptedAddressService.updateAddress(
+        editingAddress.id!,
+        user.id,
+        addressForm
+      );
+      if (updated) {
+        setShowAddressForm(false);
+        setEditingAddress(null);
+        await loadEncryptedAddresses();
+      }
+    } else {
+      // Create new address
+      const created = await encryptedAddressService.saveAddress(
+        user.id,
+        addressForm,
+        encryptedAddresses.length === 0 // Set as default if it's the first address
+      );
+      if (created) {
+        setShowAddressForm(false);
+        await loadEncryptedAddresses();
+      }
+    }
+  }, [user, editingAddress, addressForm, encryptedAddresses.length, loadEncryptedAddresses]);
+
+  // Set default address
+  const handleSetDefaultAddress = useCallback(async (addressId: string) => {
+    if (!user?.id) return;
+
+    const success = await encryptedAddressService.setDefaultAddress(addressId, user.id);
+    if (success) {
+      await loadEncryptedAddresses();
+    }
+  }, [user, loadEncryptedAddresses]);
+
+  // Delete address
+  const handleDeleteAddress = useCallback(async (addressId: string) => {
+    if (!user?.id) return;
+
+    const success = await encryptedAddressService.deleteAddress(addressId, user.id);
+    if (success) {
+      await loadEncryptedAddresses();
+    }
+  }, [user, loadEncryptedAddresses]);
+
+  // Edit address
+  const handleEditAddress = useCallback((address: EncryptedAddress) => {
+    setEditingAddress(address);
+    initializeAddressForm(address);
+    setShowAddressForm(true);
+  }, [initializeAddressForm]);
+
+  // Start new address
+  const handleNewAddress = useCallback(() => {
+    setEditingAddress(null);
+    initializeAddressForm();
+    setShowAddressForm(true);
+  }, [initializeAddressForm]);
+
   const viewItemDetails = useCallback((item: RecentItem) => {
     if (item.type === 'order') {
       navigate("/orders");
@@ -563,7 +697,7 @@ const Profile = () => {
 
           {/* Profile Tabs */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Settings
@@ -575,10 +709,6 @@ const Profile = () => {
               <TabsTrigger value="purchases" className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4" />
                 Orders
-              </TabsTrigger>
-              <TabsTrigger value="recents" className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Recent
               </TabsTrigger>
               <TabsTrigger value="activity" className="flex items-center gap-2">
                 <Activity className="w-4 h-4" />
@@ -595,21 +725,11 @@ const Profile = () => {
               {/* Saved Labels Management */}
               <Card>
                 <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle>My Saved Labels</CardTitle>
-                      <CardDescription>
-                        Manage your custom bottle label designs for enterprise orders
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate('/enterprise')}
-                      className="shrink-0"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create New
-                    </Button>
+                  <div>
+                    <CardTitle>My Saved Labels</CardTitle>
+                    <CardDescription>
+                      Manage your custom bottle label designs for enterprise orders
+                    </CardDescription>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -685,13 +805,9 @@ const Profile = () => {
                       <Tag className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                       <h3 className="text-lg font-medium mb-2">No Custom Labels Yet</h3>
                       <p className="text-muted-foreground mb-6">
-                        Create custom labels for your enterprise orders. These will be available
-                        when requesting quotes and can be set as your default branding.
+                        Create custom labels using the designer below. These will be available
+                        for your enterprise orders and can be set as your default branding.
                       </p>
-                      <Button onClick={() => navigate('/enterprise')} size="lg">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Your First Label
-                      </Button>
                     </div>
                   )}
                 </CardContent>
@@ -700,9 +816,9 @@ const Profile = () => {
               {/* Label Designer */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Label Designer</CardTitle>
+                  <CardTitle>Custom Label Designer</CardTitle>
                   <CardDescription>
-                    Create new custom labels directly from your profile
+                    Create and save custom labels for your bottles. Design with text, images, and branding elements.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -772,21 +888,11 @@ const Profile = () => {
               {/* Saved Labels Management */}
               <Card>
                 <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle>My Saved Labels</CardTitle>
-                      <CardDescription>
-                        Manage your custom bottle label designs
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate('/enterprise')}
-                      className="shrink-0"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create New
-                    </Button>
+                  <div>
+                    <CardTitle>My Saved Labels</CardTitle>
+                    <CardDescription>
+                      Manage your custom bottle label designs. Use the Labels tab to create new designs.
+                    </CardDescription>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -844,7 +950,7 @@ const Profile = () => {
                     <div className="text-center py-8">
                       <Tag className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground mb-4">No custom labels created yet</p>
-                      <Button onClick={() => navigate('/enterprise')}>Create Your First Label</Button>
+                      <p className="text-sm text-muted-foreground">Switch to the Labels tab to create your first custom label design.</p>
                     </div>
                   )}
                 </CardContent>
@@ -934,54 +1040,6 @@ const Profile = () => {
               </Card>
             </TabsContent>
 
-            {/* Recent Items Tab */}
-            <TabsContent value="recents" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                  <CardDescription>
-                    Your recent orders and interactions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {loadingStates.recents ? (
-                    <RecentItemsSkeleton />
-                  ) : recentItems.length > 0 ? (
-                    <div className="space-y-3">
-                      {recentItems.map((item) => (
-                        <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <ShoppingBag className="w-5 h-5 text-primary" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-medium text-sm">{item.name}</h3>
-                            <p className="text-xs text-muted-foreground">{item.description}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDateTime(item.timestamp)}
-                            </p>
-                          </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => viewItemDetails(item)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">No recent activity</p>
-                      <Button className="mt-4" onClick={() => navigate("/products")}>
-                        Browse Products
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             {/* Activity Tab */}
             <TabsContent value="activity" className="space-y-4">
@@ -1031,41 +1089,214 @@ const Profile = () => {
             <TabsContent value="delivery" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Saved Addresses</CardTitle>
-                  <CardDescription>
-                    Manage your delivery addresses
-                  </CardDescription>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Delivery Addresses</CardTitle>
+                      <CardDescription>
+                        Manage your encrypted delivery addresses securely
+                      </CardDescription>
+                    </div>
+                    <Button onClick={handleNewAddress}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Address
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  {savedShippingDetails.length > 0 ? (
-                    <div className="space-y-3">
-                      {savedShippingDetails.map((details, index) => (
-                        <div key={index} className="border rounded-lg p-3">
-                          <div className="flex items-center justify-between mb-1">
-                            <h4 className="font-medium text-sm">{details.name || "Address"}</h4>
-                            <Badge variant="outline">
-                              <Truck className="w-3 h-3 mr-1" />
-                              Saved
-                            </Badge>
+                  {loadingAddresses ? (
+                    <div className="h-32 flex items-center justify-center">
+                      <LoadingSpinner message="Loading addresses..." />
+                    </div>
+                  ) : encryptedAddresses.length > 0 ? (
+                    <div className="space-y-4">
+                      {encryptedAddresses.map((address) => (
+                        <div key={address.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <Truck className="w-5 h-5 text-primary" />
+                              </div>
+                              <div>
+                                <h3 className="font-medium">
+                                  {encryptedAddressService.getAddressPreview(address)}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  Added {new Date(address.created_at!).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {address.is_default ? (
+                                <Badge variant="default" className="bg-primary/10 text-primary">
+                                  <Star className="w-3 h-3 mr-1" />
+                                  Default
+                                </Badge>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleSetDefaultAddress(address.id!)}
+                                >
+                                  <Settings className="w-4 h-4 mr-1" />
+                                  Set Default
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditAddress(address)}
+                              >
+                                <Settings className="w-4 h-4 mr-1" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteAddress(address.id!)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            <p>{details.address}</p>
-                            <p>{details.city}, {details.province}</p>
+                            <p>🔒 Address data is encrypted and secure</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <Truck className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground mb-4">No saved addresses</p>
-                      <Button onClick={() => navigate("/products")}>
-                        Shop to Add Addresses
+                    <div className="text-center py-12">
+                      <Truck className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No Delivery Addresses</h3>
+                      <p className="text-muted-foreground mb-6">
+                        Add your delivery addresses to make checkout faster. All addresses are encrypted for security.
+                      </p>
+                      <Button onClick={handleNewAddress} size="lg">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Your First Address
                       </Button>
                     </div>
                   )}
                 </CardContent>
               </Card>
+
+              {/* Address Form Dialog */}
+              <Dialog open={showAddressForm} onOpenChange={setShowAddressForm}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingAddress ? 'Edit Address' : 'Add New Address'}
+                    </DialogTitle>
+                    <DialogDescription>
+                      Your address information will be encrypted before saving.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="fullName">Full Name *</Label>
+                        <Input
+                          id="fullName"
+                          value={addressForm.fullName}
+                          onChange={(e) => handleAddressChange('fullName', e.target.value)}
+                          placeholder="Enter full name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="company">Company</Label>
+                        <Input
+                          id="company"
+                          value={addressForm.company}
+                          onChange={(e) => handleAddressChange('company', e.target.value)}
+                          placeholder="Company name"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="address1">Address Line 1 *</Label>
+                      <Input
+                        id="address1"
+                        value={addressForm.address1}
+                        onChange={(e) => handleAddressChange('address1', e.target.value)}
+                        placeholder="Street address"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="address2">Address Line 2</Label>
+                      <Input
+                        id="address2"
+                        value={addressForm.address2}
+                        onChange={(e) => handleAddressChange('address2', e.target.value)}
+                        placeholder="Apartment, suite, etc."
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="city">City *</Label>
+                        <Input
+                          id="city"
+                          value={addressForm.city}
+                          onChange={(e) => handleAddressChange('city', e.target.value)}
+                          placeholder="City"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="province">Province *</Label>
+                        <Select value={addressForm.province} onValueChange={(value) => handleAddressChange('province', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select province" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gauteng">Gauteng</SelectItem>
+                            <SelectItem value="western-cape">Western Cape</SelectItem>
+                            <SelectItem value="kwazulu-natal">KwaZulu-Natal</SelectItem>
+                            <SelectItem value="eastern-cape">Eastern Cape</SelectItem>
+                            <SelectItem value="free-state">Free State</SelectItem>
+                            <SelectItem value="limpopo">Limpopo</SelectItem>
+                            <SelectItem value="mpumalanga">Mpumalanga</SelectItem>
+                            <SelectItem value="north-west">North West</SelectItem>
+                            <SelectItem value="northern-cape">Northern Cape</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="postalCode">Postal Code *</Label>
+                        <Input
+                          id="postalCode"
+                          value={addressForm.postalCode}
+                          onChange={(e) => handleAddressChange('postalCode', e.target.value)}
+                          placeholder="Postal code"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Phone Number *</Label>
+                        <Input
+                          id="phone"
+                          value={addressForm.phone}
+                          onChange={(e) => handleAddressChange('phone', e.target.value)}
+                          placeholder="Phone number"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowAddressForm(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={saveAddress}>
+                      <Save className="w-4 h-4 mr-2" />
+                      {editingAddress ? 'Update' : 'Save'} Address
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </TabsContent>
           </Tabs>
         </div>

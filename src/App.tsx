@@ -3,12 +3,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { initializeGlobalScrollToTop } from "@/hooks/use-scroll-to-top";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { orderTrackingService } from "@/services/orderTracking";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import SmartLoadingSpinner from "@/components/SmartLoadingSpinner";
+import { pagePreloader } from "@/utils/preloader";
+import { loadingStateManager } from "@/utils/loadingStateManager";
 
 // Lazy load all pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -43,19 +46,37 @@ const queryClient = new QueryClient({
   },
 });
 
-// Page loading fallback component
+// Page loading fallback component with smart loading
 const PageLoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
-    <LoadingSpinner message="Loading page..." size="lg" />
+    <SmartLoadingSpinner message="Loading page..." size="lg" />
   </div>
 );
+
+// Navigation tracker component to track route changes
+const NavigationTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    loadingStateManager.onNavigation(location.pathname);
+  }, [location]);
+
+  return null;
+};
 
 const App = () => {
   useEffect(() => {
     // Initialize global scroll to top for all button clicks
     initializeGlobalScrollToTop();
 
+    // Start page preloading for instant navigation
+    pagePreloader.startPreloading();
+
+    // Initialize loading state manager
+    loadingStateManager.initialize();
+
     // App initialization complete
+    console.log('🚀 MyFuze App initialized with preloading');
   }, []);
 
   return (
@@ -66,6 +87,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <NavigationTracker />
               <Suspense fallback={<PageLoadingFallback />}>
                 <Routes>
                   <Route path="/" element={<Index />} />

@@ -29,8 +29,8 @@ const Layout2About = () => {
   ];
 
   const stats = [
-    { icon: Users, value: "50,000+", label: "Satisfied Customers" },
-    { icon: Globe, value: "15", label: "Countries Served" },
+    { icon: Users, value: "Endless", label: "Satisfied Customers" },
+    { icon: Globe, value: "SA", label: "South Africa Proud" },
     { icon: Heart, value: "99.9%", label: "Purity Guaranteed" },
     { icon: CheckCircle, value: "24/7", label: "Quality Control" }
   ];
