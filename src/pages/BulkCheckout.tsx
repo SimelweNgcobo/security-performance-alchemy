@@ -164,41 +164,43 @@ const BulkCheckout = () => {
 
     const unitPrice = getCurrentPrice();
     const subtotal = quantity * unitPrice;
-    
+
     // Check if same size already exists in cart
-    const existingItemIndex = cartItems.findIndex(item => item.size === selectedSize);
-    
+    const existingItemIndex = cartItems.findIndex(item => item.size === selectedSize && item.hasCustomLabel === useCustomLabel);
+
     if (existingItemIndex >= 0) {
       // Update existing item
       const updatedItems = [...cartItems];
       const newQuantity = updatedItems[existingItemIndex].quantity + quantity;
-      const newUnitPrice = calculatePrice(selectedSize, newQuantity);
-      
+      const newUnitPrice = calculatePrice(selectedSize, newQuantity, useCustomLabel);
+
       updatedItems[existingItemIndex] = {
         ...updatedItems[existingItemIndex],
         quantity: newQuantity,
         unitPrice: newUnitPrice,
         subtotal: newQuantity * newUnitPrice
       };
-      
+
       setCartItems(updatedItems);
       toast.success(`Updated ${selectedSize} bottles in cart`);
     } else {
       // Add new item
       const newItem: CartItem = {
-        id: `${selectedSize}-${Date.now()}`,
+        id: `${selectedSize}-${useCustomLabel ? 'custom' : 'standard'}-${Date.now()}`,
         size: selectedSize,
         quantity,
         unitPrice,
-        subtotal
+        subtotal,
+        hasCustomLabel: useCustomLabel
       };
 
       setCartItems(prev => [...prev, newItem]);
-      toast.success(`Added ${quantity} × ${selectedSize} bottles to cart`);
+      toast.success(`Added ${quantity} × ${selectedSize} bottles${useCustomLabel ? ' with custom label' : ''} to cart`);
     }
 
     // Reset form
     setQuantity(500);
+    setUseCustomLabel(false);
   };
 
   const removeFromCart = useCallback((id: string) => {
