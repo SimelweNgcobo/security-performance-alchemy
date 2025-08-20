@@ -373,9 +373,6 @@ const Profile = () => {
         case "purchases":
           loadPurchasesData();
           break;
-        case "recents":
-          loadRecentItems();
-          break;
       }
     }, 50);
   }, [loadActivityData, loadPurchasesData, loadRecentItems]);
