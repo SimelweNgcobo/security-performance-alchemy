@@ -179,26 +179,13 @@ class UserLabelsService {
       backgroundColor: '#ffffff',
       elements: [
         {
-          id: 'logo-text',
-          type: 'text',
-          content: 'MyFuze',
-          x: 132,
-          y: 30,
-          fontSize: 28,
-          fontFamily: 'Arial, sans-serif',
-          color: '#1e40af',
-          textAlign: 'center'
-        },
-        {
-          id: 'tagline',
-          type: 'text',
-          content: 'Pure Water, Pure Quality',
-          x: 132,
-          y: 45,
-          fontSize: 12,
-          fontFamily: 'Arial, sans-serif',
-          color: '#64748b',
-          textAlign: 'center'
+          id: 'myfuze-logo-image',
+          type: 'image',
+          src: 'https://cdn.builder.io/api/v1/image/assets%2F78c54f0f820f4ef89b161934d7e5758a%2F9f55ebccb8d94d739820d7c8aa1bd09a?format=webp&width=800',
+          x: 0,
+          y: 0,
+          width: 264 * 3.78, // Full width in pixels (264mm * 3.78 px/mm)
+          height: 60 * 3.78   // Full height in pixels (60mm * 3.78 px/mm)
         }
       ]
     };
@@ -207,7 +194,7 @@ class UserLabelsService {
       userId,
       'MyFuze Default',
       defaultDesign,
-      'Default MyFuze branding label',
+      'Default MyFuze branding label with official logo',
       true
     );
   }
