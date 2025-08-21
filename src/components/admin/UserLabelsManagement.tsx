@@ -52,10 +52,7 @@ export const UserLabelsManagement = () => {
       const { data, error } = await supabase
         .from("user_labels")
         .select(`
-          *,
-          users:user_id (
-            email
-          )
+          *
         `)
         .order("created_at", { ascending: false });
 
@@ -63,7 +60,12 @@ export const UserLabelsManagement = () => {
         throw error;
       }
 
-      setLabels(data || []);
+      setLabels(data?.map(label => ({
+        ...label,
+        design_data: label.design_data || {},
+        dimensions: typeof label.dimensions === 'object' ? label.dimensions as { width: number; height: number } : { width: 264, height: 60 },
+        users: { email: '' }
+      })) || []);
     } catch (error) {
       console.error("Error loading user labels:", error);
       toast.error("Failed to load user labels");
@@ -109,7 +111,7 @@ export const UserLabelsManagement = () => {
   const filteredLabels = labels.filter(label => 
     label.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     label.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (label.users as any)?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    label.user_id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -214,7 +216,7 @@ export const UserLabelsManagement = () => {
                         <div className="flex items-center gap-2">
                           <User className="w-4 h-4 text-muted-foreground" />
                           <span className="text-sm">
-                            {(label.users as any)?.email || 'Unknown User'}
+                            {label.user_id}
                           </span>
                         </div>
                       </TableCell>
@@ -282,7 +284,7 @@ export const UserLabelsManagement = () => {
                                         </div>
                                         <div className="flex justify-between">
                                           <span className="text-muted-foreground">User:</span>
-                                          <span>{(selectedLabel.users as any)?.email || 'Unknown'}</span>
+                                          <span>{label.user_id}</span>
                                         </div>
                                         <div className="flex justify-between">
                                           <span className="text-muted-foreground">Status:</span>

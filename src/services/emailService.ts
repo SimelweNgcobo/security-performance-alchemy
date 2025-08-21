@@ -65,7 +65,7 @@ class EmailService {
         userEmail: request.contact_email,
         companyName: request.company_name,
         requirements: request.requirements,
-        designs: request.designs
+        designs: Array.isArray(request.designs) ? request.designs : []
       };
 
       await this.sendQuoteEmail(emailData);

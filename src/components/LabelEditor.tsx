@@ -199,7 +199,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     setDesign(prev => ({
       ...prev,
       elements: prev.elements.map(el => 
-        el.id === id ? { ...el, ...updates } : el
+        el.id === id ? { ...el, ...updates } as Element : el
       )
     }));
   };

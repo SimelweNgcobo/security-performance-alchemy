@@ -41,7 +41,11 @@ class UserLabelsService {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return data?.map(label => ({
+        ...label,
+        design_data: label.design_data || {},
+        dimensions: typeof label.dimensions === 'object' ? label.dimensions as { width: number; height: number } : { width: 264, height: 60 }
+      })) || [];
     } catch (error) {
       console.error('Error fetching user labels:', error);
       toast.error('Failed to load saved labels');
@@ -59,7 +63,11 @@ class UserLabelsService {
         .single();
 
       if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows found
-      return data || null;
+      return data ? {
+        ...data,
+        design_data: data.design_data || {},
+        dimensions: typeof data.dimensions === 'object' ? data.dimensions as { width: number; height: number } : { width: 264, height: 60 }
+      } : null;
     } catch (error) {
       console.error('Error fetching default label:', error);
       return null;
@@ -78,9 +86,9 @@ class UserLabelsService {
         user_id: userId,
         name,
         description,
-        design_data: designData,
+        design_data: designData as any,
         is_default: isDefault,
-        dimensions: { width: 264, height: 60 }
+        dimensions: { width: 264, height: 60 } as any
       };
 
       const { data, error } = await supabase
@@ -92,7 +100,11 @@ class UserLabelsService {
       if (error) throw error;
 
       toast.success(`Label "${name}" saved successfully!`);
-      return data;
+      return {
+        ...data,
+        design_data: data.design_data || {},
+        dimensions: typeof data.dimensions === 'object' ? data.dimensions as { width: number; height: number } : { width: 264, height: 60 }
+      };
     } catch (error) {
       console.error('Error saving label:', error);
       toast.error('Failed to save label');
@@ -112,7 +124,7 @@ class UserLabelsService {
     try {
       const { data, error } = await supabase
         .from('user_labels')
-        .update(updates)
+        .update(updates as any)
         .eq('id', labelId)
         .select()
         .single();
@@ -120,7 +132,11 @@ class UserLabelsService {
       if (error) throw error;
 
       toast.success('Label updated successfully!');
-      return data;
+      return {
+        ...data,
+        design_data: data.design_data || {},
+        dimensions: typeof data.dimensions === 'object' ? data.dimensions as { width: number; height: number } : { width: 264, height: 60 }
+      };
     } catch (error) {
       console.error('Error updating label:', error);
       toast.error('Failed to update label');

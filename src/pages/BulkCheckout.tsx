@@ -508,7 +508,7 @@ const BulkCheckout = () => {
                   <Checkbox
                     id="custom-label"
                     checked={useCustomLabel}
-                    onCheckedChange={setUseCustomLabel}
+                    onCheckedChange={(checked) => setUseCustomLabel(checked === true)}
                   />
                   <Label htmlFor="custom-label" className="text-sm font-medium flex items-center gap-2">
                     <Palette className="w-4 h-4 text-primary" />

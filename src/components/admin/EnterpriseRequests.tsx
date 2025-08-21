@@ -55,6 +55,10 @@ export const EnterpriseRequests = () => {
       status: "pending",
       user_id: "user-123",
       created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      designs: null,
+      quote_amount: null,
+      quote_valid_until: null,
       notes: ""
     },
     {
@@ -65,7 +69,10 @@ export const EnterpriseRequests = () => {
       status: "reviewing",
       user_id: "user-456",
       created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      label_design_url: "https://example.com/design.png",
+      updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      designs: { label_design_url: "https://example.com/design.png" },
+      quote_amount: null,
+      quote_valid_until: null,
       notes: "Customer interested in recyclable materials"
     },
     {
@@ -76,6 +83,10 @@ export const EnterpriseRequests = () => {
       status: "quoted",
       user_id: "user-789",
       created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      designs: null,
+      quote_amount: 45000,
+      quote_valid_until: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
       notes: "Quote sent R45,000 including rush delivery"
     }
   ];

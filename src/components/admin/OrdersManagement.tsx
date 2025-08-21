@@ -62,7 +62,10 @@ export function OrdersManagement() {
         .limit(50); // Limit to 50 orders for better performance
 
       if (error) throw error;
-      setOrders(data || []);
+      setOrders(data?.map(order => ({
+        ...order,
+        metadata: typeof order.metadata === 'string' ? order.metadata : JSON.stringify(order.metadata || {})
+      })) || []);
     } catch (error) {
       console.error("Error loading orders:", error);
       toast.error("Failed to load orders");

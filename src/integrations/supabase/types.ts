@@ -52,6 +52,53 @@ export type Database = {
           },
         ]
       }
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_user_id: string | null
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          table_name: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_log_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_users: {
         Row: {
           created_at: string | null
@@ -274,6 +321,60 @@ export type Database = {
           },
         ]
       }
+      email_queue: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          error_message: string | null
+          from_email: string | null
+          html_content: string | null
+          id: string
+          max_attempts: number | null
+          scheduled_for: string | null
+          sent_at: string | null
+          status: string | null
+          subject: string
+          template_data: Json | null
+          template_id: string | null
+          text_content: string | null
+          to_email: string
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          from_email?: string | null
+          html_content?: string | null
+          id?: string
+          max_attempts?: number | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject: string
+          template_data?: Json | null
+          template_id?: string | null
+          text_content?: string | null
+          to_email: string
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          from_email?: string | null
+          html_content?: string | null
+          id?: string
+          max_attempts?: number | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string
+          template_data?: Json | null
+          template_id?: string | null
+          text_content?: string | null
+          to_email?: string
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           created_at: string
@@ -301,6 +402,36 @@ export type Database = {
           template_name?: string
           updated_at?: string
           variables?: Json | null
+        }
+        Relationships: []
+      }
+      encrypted_addresses: {
+        Row: {
+          created_at: string | null
+          encrypted_data: string
+          id: string
+          is_default: boolean | null
+          metadata: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          encrypted_data: string
+          id?: string
+          is_default?: boolean | null
+          metadata?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          encrypted_data?: string
+          id?: string
+          is_default?: boolean | null
+          metadata?: Json | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -473,6 +604,59 @@ export type Database = {
           },
         ]
       }
+      order_tracking: {
+        Row: {
+          actual_delivery: string | null
+          carrier: string | null
+          created_at: string | null
+          estimated_delivery: string | null
+          id: string
+          location: string | null
+          metadata: Json | null
+          notes: string | null
+          order_id: string | null
+          status: string
+          tracking_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_delivery?: string | null
+          carrier?: string | null
+          created_at?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          order_id?: string | null
+          status: string
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_delivery?: string | null
+          carrier?: string | null
+          created_at?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          order_id?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_tracking_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           created_at: string | null
@@ -531,6 +715,53 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          order_id: string | null
+          provider: string
+          provider_response: Json | null
+          status: string
+          transaction_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          order_id?: string | null
+          provider: string
+          provider_response?: Json | null
+          status: string
+          transaction_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          order_id?: string | null
+          provider?: string
+          provider_response?: Json | null
+          status?: string
+          transaction_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -619,6 +850,50 @@ export type Database = {
           {
             foreignKeyName: "refunds_processed_by_fkey"
             columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_settings: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_public: boolean | null
+          setting_key: string
+          setting_value: Json
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          setting_key: string
+          setting_value: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_settings_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "admin_users"
             referencedColumns: ["id"]
@@ -723,6 +998,16 @@ export type Database = {
         }
         Returns: string
       }
+      create_order_with_tracking: {
+        Args: {
+          p_customer_id: string
+          p_items: Json[]
+          p_order_data: Json
+          p_payment_data?: Json
+          p_user_id: string
+        }
+        Returns: Json
+      }
       generate_invoice_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -733,6 +1018,38 @@ export type Database = {
       }
       is_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      process_payment: {
+        Args: {
+          p_amount: number
+          p_order_id: string
+          p_provider: string
+          p_provider_response?: Json
+          p_status: string
+          p_transaction_id: string
+        }
+        Returns: boolean
+      }
+      queue_email: {
+        Args: {
+          p_html_content?: string
+          p_scheduled_for?: string
+          p_subject: string
+          p_template_data?: Json
+          p_template_id?: string
+          p_to_email: string
+        }
+        Returns: string
+      }
+      update_order_status: {
+        Args: {
+          p_delivery_status?: string
+          p_order_id: string
+          p_payment_status?: string
+          p_status: string
+          p_tracking_data?: Json
+        }
         Returns: boolean
       }
     }
