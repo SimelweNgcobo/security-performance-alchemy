@@ -39,7 +39,9 @@ import {
   Star,
   Trash2,
   Settings,
-  Plus
+  Plus,
+  Palette,
+  RotateCcw
 } from "lucide-react";
 
 // Lazy load heavy components
