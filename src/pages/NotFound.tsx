@@ -1,10 +1,11 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Home } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.error(
@@ -111,7 +112,7 @@ const NotFound = () => {
             Go Back
           </Button>
           <Button
-            onClick={() => window.location.href = '/'}
+            onClick={() => navigate('/')}
             size="lg"
             className="px-6 py-3 bg-primary hover:bg-primary/90"
           >

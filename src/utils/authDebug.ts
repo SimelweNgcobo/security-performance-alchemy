@@ -106,5 +106,5 @@ export const debugAuth = {
 
 // Add to window for easy access in browser console
 if (typeof window !== 'undefined') {
-  (window as any).debugAuth = debugAuth;
+  (globalThis as any).debugAuth = debugAuth;
 }

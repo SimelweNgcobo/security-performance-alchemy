@@ -48,19 +48,6 @@ export default function AdminPanel() {
 
   const checkAdminAccess = async () => {
     try {
-      // TEMPORARY: Allow admin access without password verification
-      // TODO: Remove this bypass and restore proper authentication
-      const isTemporaryBypass = true; // Set to false to restore normal auth
-
-      if (isTemporaryBypass) {
-        console.log("🔓 TEMPORARY: Admin access granted without authentication");
-        toast.success("Admin panel accessed (temporary bypass active)");
-        setIsAdmin(true);
-        setLoading(false);
-        return;
-      }
-
-      // Normal authentication flow (currently disabled)
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
