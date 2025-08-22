@@ -125,112 +125,163 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     'Comic Sans MS, cursive'
   ];
 
-  const addTextElement = (e?: React.MouseEvent) => {
+  const addTextElement = useCallback((e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
 
-    const newElement: TextElement = {
-      id: `text-${Date.now()}`,
-      type: 'text',
-      content: 'Your Text Here',
-      x: LABEL_WIDTH_PX / 2 - 50,
-      y: LABEL_HEIGHT_PX / 2 - 10,
-      width: 100,
-      height: 20,
-      fontSize: 16,
-      fontFamily: 'Arial, sans-serif',
-      color: '#000000',
-      fontWeight: 'normal',
-      fontStyle: 'normal',
-      textDecoration: 'none',
-      textAlign: 'left',
-      rotation: 0,
-      visible: true,
-      layer: design.elements.length
-    };
-
-    setDesign(prev => ({
-      ...prev,
-      elements: [...prev.elements, newElement]
-    }));
-    setSelectedElement(newElement.id);
-  };
-
-  const addImageElement = (src: string) => {
-    const newElement: ImageElement = {
-      id: `image-${Date.now()}`,
-      type: 'image',
-      src,
-      x: LABEL_WIDTH_PX / 2 - 50,
-      y: LABEL_HEIGHT_PX / 2 - 50,
-      width: 100,
-      height: 100,
-      rotation: 0,
-      visible: true,
-      layer: design.elements.length
-    };
-
-    setDesign(prev => ({
-      ...prev,
-      elements: [...prev.elements, newElement]
-    }));
-    setSelectedElement(newElement.id);
-  };
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        addImageElement(result);
-        toast.success("Image added to canvas!");
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const updateElement = (id: string, updates: Partial<Element>) => {
-    setDesign(prev => ({
-      ...prev,
-      elements: prev.elements.map(el => 
-        el.id === id ? { ...el, ...updates } as Element : el
-      )
-    }));
-  };
-
-  const deleteElement = (id: string) => {
-    setDesign(prev => ({
-      ...prev,
-      elements: prev.elements.filter(el => el.id !== id)
-    }));
-    if (selectedElement === id) {
-      setSelectedElement(null);
-    }
-  };
-
-  const duplicateElement = (id: string) => {
-    const element = design.elements.find(el => el.id === id);
-    if (element) {
-      const newElement = {
-        ...element,
-        id: `${element.type}-${Date.now()}`,
-        x: element.x + 20,
-        y: element.y + 20,
+    try {
+      const newElement: TextElement = {
+        id: `text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type: 'text',
+        content: 'Your Text Here',
+        x: LABEL_WIDTH_PX / 2 - 50,
+        y: LABEL_HEIGHT_PX / 2 - 10,
+        width: 100,
+        height: 20,
+        fontSize: 16,
+        fontFamily: 'Arial, sans-serif',
+        color: '#000000',
+        fontWeight: 'normal',
+        fontStyle: 'normal',
+        textDecoration: 'none',
+        textAlign: 'left',
+        rotation: 0,
+        visible: true,
         layer: design.elements.length
       };
+
       setDesign(prev => ({
         ...prev,
         elements: [...prev.elements, newElement]
       }));
       setSelectedElement(newElement.id);
+      toast.success('Text element added successfully!');
+    } catch (error) {
+      console.error('Error adding text element:', error);
+      toast.error('Failed to add text element');
     }
-  };
+  }, [design.elements.length]);
+
+  const addImageElement = useCallback((src: string) => {
+    try {
+      const newElement: ImageElement = {
+        id: `image-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type: 'image',
+        src,
+        x: LABEL_WIDTH_PX / 2 - 50,
+        y: LABEL_HEIGHT_PX / 2 - 50,
+        width: 100,
+        height: 100,
+        rotation: 0,
+        visible: true,
+        layer: design.elements.length
+      };
+
+      setDesign(prev => ({
+        ...prev,
+        elements: [...prev.elements, newElement]
+      }));
+      setSelectedElement(newElement.id);
+    } catch (error) {
+      console.error('Error adding image element:', error);
+      toast.error('Failed to add image element');
+    }
+  }, [design.elements.length]);
+
+  const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file');
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        const result = e.target?.result as string;
+        if (result) {
+          addImageElement(result);
+          toast.success('Image added to canvas!');
+        }
+      } catch (error) {
+        console.error('Error processing image:', error);
+        toast.error('Failed to process image');
+      }
+    };
+
+    reader.onerror = () => {
+      toast.error('Failed to read image file');
+    };
+
+    reader.readAsDataURL(file);
+
+    // Clear the input to allow selecting the same file again
+    event.target.value = '';
+  }, [addImageElement]);
+
+  const updateElement = useCallback((id: string, updates: Partial<Element>) => {
+    try {
+      setDesign(prev => ({
+        ...prev,
+        elements: prev.elements.map(el =>
+          el.id === id ? { ...el, ...updates } as Element : el
+        )
+      }));
+    } catch (error) {
+      console.error('Error updating element:', error);
+      toast.error('Failed to update element');
+    }
+  }, []);
+
+  const deleteElement = useCallback((id: string) => {
+    try {
+      setDesign(prev => ({
+        ...prev,
+        elements: prev.elements.filter(el => el.id !== id)
+      }));
+      if (selectedElement === id) {
+        setSelectedElement(null);
+      }
+      toast.success('Element deleted successfully');
+    } catch (error) {
+      console.error('Error deleting element:', error);
+      toast.error('Failed to delete element');
+    }
+  }, [selectedElement]);
+
+  const duplicateElement = useCallback((id: string) => {
+    try {
+      const element = design.elements.find(el => el.id === id);
+      if (element) {
+        const newElement = {
+          ...element,
+          id: `${element.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          x: Math.min(element.x + 20, LABEL_WIDTH_PX - element.width),
+          y: Math.min(element.y + 20, LABEL_HEIGHT_PX - element.height),
+          layer: design.elements.length
+        };
+        setDesign(prev => ({
+          ...prev,
+          elements: [...prev.elements, newElement]
+        }));
+        setSelectedElement(newElement.id);
+        toast.success('Element duplicated successfully');
+      }
+    } catch (error) {
+      console.error('Error duplicating element:', error);
+      toast.error('Failed to duplicate element');
+    }
+  }, [design.elements]);
 
   const moveElementLayer = (id: string, direction: 'up' | 'down') => {
     const element = design.elements.find(el => el.id === id);
@@ -243,17 +294,22 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     updateElement(id, { layer: newLayer });
   };
 
-  const resetCanvas = (e?: React.MouseEvent) => {
+  const resetCanvas = useCallback((e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
 
-    setDesign({
-      elements: [],
-      backgroundColor: '#ffffff'
-    });
-    setSelectedElement(null);
-    toast.success("Canvas reset!");
-  };
+    try {
+      setDesign({
+        elements: [],
+        backgroundColor: '#ffffff'
+      });
+      setSelectedElement(null);
+      toast.success('Canvas reset successfully!');
+    } catch (error) {
+      console.error('Error resetting canvas:', error);
+      toast.error('Failed to reset canvas');
+    }
+  }, []);
 
   const useDefaultBranding = (e?: React.MouseEvent) => {
     e?.preventDefault();
@@ -330,7 +386,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     toast.success("Design exported successfully!");
   };
 
-  const handleSaveToProfile = async () => {
+  const handleSaveToProfile = useCallback(async () => {
     if (!user) {
       toast.error('Please sign in to save labels to your profile');
       return;
@@ -346,31 +402,36 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
       return;
     }
 
-    const designData = {
-      backgroundColor: design.backgroundColor,
-      elements: design.elements
-    };
+    try {
+      const designData = {
+        backgroundColor: design.backgroundColor,
+        elements: design.elements
+      };
 
-    const savedLabel = await userLabelsService.saveLabel(
-      user.id,
-      saveForm.name.trim(),
-      designData,
-      saveForm.description.trim() || undefined,
-      saveForm.isDefault
-    );
+      const savedLabel = await userLabelsService.saveLabel(
+        user.id,
+        saveForm.name.trim(),
+        designData,
+        saveForm.description.trim() || undefined,
+        saveForm.isDefault
+      );
 
-    if (savedLabel) {
-      setShowSaveDialog(false);
-      setSaveForm({ name: '', description: '', isDefault: false });
+      if (savedLabel) {
+        setShowSaveDialog(false);
+        setSaveForm({ name: '', description: '', isDefault: false });
 
-      // Call the onSave callback to refresh the parent component
-      if (onSave) {
-        onSave();
+        // Call the onSave callback to refresh the parent component
+        if (onSave) {
+          onSave();
+        }
       }
+    } catch (error) {
+      console.error('Error saving label:', error);
+      toast.error('Failed to save label. Please try again.');
     }
-  };
+  }, [user, saveForm, design, onSave]);
 
-  const openSaveDialog = () => {
+  const openSaveDialog = useCallback(() => {
     if (!user) {
       toast.error('Please sign in to save labels');
       return;
@@ -382,36 +443,41 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     }
 
     setShowSaveDialog(true);
-  };
+  }, [user, design.elements.length]);
 
   const selectedElementData = selectedElement 
     ? design.elements.find(el => el.id === selectedElement)
     : null;
 
   // Mouse event handlers for canvas interaction
-  const handleMouseDown = (e: React.MouseEvent, elementId: string) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent, elementId: string) => {
     e.preventDefault();
     e.stopPropagation();
     setSelectedElement(elementId);
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
-  };
+  }, []);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging || !selectedElement) return;
 
-    const deltaX = e.clientX - dragStart.x;
-    const deltaY = e.clientY - dragStart.y;
-    
-    const element = design.elements.find(el => el.id === selectedElement);
-    if (element) {
-      const newX = Math.max(0, Math.min(element.x + deltaX, LABEL_WIDTH_PX - element.width));
-      const newY = Math.max(0, Math.min(element.y + deltaY, LABEL_HEIGHT_PX - element.height));
-      
-      updateElement(selectedElement, { x: newX, y: newY });
-      setDragStart({ x: e.clientX, y: e.clientY });
+    try {
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+
+      const element = design.elements.find(el => el.id === selectedElement);
+      if (element) {
+        const newX = Math.max(0, Math.min(element.x + deltaX, LABEL_WIDTH_PX - element.width));
+        const newY = Math.max(0, Math.min(element.y + deltaY, LABEL_HEIGHT_PX - element.height));
+
+        updateElement(selectedElement, { x: newX, y: newY });
+        setDragStart({ x: e.clientX, y: e.clientY });
+      }
+    } catch (error) {
+      console.error('Error during mouse move:', error);
+      setIsDragging(false);
     }
-  }, [isDragging, selectedElement, dragStart, design.elements]);
+  }, [isDragging, selectedElement, dragStart, design.elements, updateElement]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -419,15 +485,24 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
 
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      
+      document.addEventListener('mousemove', handleMouseMove, { passive: false });
+      document.addEventListener('mouseup', handleMouseUp, { passive: false });
+
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  // Cleanup function to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      // Clean up any remaining event listeners
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp]);
 
   return (
     <div className="label-editor grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto p-2 sm:p-4">
