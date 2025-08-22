@@ -81,7 +81,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, userData?: any) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      // Use the proper domain for email redirects
+      const redirectUrl = "https://myfuze.co.za";
       
       const { data, error } = await supabase.auth.signUp({
         email,
