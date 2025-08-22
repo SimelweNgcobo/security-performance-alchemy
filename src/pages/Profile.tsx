@@ -39,7 +39,9 @@ import {
   Star,
   Trash2,
   Settings,
-  Plus
+  Plus,
+  Palette,
+  RotateCcw
 } from "lucide-react";
 
 // Lazy load heavy components
@@ -387,7 +389,7 @@ const Profile = () => {
   // Handle tab changes with lazy loading
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab);
-    
+
     // Delay loading to improve tab switch performance
     setTimeout(() => {
       switch (tab) {
@@ -397,9 +399,14 @@ const Profile = () => {
         case "purchases":
           loadPurchasesData();
           break;
+        case "labels":
+          if (userLabels.length === 0 && !loadingLabels) {
+            loadUserLabels();
+          }
+          break;
       }
     }, 50);
-  }, [loadActivityData, loadPurchasesData, loadRecentItems]);
+  }, [loadActivityData, loadPurchasesData, loadUserLabels, userLabels.length, loadingLabels]);
 
   // Optimistic profile update
   const updateProfile = useCallback(async () => {
@@ -722,14 +729,64 @@ const Profile = () => {
 
             {/* Labels Tab - New dedicated tab */}
             <TabsContent value="labels" className="space-y-6">
+              {/* Quick Actions */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <Tag className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Saved Labels</h3>
+                      <p className="text-sm text-muted-foreground">{userLabels.length} designs</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                      <Star className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Default Label</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {defaultLabel ? defaultLabel.name : 'None set'}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <Palette className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Designer</h3>
+                      <p className="text-sm text-muted-foreground">Create new labels</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
               {/* Saved Labels Management */}
               <Card>
                 <CardHeader>
-                  <div>
-                    <CardTitle>My Saved Labels</CardTitle>
-                    <CardDescription>
-                      Manage your custom bottle label designs for enterprise orders
-                    </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>My Saved Labels</CardTitle>
+                      <CardDescription>
+                        Manage your custom bottle label designs for enterprise orders
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => loadUserLabels()}
+                      disabled={loadingLabels}
+                    >
+                      <RotateCcw className={`w-4 h-4 mr-2 ${loadingLabels ? 'animate-spin' : ''}`} />
+                      Refresh
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -740,7 +797,7 @@ const Profile = () => {
                   ) : userLabels.length > 0 ? (
                     <div className="space-y-4">
                       {userLabels.map((label) => (
-                        <div key={label.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                        <div key={label.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -749,13 +806,13 @@ const Profile = () => {
                               <div>
                                 <h3 className="font-medium">{label.name}</h3>
                                 <p className="text-sm text-muted-foreground">
-                                  {label.description || 'No description'}
+                                  {label.description || 'No description provided'}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               {label.is_default ? (
-                                <Badge variant="default" className="bg-primary/10 text-primary">
+                                <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
                                   <Star className="w-3 h-3 mr-1" />
                                   Default
                                 </Badge>
@@ -764,8 +821,9 @@ const Profile = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleSetDefaultLabel(label.id)}
+                                  title="Set as default label"
                                 >
-                                  <Settings className="w-4 h-4 mr-1" />
+                                  <Star className="w-4 h-4 mr-1" />
                                   Set Default
                                 </Button>
                               )}
@@ -773,7 +831,8 @@ const Profile = () => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDeleteLabel(label.id)}
-                                className="text-red-600 hover:text-red-700"
+                                className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                title="Delete this label"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -782,11 +841,15 @@ const Profile = () => {
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <span className="font-medium">Elements:</span>
-                              <span>{label.design_data.elements?.length || 0}</span>
+                              <span>{label.design_data?.elements?.length || 0}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <span className="font-medium">Background:</span>
-                              <div className="w-4 h-4 rounded border" style={{ backgroundColor: label.design_data.backgroundColor || '#ffffff' }}></div>
+                              <div
+                                className="w-4 h-4 rounded border border-gray-300"
+                                style={{ backgroundColor: label.design_data?.backgroundColor || '#ffffff' }}
+                                title={`Background color: ${label.design_data?.backgroundColor || '#ffffff'}`}
+                              ></div>
                             </div>
                             <div className="flex items-center gap-1">
                               <span className="font-medium">Size:</span>
@@ -804,25 +867,49 @@ const Profile = () => {
                     <div className="text-center py-12">
                       <Tag className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                       <h3 className="text-lg font-medium mb-2">No Custom Labels Yet</h3>
-                      <p className="text-muted-foreground mb-6">
+                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                         Create custom labels using the designer below. These will be available
                         for your enterprise orders and can be set as your default branding.
                       </p>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          // Scroll to the label designer section
+                          const designerSection = document.querySelector('[data-label-designer]');
+                          if (designerSection) {
+                            designerSection.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Your First Label
+                      </Button>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
               {/* Label Designer */}
-              <Card>
+              <Card data-label-designer>
                 <CardHeader>
-                  <CardTitle>Custom Label Designer</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Palette className="w-5 h-5" />
+                    Custom Label Designer
+                  </CardTitle>
                   <CardDescription>
                     Create and save custom labels for your bottles. Design with text, images, and branding elements.
+                    All labels are automatically sized for water bottles (264mm × 60mm).
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Suspense fallback={<div className="h-64 flex items-center justify-center"><LoadingSpinner /></div>}>
+                  <Suspense fallback={
+                    <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
+                      <div className="text-center">
+                        <LoadingSpinner message="Loading Label Designer..." />
+                        <p className="text-sm text-muted-foreground mt-2">Please wait while we prepare the design tools</p>
+                      </div>
+                    </div>
+                  }>
                     <LabelEditor onSave={loadUserLabels} />
                   </Suspense>
                 </CardContent>
