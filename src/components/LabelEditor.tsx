@@ -445,9 +445,12 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     setShowSaveDialog(true);
   }, [user, design.elements.length]);
 
-  const selectedElementData = selectedElement 
-    ? design.elements.find(el => el.id === selectedElement)
-    : null;
+  // Memoize the selected element data to prevent unnecessary re-renders
+  const selectedElementData = useMemo(() => {
+    return selectedElement
+      ? design.elements.find(el => el.id === selectedElement)
+      : null;
+  }, [selectedElement, design.elements]);
 
   // Mouse event handlers for canvas interaction
   const handleMouseDown = useCallback((e: React.MouseEvent, elementId: string) => {
@@ -603,6 +606,9 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                           transformOrigin: 'center'
                         }}
                         onMouseDown={(e) => handleMouseDown(e, element.id)}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${element.type} element: ${element.type === 'text' ? (element as TextElement).content : 'Image'}`}
                       >
                         {element.type === 'text' ? (
                           <div
@@ -648,7 +654,13 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
             {/* Canvas Actions */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-4 gap-3">
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <Button variant="outline" size="sm" onClick={useDefaultBranding} className="text-xs sm:text-sm no-scroll">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={useDefaultBranding}
+                  className="text-xs sm:text-sm no-scroll"
+                  title="Apply MyFuze default branding template"
+                >
                   Use Default Branding
                 </Button>
                 <Button
