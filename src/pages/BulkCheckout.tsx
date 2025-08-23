@@ -412,7 +412,16 @@ const BulkCheckout = () => {
         payment_reference: reference.reference,
         shipping_address: JSON.stringify(shippingAddress),
         metadata: JSON.stringify({
-          cart_items: cartItems,
+          cart_items: cartItems.map(item => ({
+            id: item.id,
+            size: item.size,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            subtotal: item.subtotal,
+            hasCustomLabel: item.hasCustomLabel,
+            labelId: item.labelId || null,
+            labelName: item.labelName || null
+          })),
           total_quantity: totalQuantity,
           payment_method: "paystack"
         })
