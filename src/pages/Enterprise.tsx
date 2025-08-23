@@ -284,15 +284,41 @@ const Enterprise = () => {
                       </Badge>
                     </div>
                   )}
-                  <Button
-                    onClick={useDefaultLabel}
-                    variant="outline"
-                    className="w-full"
-                    disabled={loadingLabels}
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    {loadingLabels ? 'Loading...' : 'Use Default'}
-                  </Button>
+                  {profileLabels.length > 0 ? (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-gray-700">Select from your labels:</p>
+                      <div className="space-y-1">
+                        {profileLabels.map((label) => (
+                          <Button
+                            key={label.id}
+                            onClick={() => selectLabel(label)}
+                            variant={label.is_default ? "default" : "outline"}
+                            className="w-full text-left justify-start h-auto p-3"
+                          >
+                            <div className="w-full">
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">{label.name}</span>
+                                {label.is_default && <Star className="h-3 w-3 text-yellow-500" />}
+                              </div>
+                              {label.description && (
+                                <p className="text-xs text-muted-foreground mt-1 text-left">{label.description}</p>
+                              )}
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => navigate('/profile?tab=labels')}
+                      variant="outline"
+                      className="w-full"
+                      disabled={loadingLabels}
+                    >
+                      <Palette className="w-4 h-4 mr-2" />
+                      {loadingLabels ? 'Loading...' : 'Create Labels in Profile'}
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
 
