@@ -125,6 +125,31 @@ const BulkCheckout = () => {
     }
   }, [user, navigate]);
 
+  // Load user labels when user is available
+  useEffect(() => {
+    const loadUserLabels = async () => {
+      if (!user?.id) return;
+
+      setLoadingLabels(true);
+      try {
+        const labels = await userLabelsService.getUserLabels(user.id);
+        setUserLabels(labels);
+
+        // Auto-select default label if available
+        const defaultLabel = labels.find(l => l.is_default) || labels[0];
+        if (defaultLabel) {
+          setSelectedLabelId(defaultLabel.id);
+        }
+      } catch (error) {
+        console.error('Error loading user labels:', error);
+      } finally {
+        setLoadingLabels(false);
+      }
+    };
+
+    loadUserLabels();
+  }, [user?.id]);
+
   // Load saved address when user is available
   useEffect(() => {
     const loadSavedAddress = async () => {
