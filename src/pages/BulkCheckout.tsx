@@ -1109,7 +1109,7 @@ const BulkCheckout = () => {
                 </div>
               </div>
 
-              {paystackPublicKey ? (
+              {paystackPublicKey && cartTotal > 0 && user?.email ? (
                 <PaystackButton
                   {...paystackConfig}
                   text={`Pay R${(cartTotal >= 1000 ? cartTotal : cartTotal + 150).toFixed(2)}`}
@@ -1123,10 +1123,24 @@ const BulkCheckout = () => {
                     disabled
                     className="w-full bg-gray-400 text-white py-2 lg:py-3 px-4 rounded-lg font-medium text-sm lg:text-base"
                   >
-                    Payment Unavailable - Configuration Error
+                    {!paystackPublicKey
+                      ? "Payment Unavailable - Configuration Error"
+                      : cartTotal <= 0
+                      ? "Add Items to Cart"
+                      : !user?.email
+                      ? "Please Sign In"
+                      : "Payment Unavailable"
+                    }
                   </Button>
                   <p className="text-xs text-red-600 mt-2 text-center">
-                    Paystack configuration missing. Please contact support.
+                    {!paystackPublicKey
+                      ? "Paystack configuration missing. Please contact support."
+                      : cartTotal <= 0
+                      ? "Please add items to your cart before proceeding with payment."
+                      : !user?.email
+                      ? "A valid email address is required for payment processing."
+                      : "Unable to process payment at this time."
+                    }
                   </p>
                 </div>
               )}
