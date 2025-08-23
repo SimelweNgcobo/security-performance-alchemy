@@ -565,7 +565,7 @@ const BulkCheckout = () => {
                         {item.hasCustomLabel && (
                           <Badge variant="outline" className="text-xs border-primary text-primary">
                             <Palette className="w-3 h-3 mr-1" />
-                            Custom Label
+                            {item.labelName || 'Custom Label'}
                           </Badge>
                         )}
                       </div>
