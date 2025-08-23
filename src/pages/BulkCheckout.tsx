@@ -1073,13 +1073,27 @@ const BulkCheckout = () => {
                 </div>
               </div>
 
-              <PaystackButton
-                {...paystackConfig}
-                text={`Pay R${(cartTotal >= 1000 ? cartTotal : cartTotal + 150).toFixed(2)}`}
-                onSuccess={handlePaystackSuccess}
-                onClose={handlePaystackClose}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 lg:py-3 px-4 rounded-lg font-medium transition-colors duration-200 text-sm lg:text-base"
-              />
+              {paystackPublicKey ? (
+                <PaystackButton
+                  {...paystackConfig}
+                  text={`Pay R${(cartTotal >= 1000 ? cartTotal : cartTotal + 150).toFixed(2)}`}
+                  onSuccess={handlePaystackSuccess}
+                  onClose={handlePaystackClose}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 lg:py-3 px-4 rounded-lg font-medium transition-colors duration-200 text-sm lg:text-base"
+                />
+              ) : (
+                <div className="w-full">
+                  <Button
+                    disabled
+                    className="w-full bg-gray-400 text-white py-2 lg:py-3 px-4 rounded-lg font-medium text-sm lg:text-base"
+                  >
+                    Payment Unavailable - Configuration Error
+                  </Button>
+                  <p className="text-xs text-red-600 mt-2 text-center">
+                    Paystack configuration missing. Please contact support.
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2 lg:space-y-3 text-xs text-slate-500">
                 <div className="flex items-center gap-2">
