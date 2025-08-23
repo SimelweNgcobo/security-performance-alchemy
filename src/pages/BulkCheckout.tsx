@@ -300,7 +300,7 @@ const BulkCheckout = () => {
 
       if (orderError) {
         console.error("Error creating order:", orderError);
-        toast.error("Failed to save order. Please contact support.");
+        toast.error(`Failed to save order: ${orderError.message || 'Unknown error'}. Please contact support.`);
         return;
       }
 
@@ -308,7 +308,8 @@ const BulkCheckout = () => {
       setCurrentStep(4);
     } catch (error) {
       console.error("Error processing payment:", error);
-      toast.error("Failed to process order. Please contact support.");
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Failed to process order: ${errorMessage}. Please contact support.`);
     }
   };
 
@@ -348,13 +349,14 @@ const BulkCheckout = () => {
 
       if (error) {
         console.error('Error saving address:', error);
-        toast.error("Failed to save address");
+        toast.error(`Failed to save address: ${error.message || 'Unknown error'}`);
       } else {
         toast.success("Address saved to your profile!");
       }
     } catch (error) {
       console.error('Error saving address:', error);
-      toast.error("Failed to save address");
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Failed to save address: ${errorMessage}`);
     } finally {
       setIsSavingAddress(false);
     }
