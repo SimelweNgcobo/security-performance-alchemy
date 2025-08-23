@@ -86,13 +86,71 @@ export function OrdersManagement() {
         .eq("id", orderId);
 
       if (error) throw error;
-      
+
       toast.success("Order status updated successfully");
       loadOrders();
     } catch (error) {
       console.error("Error updating order:", error);
       toast.error("Failed to update order status");
     }
+  };
+
+  const handleStatusUpdate = async (orderId: string) => {
+    if (!newStatus) {
+      toast.error("Please select a status");
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const updateData: any = {
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      };
+
+      if (adminNotes.trim()) {
+        updateData.admin_notes = adminNotes.trim();
+      }
+
+      // Set delivery status based on main status
+      if (newStatus === 'in_transit') {
+        updateData.delivery_status = 'shipped';
+      } else if (newStatus === 'delivered') {
+        updateData.delivery_status = 'delivered';
+      } else if (newStatus === 'cancelled') {
+        updateData.delivery_status = 'cancelled';
+      }
+
+      const { error } = await supabase
+        .from("orders")
+        .update(updateData)
+        .eq("id", orderId);
+
+      if (error) throw error;
+
+      toast.success(`Order status updated to ${newStatus}`);
+      setEditingOrderId(null);
+      setNewStatus('');
+      setAdminNotes('');
+      loadOrders();
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      toast.error("Failed to update order status");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const startEditingStatus = (order: Order) => {
+    setEditingOrderId(order.id);
+    setNewStatus(order.status);
+    setAdminNotes('');
+  };
+
+  const cancelEditing = () => {
+    setEditingOrderId(null);
+    setNewStatus('');
+    setAdminNotes('');
   };
 
   const getStatusBadge = (status: string, type: "status" | "payment" | "delivery") => {
