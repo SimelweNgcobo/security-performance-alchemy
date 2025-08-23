@@ -268,7 +268,7 @@ const BulkCheckout = () => {
     reference: `BLK_${Date.now()}`,
     email: user?.email || "customer@example.com",
     amount: Math.round(cartTotal * 100), // Paystack expects amount in kobo (multiply by 100)
-    publicKey: "pk_test_your_paystack_public_key", // You should use environment variable for this
+    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "",
   };
 
   const handlePaystackSuccess = async (reference: any) => {
