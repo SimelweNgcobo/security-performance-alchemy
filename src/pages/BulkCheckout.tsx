@@ -323,6 +323,7 @@ const BulkCheckout = () => {
   };
 
   const handlePaystackSuccess = async (reference: any) => {
+    console.log('Paystack success callback triggered with reference:', reference);
     try {
       // Generate order number
       const orderNum = `BLK${Date.now().toString().slice(-6)}`;
@@ -345,6 +346,8 @@ const BulkCheckout = () => {
         })
       };
 
+      console.log('Creating order with data:', orderData);
+
       const { error: orderError } = await supabase
         .from("orders")
         .insert([orderData]);
@@ -365,6 +368,7 @@ const BulkCheckout = () => {
   };
 
   const handlePaystackClose = () => {
+    console.log('Paystack payment dialog closed');
     toast.error("Payment was not completed");
   };
 
