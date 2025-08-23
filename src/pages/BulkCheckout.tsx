@@ -119,6 +119,45 @@ const BulkCheckout = () => {
     }
   }, [user, navigate]);
 
+  // Load saved address when user is available
+  useEffect(() => {
+    const loadSavedAddress = async () => {
+      if (!user?.id) return;
+
+      try {
+        const { data: savedAddress, error } = await supabase
+          .from('user_addresses')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_default', true)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error loading saved address:', error);
+          return;
+        }
+
+        if (savedAddress) {
+          setShippingAddress({
+            fullName: savedAddress.full_name || "",
+            company: savedAddress.company || "",
+            address1: savedAddress.address_line_1 || "",
+            address2: savedAddress.address_line_2 || "",
+            city: savedAddress.city || "",
+            province: savedAddress.province || "",
+            postalCode: savedAddress.postal_code || "",
+            phone: savedAddress.phone || ""
+          });
+          toast.success("Loaded your saved address");
+        }
+      } catch (error) {
+        console.error('Error loading saved address:', error);
+      }
+    };
+
+    loadSavedAddress();
+  }, [user?.id]);
+
   // Calculate pricing for a given size and quantity (with optional custom label)
   const calculatePrice = useCallback((size: BottleSize, qty: number, hasCustomLabel: boolean = false) => {
     const pricing = pricingData[size];
