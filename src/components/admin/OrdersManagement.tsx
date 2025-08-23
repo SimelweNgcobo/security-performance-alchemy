@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Eye, CheckCircle, XCircle, Truck } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Truck, Edit, Save, X as XIcon } from "lucide-react";
 
 interface Order {
   id: string;
@@ -39,6 +39,10 @@ export function OrdersManagement() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+  const [newStatus, setNewStatus] = useState<string>('');
+  const [adminNotes, setAdminNotes] = useState<string>('');
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     loadOrders();
