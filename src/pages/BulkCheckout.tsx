@@ -676,9 +676,49 @@ const BulkCheckout = () => {
                 </div>
                 {useCustomLabel && (
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-xs text-blue-800">
-                      Design your custom label in your profile. The R5 additional cost covers premium label printing and application.
-                    </p>
+                    {loadingLabels ? (
+                      <p className="text-xs text-blue-800">Loading saved labels...</p>
+                    ) : userLabels.length === 0 ? (
+                      <div className="text-xs text-blue-800">
+                        <p className="mb-2">No saved labels found.</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate('/profile?tab=labels')}
+                          className="text-xs"
+                        >
+                          Create a label in your profile
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <label className="text-xs text-blue-800 block font-medium">Choose saved label:</label>
+                        <Select value={selectedLabelId || ''} onValueChange={(value) => setSelectedLabelId(value)}>
+                          <SelectTrigger className="w-full text-xs">
+                            <SelectValue placeholder="Select a label" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {userLabels.map(label => (
+                              <SelectItem key={label.id} value={label.id}>
+                                <div className="flex items-center gap-2">
+                                  <span>{label.name}</span>
+                                  {label.is_default && <Star className="h-3 w-3 text-yellow-500" />}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-blue-700">
+                          The R5 additional cost covers premium label printing and application.
+                          <button
+                            onClick={() => navigate('/profile?tab=labels')}
+                            className="text-primary underline ml-1"
+                          >
+                            Edit labels in profile
+                          </button>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
