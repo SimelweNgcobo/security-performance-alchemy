@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Eye, CheckCircle, XCircle, Truck, Edit, Save, X as XIcon } from "lucide-react";
 
@@ -288,6 +289,12 @@ export function OrdersManagement() {
                             <SelectItem value="cancelled">Cancelled</SelectItem>
                           </SelectContent>
                         </Select>
+                        <Textarea
+                          placeholder="Admin notes (optional)"
+                          value={adminNotes}
+                          onChange={(e) => setAdminNotes(e.target.value)}
+                          className="h-20 text-xs"
+                        />
                         <div className="flex gap-1">
                           <Button
                             size="sm"
