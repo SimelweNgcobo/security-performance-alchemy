@@ -330,32 +330,57 @@ const BulkCheckout = () => {
 
     setIsSavingAddress(true);
     try {
-      const { error } = await supabase
+      // First, let's check if user has an existing address
+      const { data: existingAddress, error: checkError } = await supabase
         .from('user_addresses')
-        .upsert({
-          user_id: user.id,
-          full_name: shippingAddress.fullName,
-          company: shippingAddress.company,
-          address_line_1: shippingAddress.address1,
-          address_line_2: shippingAddress.address2,
-          city: shippingAddress.city,
-          province: shippingAddress.province,
-          postal_code: shippingAddress.postalCode,
-          phone: shippingAddress.phone,
-          is_default: true
-        }, {
-          onConflict: 'user_id'
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking existing address:', checkError);
+      }
+
+      const addressData = {
+        user_id: user.id,
+        full_name: shippingAddress.fullName.trim(),
+        company: shippingAddress.company.trim() || null,
+        address_line_1: shippingAddress.address1.trim(),
+        address_line_2: shippingAddress.address2.trim() || null,
+        city: shippingAddress.city.trim(),
+        province: shippingAddress.province.trim(),
+        postal_code: shippingAddress.postalCode.trim(),
+        phone: shippingAddress.phone.trim(),
+        is_default: true
+      };
+
+      console.log('Saving address data:', addressData);
+
+      let result;
+      if (existingAddress) {
+        // Update existing address
+        result = await supabase
+          .from('user_addresses')
+          .update(addressData)
+          .eq('user_id', user.id);
+      } else {
+        // Insert new address
+        result = await supabase
+          .from('user_addresses')
+          .insert([addressData]);
+      }
+
+      const { error } = result;
 
       if (error) {
         console.error('Error saving address:', error);
-        toast.error(`Failed to save address: ${error.message || 'Unknown error'}`);
+        toast.error(`Failed to save address: ${error.message || JSON.stringify(error)}`);
       } else {
         toast.success("Address saved to your profile!");
       }
     } catch (error) {
       console.error('Error saving address:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
       toast.error(`Failed to save address: ${errorMessage}`);
     } finally {
       setIsSavingAddress(false);
