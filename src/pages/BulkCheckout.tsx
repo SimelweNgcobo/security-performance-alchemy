@@ -318,9 +318,41 @@ const BulkCheckout = () => {
   const paystackConfig = {
     reference: `BLK_${Date.now()}`,
     email: user?.email || "customer@example.com",
-    amount: Math.round(cartTotal * 100), // Paystack expects amount in kobo (multiply by 100)
+    amount: Math.round((cartTotal >= 1000 ? cartTotal : cartTotal + 150) * 100), // Paystack expects amount in kobo (multiply by 100)
+    currency: "ZAR", // South African Rand
     publicKey: paystackPublicKey || "",
+    metadata: {
+      cart_items: cartItems.length,
+      user_id: user?.id,
+      total_quantity: totalQuantity
+    }
   };
+
+  // Debug Paystack configuration before payment
+  useEffect(() => {
+    if (currentStep === 3 && cartTotal > 0) {
+      console.log('Paystack Configuration:', paystackConfig);
+      console.log('Cart Total:', cartTotal);
+      console.log('Final Amount (including delivery):', cartTotal >= 1000 ? cartTotal : cartTotal + 150);
+      console.log('Amount in Kobo:', paystackConfig.amount);
+
+      // Validation checks
+      if (paystackConfig.amount <= 0) {
+        console.error('Invalid amount: Amount must be greater than 0');
+        toast.error("Invalid payment amount. Please add items to your cart.");
+      }
+
+      if (!user?.email) {
+        console.error('Invalid email: User email is required');
+        toast.error("Please ensure you're signed in with a valid email address.");
+      }
+
+      if (!paystackPublicKey) {
+        console.error('Invalid public key: Paystack public key is required');
+        toast.error("Payment configuration error. Please contact support.");
+      }
+    }
+  }, [currentStep, cartTotal, user?.email, paystackPublicKey, paystackConfig]);
 
   const handlePaystackSuccess = async (reference: any) => {
     console.log('Paystack success callback triggered with reference:', reference);
