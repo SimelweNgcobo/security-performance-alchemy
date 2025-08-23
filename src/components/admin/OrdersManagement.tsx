@@ -275,23 +275,51 @@ export function OrdersManagement() {
                   </TableCell>
                   <TableCell>R{parseFloat(order.total_amount.toString()).toFixed(2)}</TableCell>
                   <TableCell>
-                    <Select 
-                      value={order.status} 
-                      onValueChange={(value) => updateOrderStatus(order.id, "status", value)}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="paid">Paid</SelectItem>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="shipped">Shipped</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                        <SelectItem value="declined">Declined</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {editingOrderId === order.id ? (
+                      <div className="space-y-2">
+                        <Select value={newStatus} onValueChange={setNewStatus}>
+                          <SelectTrigger className="w-36">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="processing">Processing</SelectItem>
+                            <SelectItem value="in_transit">In Transit</SelectItem>
+                            <SelectItem value="delivered">Delivered</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            onClick={() => handleStatusUpdate(order.id)}
+                            disabled={updating || !newStatus}
+                            className="h-7 px-2"
+                          >
+                            <Save className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={cancelEditing}
+                            className="h-7 px-2"
+                          >
+                            <XIcon className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(order.status, "status")}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => startEditingStatus(order)}
+                          className="h-7 w-7 p-0"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>{getStatusBadge(order.payment_status, "payment")}</TableCell>
                   <TableCell>
