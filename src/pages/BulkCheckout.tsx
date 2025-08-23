@@ -211,8 +211,11 @@ const BulkCheckout = () => {
     const unitPrice = getCurrentPrice();
     const subtotal = quantity * unitPrice;
 
-    // Check if same size already exists in cart
-    const existingItemIndex = cartItems.findIndex(item => item.size === selectedSize && item.hasCustomLabel === useCustomLabel);
+    // Check if same size with same label already exists in cart
+    const existingItemIndex = cartItems.findIndex(item =>
+      item.size === selectedSize &&
+      (item.labelId ?? null) === (useCustomLabel ? (selectedLabelId ?? null) : null)
+    );
 
     if (existingItemIndex >= 0) {
       // Update existing item
@@ -231,13 +234,17 @@ const BulkCheckout = () => {
       toast.success(`Updated ${selectedSize} bottles in cart`);
     } else {
       // Add new item
+      const selectedLabel = userLabels.find(l => l.id === selectedLabelId);
+
       const newItem: CartItem = {
-        id: `${selectedSize}-${useCustomLabel ? 'custom' : 'standard'}-${Date.now()}`,
+        id: `${selectedSize}-${useCustomLabel ? 'custom' : 'standard'}-${selectedLabelId ?? 'no-label'}-${Date.now()}`,
         size: selectedSize,
         quantity,
         unitPrice,
         subtotal,
-        hasCustomLabel: useCustomLabel
+        hasCustomLabel: useCustomLabel,
+        labelId: useCustomLabel ? selectedLabelId : undefined,
+        labelName: useCustomLabel ? selectedLabel?.name : undefined
       };
 
       setCartItems(prev => [...prev, newItem]);
@@ -247,6 +254,8 @@ const BulkCheckout = () => {
     // Reset form
     setQuantity(500);
     setUseCustomLabel(false);
+    // Keep the selected label for next use
+    // setSelectedLabelId(null);
   };
 
   const removeFromCart = useCallback((id: string) => {
