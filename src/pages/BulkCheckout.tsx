@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { PaystackButton } from 'react-paystack';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { userLabelsService, UserLabel } from "@/services/userLabels";
 
 // Pricing data structure - max 10,000 bottles
 const pricingData = {
@@ -76,6 +77,8 @@ interface CartItem {
   unitPrice: number;
   subtotal: number;
   hasCustomLabel: boolean;
+  labelId?: string | null;
+  labelName?: string | null;
 }
 
 interface ShippingAddress {
@@ -100,6 +103,9 @@ const BulkCheckout = () => {
   const [showPricingTiers, setShowPricingTiers] = useState(false);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [useCustomLabel, setUseCustomLabel] = useState(false);
+  const [userLabels, setUserLabels] = useState<UserLabel[]>([]);
+  const [selectedLabelId, setSelectedLabelId] = useState<string | null>(null);
+  const [loadingLabels, setLoadingLabels] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: "",
     company: "",
