@@ -404,6 +404,11 @@ const BulkCheckout = () => {
     toast.error("Payment was not completed");
   };
 
+  const handlePaystackError = (error: any) => {
+    console.error('Paystack payment error:', error);
+    toast.error(`Payment failed: ${error.message || 'Unknown error occurred'}`);
+  };
+
   const handleSaveAddress = async () => {
     if (!user?.id) {
       toast.error("Please sign in to save address");
