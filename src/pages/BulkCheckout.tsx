@@ -302,12 +302,24 @@ const BulkCheckout = () => {
     }
   }, [currentStep]);
 
-  // Paystack configuration
+  // Paystack configuration with debugging
+  const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+
+  // Debug Paystack configuration
+  useEffect(() => {
+    console.log('Paystack Public Key:', paystackPublicKey);
+    console.log('Environment Variables:', import.meta.env);
+    if (!paystackPublicKey) {
+      console.error('VITE_PAYSTACK_PUBLIC_KEY not found in environment variables');
+      toast.error("Payment configuration error. Please contact support.");
+    }
+  }, [paystackPublicKey]);
+
   const paystackConfig = {
     reference: `BLK_${Date.now()}`,
     email: user?.email || "customer@example.com",
     amount: Math.round(cartTotal * 100), // Paystack expects amount in kobo (multiply by 100)
-    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "",
+    publicKey: paystackPublicKey || "",
   };
 
   const handlePaystackSuccess = async (reference: any) => {
