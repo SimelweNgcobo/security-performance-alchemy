@@ -119,6 +119,45 @@ const BulkCheckout = () => {
     }
   }, [user, navigate]);
 
+  // Load saved address when user is available
+  useEffect(() => {
+    const loadSavedAddress = async () => {
+      if (!user?.id) return;
+
+      try {
+        const { data: savedAddress, error } = await supabase
+          .from('user_addresses')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_default', true)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error loading saved address:', error);
+          return;
+        }
+
+        if (savedAddress) {
+          setShippingAddress({
+            fullName: savedAddress.full_name || "",
+            company: savedAddress.company || "",
+            address1: savedAddress.address_line_1 || "",
+            address2: savedAddress.address_line_2 || "",
+            city: savedAddress.city || "",
+            province: savedAddress.province || "",
+            postalCode: savedAddress.postal_code || "",
+            phone: savedAddress.phone || ""
+          });
+          toast.success("Loaded your saved address");
+        }
+      } catch (error) {
+        console.error('Error loading saved address:', error);
+      }
+    };
+
+    loadSavedAddress();
+  }, [user?.id]);
+
   // Calculate pricing for a given size and quantity (with optional custom label)
   const calculatePrice = useCallback((size: BottleSize, qty: number, hasCustomLabel: boolean = false) => {
     const pricing = pricingData[size];
@@ -263,15 +302,60 @@ const BulkCheckout = () => {
     }
   }, [currentStep]);
 
-  // Paystack configuration
+  // Paystack configuration with debugging
+  const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+
+  // Debug Paystack configuration
+  useEffect(() => {
+    console.log('Paystack Public Key:', paystackPublicKey);
+    console.log('Environment Variables:', import.meta.env);
+    if (!paystackPublicKey) {
+      console.error('VITE_PAYSTACK_PUBLIC_KEY not found in environment variables');
+      toast.error("Payment configuration error. Please contact support.");
+    }
+  }, [paystackPublicKey]);
+
   const paystackConfig = {
     reference: `BLK_${Date.now()}`,
     email: user?.email || "customer@example.com",
-    amount: Math.round(cartTotal * 100), // Paystack expects amount in kobo (multiply by 100)
-    publicKey: "pk_test_your_paystack_public_key", // You should use environment variable for this
+    amount: Math.round((cartTotal >= 1000 ? cartTotal : cartTotal + 150) * 100), // Paystack expects amount in kobo (multiply by 100)
+    currency: "ZAR", // South African Rand
+    publicKey: paystackPublicKey || "",
+    metadata: {
+      cart_items: cartItems.length,
+      user_id: user?.id,
+      total_quantity: totalQuantity
+    }
   };
 
+  // Debug Paystack configuration before payment
+  useEffect(() => {
+    if (currentStep === 3 && cartTotal > 0) {
+      console.log('Paystack Configuration:', paystackConfig);
+      console.log('Cart Total:', cartTotal);
+      console.log('Final Amount (including delivery):', cartTotal >= 1000 ? cartTotal : cartTotal + 150);
+      console.log('Amount in Kobo:', paystackConfig.amount);
+
+      // Validation checks
+      if (paystackConfig.amount <= 0) {
+        console.error('Invalid amount: Amount must be greater than 0');
+        toast.error("Invalid payment amount. Please add items to your cart.");
+      }
+
+      if (!user?.email) {
+        console.error('Invalid email: User email is required');
+        toast.error("Please ensure you're signed in with a valid email address.");
+      }
+
+      if (!paystackPublicKey) {
+        console.error('Invalid public key: Paystack public key is required');
+        toast.error("Payment configuration error. Please contact support.");
+      }
+    }
+  }, [currentStep, cartTotal, user?.email, paystackPublicKey, paystackConfig]);
+
   const handlePaystackSuccess = async (reference: any) => {
+    console.log('Paystack success callback triggered with reference:', reference);
     try {
       // Generate order number
       const orderNum = `BLK${Date.now().toString().slice(-6)}`;
@@ -294,13 +378,15 @@ const BulkCheckout = () => {
         })
       };
 
+      console.log('Creating order with data:', orderData);
+
       const { error: orderError } = await supabase
         .from("orders")
         .insert([orderData]);
 
       if (orderError) {
         console.error("Error creating order:", orderError);
-        toast.error("Failed to save order. Please contact support.");
+        toast.error(`Failed to save order: ${orderError.message || 'Unknown error'}. Please contact support.`);
         return;
       }
 
@@ -308,12 +394,19 @@ const BulkCheckout = () => {
       setCurrentStep(4);
     } catch (error) {
       console.error("Error processing payment:", error);
-      toast.error("Failed to process order. Please contact support.");
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Failed to process order: ${errorMessage}. Please contact support.`);
     }
   };
 
   const handlePaystackClose = () => {
+    console.log('Paystack payment dialog closed');
     toast.error("Payment was not completed");
+  };
+
+  const handlePaystackError = (error: any) => {
+    console.error('Paystack payment error:', error);
+    toast.error(`Payment failed: ${error.message || 'Unknown error occurred'}`);
   };
 
   const handleSaveAddress = async () => {
@@ -329,32 +422,58 @@ const BulkCheckout = () => {
 
     setIsSavingAddress(true);
     try {
-      const { error } = await supabase
+      // First, let's check if user has an existing address
+      const { data: existingAddress, error: checkError } = await supabase
         .from('user_addresses')
-        .upsert({
-          user_id: user.id,
-          full_name: shippingAddress.fullName,
-          company: shippingAddress.company,
-          address_line_1: shippingAddress.address1,
-          address_line_2: shippingAddress.address2,
-          city: shippingAddress.city,
-          province: shippingAddress.province,
-          postal_code: shippingAddress.postalCode,
-          phone: shippingAddress.phone,
-          is_default: true
-        }, {
-          onConflict: 'user_id'
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking existing address:', checkError);
+      }
+
+      const addressData = {
+        user_id: user.id,
+        full_name: shippingAddress.fullName.trim(),
+        company: shippingAddress.company.trim() || null,
+        address_line_1: shippingAddress.address1.trim(),
+        address_line_2: shippingAddress.address2.trim() || null,
+        city: shippingAddress.city.trim(),
+        province: shippingAddress.province.trim(),
+        postal_code: shippingAddress.postalCode.trim(),
+        phone: shippingAddress.phone.trim(),
+        is_default: true
+      };
+
+      console.log('Saving address data:', addressData);
+
+      let result;
+      if (existingAddress) {
+        // Update existing address
+        result = await supabase
+          .from('user_addresses')
+          .update(addressData)
+          .eq('user_id', user.id);
+      } else {
+        // Insert new address
+        result = await supabase
+          .from('user_addresses')
+          .insert([addressData]);
+      }
+
+      const { error } = result;
 
       if (error) {
         console.error('Error saving address:', error);
-        toast.error("Failed to save address");
+        toast.error(`Failed to save address: ${error.message || JSON.stringify(error)}`);
       } else {
         toast.success("Address saved to your profile!");
       }
     } catch (error) {
       console.error('Error saving address:', error);
-      toast.error("Failed to save address");
+      const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+      toast.error(`Failed to save address: ${errorMessage}`);
     } finally {
       setIsSavingAddress(false);
     }
@@ -995,13 +1114,42 @@ const BulkCheckout = () => {
                 </div>
               </div>
 
-              <PaystackButton
-                {...paystackConfig}
-                text={`Pay R${(cartTotal >= 1000 ? cartTotal : cartTotal + 150).toFixed(2)}`}
-                onSuccess={handlePaystackSuccess}
-                onClose={handlePaystackClose}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 lg:py-3 px-4 rounded-lg font-medium transition-colors duration-200 text-sm lg:text-base"
-              />
+              {paystackPublicKey && cartTotal > 0 && user?.email ? (
+                <PaystackButton
+                  {...paystackConfig}
+                  text={`Pay R${(cartTotal >= 1000 ? cartTotal : cartTotal + 150).toFixed(2)}`}
+                  onSuccess={handlePaystackSuccess}
+                  onClose={handlePaystackClose}
+                  onError={handlePaystackError}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 lg:py-3 px-4 rounded-lg font-medium transition-colors duration-200 text-sm lg:text-base"
+                />
+              ) : (
+                <div className="w-full">
+                  <Button
+                    disabled
+                    className="w-full bg-gray-400 text-white py-2 lg:py-3 px-4 rounded-lg font-medium text-sm lg:text-base"
+                  >
+                    {!paystackPublicKey
+                      ? "Payment Unavailable - Configuration Error"
+                      : cartTotal <= 0
+                      ? "Add Items to Cart"
+                      : !user?.email
+                      ? "Please Sign In"
+                      : "Payment Unavailable"
+                    }
+                  </Button>
+                  <p className="text-xs text-red-600 mt-2 text-center">
+                    {!paystackPublicKey
+                      ? "Paystack configuration missing. Please contact support."
+                      : cartTotal <= 0
+                      ? "Please add items to your cart before proceeding with payment."
+                      : !user?.email
+                      ? "A valid email address is required for payment processing."
+                      : "Unable to process payment at this time."
+                    }
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2 lg:space-y-3 text-xs text-slate-500">
                 <div className="flex items-center gap-2">
