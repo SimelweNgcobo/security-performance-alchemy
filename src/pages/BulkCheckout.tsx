@@ -1120,6 +1120,7 @@ const BulkCheckout = () => {
                   text={`Pay R${(cartTotal >= 1000 ? cartTotal : cartTotal + 150).toFixed(2)}`}
                   onSuccess={handlePaystackSuccess}
                   onClose={handlePaystackClose}
+                  onError={handlePaystackError}
                   className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 lg:py-3 px-4 rounded-lg font-medium transition-colors duration-200 text-sm lg:text-base"
                 />
               ) : (
