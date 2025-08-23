@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Eye, CheckCircle, XCircle, Truck } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Truck, Edit, Save, X as XIcon } from "lucide-react";
 
 interface Order {
   id: string;
@@ -39,6 +40,10 @@ export function OrdersManagement() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+  const [newStatus, setNewStatus] = useState<string>('');
+  const [adminNotes, setAdminNotes] = useState<string>('');
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     loadOrders();
@@ -82,13 +87,71 @@ export function OrdersManagement() {
         .eq("id", orderId);
 
       if (error) throw error;
-      
+
       toast.success("Order status updated successfully");
       loadOrders();
     } catch (error) {
       console.error("Error updating order:", error);
       toast.error("Failed to update order status");
     }
+  };
+
+  const handleStatusUpdate = async (orderId: string) => {
+    if (!newStatus) {
+      toast.error("Please select a status");
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const updateData: any = {
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      };
+
+      if (adminNotes.trim()) {
+        updateData.admin_notes = adminNotes.trim();
+      }
+
+      // Set delivery status based on main status
+      if (newStatus === 'in_transit') {
+        updateData.delivery_status = 'shipped';
+      } else if (newStatus === 'delivered') {
+        updateData.delivery_status = 'delivered';
+      } else if (newStatus === 'cancelled') {
+        updateData.delivery_status = 'cancelled';
+      }
+
+      const { error } = await supabase
+        .from("orders")
+        .update(updateData)
+        .eq("id", orderId);
+
+      if (error) throw error;
+
+      toast.success(`Order status updated to ${newStatus}`);
+      setEditingOrderId(null);
+      setNewStatus('');
+      setAdminNotes('');
+      loadOrders();
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      toast.error("Failed to update order status");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const startEditingStatus = (order: Order) => {
+    setEditingOrderId(order.id);
+    setNewStatus(order.status);
+    setAdminNotes('');
+  };
+
+  const cancelEditing = () => {
+    setEditingOrderId(null);
+    setNewStatus('');
+    setAdminNotes('');
   };
 
   const getStatusBadge = (status: string, type: "status" | "payment" | "delivery") => {
@@ -213,23 +276,57 @@ export function OrdersManagement() {
                   </TableCell>
                   <TableCell>R{parseFloat(order.total_amount.toString()).toFixed(2)}</TableCell>
                   <TableCell>
-                    <Select 
-                      value={order.status} 
-                      onValueChange={(value) => updateOrderStatus(order.id, "status", value)}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="paid">Paid</SelectItem>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="shipped">Shipped</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                        <SelectItem value="declined">Declined</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {editingOrderId === order.id ? (
+                      <div className="space-y-2">
+                        <Select value={newStatus} onValueChange={setNewStatus}>
+                          <SelectTrigger className="w-36">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="processing">Processing</SelectItem>
+                            <SelectItem value="in_transit">In Transit</SelectItem>
+                            <SelectItem value="delivered">Delivered</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Textarea
+                          placeholder="Admin notes (optional)"
+                          value={adminNotes}
+                          onChange={(e) => setAdminNotes(e.target.value)}
+                          className="h-20 text-xs"
+                        />
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            onClick={() => handleStatusUpdate(order.id)}
+                            disabled={updating || !newStatus}
+                            className="h-7 px-2"
+                          >
+                            <Save className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={cancelEditing}
+                            className="h-7 px-2"
+                          >
+                            <XIcon className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(order.status, "status")}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => startEditingStatus(order)}
+                          className="h-7 w-7 p-0"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>{getStatusBadge(order.payment_status, "payment")}</TableCell>
                   <TableCell>

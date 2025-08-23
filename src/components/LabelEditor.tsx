@@ -311,11 +311,11 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     }
   }, []);
 
-  const useDefaultBranding = (e?: React.MouseEvent) => {
+  const addMyFuzeBranding = (e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
 
-    // Use the official MyFuze label image that fits the exact dimensions
+    // Add the official MyFuze label image that fits the exact dimensions
     const myFuzeLabelElement: ImageElement = {
       id: `myfuze-label-${Date.now()}`,
       type: 'image',
@@ -657,11 +657,11 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={useDefaultBranding}
+                  onClick={addMyFuzeBranding}
                   className="text-xs sm:text-sm no-scroll"
                   title="Apply MyFuze default branding template"
                 >
-                  Use Default Branding
+                  Add MyFuze Logo
                 </Button>
                 <Button
                   variant="default"

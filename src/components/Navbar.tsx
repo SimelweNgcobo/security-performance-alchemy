@@ -138,15 +138,32 @@ const Navbar = () => {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
+            className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200"
           >
-            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <div className="relative w-5 h-5">
+              <Menu
+                className={`w-5 h-5 absolute transition-all duration-200 ease-in-out ${
+                  isOpen ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'
+                }`}
+              />
+              <X
+                className={`w-5 h-5 absolute transition-all duration-200 ease-in-out ${
+                  isOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'
+                }`}
+              />
+            </div>
           </button>
         </div>
 
         {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="md:hidden py-4 border-t border-border/50">
+        <div
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className={`py-4 border-t border-border/50 transition-all duration-300 ease-in-out ${
+            isOpen ? 'translate-y-0' : '-translate-y-4'
+          }`}>
             <div className="space-y-3">
               {navItems.map((item) => (
                 <Link
@@ -250,7 +267,7 @@ const Navbar = () => {
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </nav>
   );

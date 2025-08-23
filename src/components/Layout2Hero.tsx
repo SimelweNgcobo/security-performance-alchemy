@@ -89,7 +89,7 @@ const Layout2Hero = () => {
               {/* Product showcase */}
               <div className="relative bg-gradient-to-br from-background/80 to-primary/5 backdrop-blur-sm rounded-3xl p-12 border border-primary/10">
                 <img
-                  src="https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg"
+                  src="https://cdn.builder.io/api/v1/image/assets%2Fec9f96f2a6c749f59a8ec45944035032%2F00659aa0ba504268871e62110c6b52b6?format=webp&width=800"
                   alt="MyFuze Premium Water Collection"
                   className="w-full h-auto max-w-md mx-auto drop-shadow-2xl transform hover:scale-105 transition-all duration-700 rounded-2xl"
                 />

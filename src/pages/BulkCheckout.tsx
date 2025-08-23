@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { PaystackButton } from 'react-paystack';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { userLabelsService, UserLabel } from "@/services/userLabels";
 
 // Pricing data structure - max 10,000 bottles
 const pricingData = {
@@ -76,6 +77,8 @@ interface CartItem {
   unitPrice: number;
   subtotal: number;
   hasCustomLabel: boolean;
+  labelId?: string | null;
+  labelName?: string | null;
 }
 
 interface ShippingAddress {
@@ -100,6 +103,9 @@ const BulkCheckout = () => {
   const [showPricingTiers, setShowPricingTiers] = useState(false);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [useCustomLabel, setUseCustomLabel] = useState(false);
+  const [userLabels, setUserLabels] = useState<UserLabel[]>([]);
+  const [selectedLabelId, setSelectedLabelId] = useState<string | null>(null);
+  const [loadingLabels, setLoadingLabels] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: "",
     company: "",
@@ -118,6 +124,31 @@ const BulkCheckout = () => {
       navigate('/auth');
     }
   }, [user, navigate]);
+
+  // Load user labels when user is available
+  useEffect(() => {
+    const loadUserLabels = async () => {
+      if (!user?.id) return;
+
+      setLoadingLabels(true);
+      try {
+        const labels = await userLabelsService.getUserLabels(user.id);
+        setUserLabels(labels);
+
+        // Auto-select default label if available
+        const defaultLabel = labels.find(l => l.is_default) || labels[0];
+        if (defaultLabel) {
+          setSelectedLabelId(defaultLabel.id);
+        }
+      } catch (error) {
+        console.error('Error loading user labels:', error);
+      } finally {
+        setLoadingLabels(false);
+      }
+    };
+
+    loadUserLabels();
+  }, [user?.id]);
 
   // Load saved address when user is available
   useEffect(() => {
@@ -205,8 +236,11 @@ const BulkCheckout = () => {
     const unitPrice = getCurrentPrice();
     const subtotal = quantity * unitPrice;
 
-    // Check if same size already exists in cart
-    const existingItemIndex = cartItems.findIndex(item => item.size === selectedSize && item.hasCustomLabel === useCustomLabel);
+    // Check if same size with same label already exists in cart
+    const existingItemIndex = cartItems.findIndex(item =>
+      item.size === selectedSize &&
+      (item.labelId ?? null) === (useCustomLabel ? (selectedLabelId ?? null) : null)
+    );
 
     if (existingItemIndex >= 0) {
       // Update existing item
@@ -225,13 +259,17 @@ const BulkCheckout = () => {
       toast.success(`Updated ${selectedSize} bottles in cart`);
     } else {
       // Add new item
+      const selectedLabel = userLabels.find(l => l.id === selectedLabelId);
+
       const newItem: CartItem = {
-        id: `${selectedSize}-${useCustomLabel ? 'custom' : 'standard'}-${Date.now()}`,
+        id: `${selectedSize}-${useCustomLabel ? 'custom' : 'standard'}-${selectedLabelId ?? 'no-label'}-${Date.now()}`,
         size: selectedSize,
         quantity,
         unitPrice,
         subtotal,
-        hasCustomLabel: useCustomLabel
+        hasCustomLabel: useCustomLabel,
+        labelId: useCustomLabel ? selectedLabelId : undefined,
+        labelName: useCustomLabel ? selectedLabel?.name : undefined
       };
 
       setCartItems(prev => [...prev, newItem]);
@@ -241,6 +279,8 @@ const BulkCheckout = () => {
     // Reset form
     setQuantity(500);
     setUseCustomLabel(false);
+    // Keep the selected label for next use
+    // setSelectedLabelId(null);
   };
 
   const removeFromCart = useCallback((id: string) => {
@@ -372,7 +412,16 @@ const BulkCheckout = () => {
         payment_reference: reference.reference,
         shipping_address: JSON.stringify(shippingAddress),
         metadata: JSON.stringify({
-          cart_items: cartItems,
+          cart_items: cartItems.map(item => ({
+            id: item.id,
+            size: item.size,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            subtotal: item.subtotal,
+            hasCustomLabel: item.hasCustomLabel,
+            labelId: item.labelId || null,
+            labelName: item.labelName || null
+          })),
           total_quantity: totalQuantity,
           payment_method: "paystack"
         })
@@ -516,7 +565,7 @@ const BulkCheckout = () => {
                         {item.hasCustomLabel && (
                           <Badge variant="outline" className="text-xs border-primary text-primary">
                             <Palette className="w-3 h-3 mr-1" />
-                            Custom Label
+                            {item.labelName || 'Custom Label'}
                           </Badge>
                         )}
                       </div>
@@ -636,9 +685,49 @@ const BulkCheckout = () => {
                 </div>
                 {useCustomLabel && (
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-xs text-blue-800">
-                      Design your custom label in your profile. The R5 additional cost covers premium label printing and application.
-                    </p>
+                    {loadingLabels ? (
+                      <p className="text-xs text-blue-800">Loading saved labels...</p>
+                    ) : userLabels.length === 0 ? (
+                      <div className="text-xs text-blue-800">
+                        <p className="mb-2">No saved labels found.</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate('/profile?tab=labels')}
+                          className="text-xs"
+                        >
+                          Create a label in your profile
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <label className="text-xs text-blue-800 block font-medium">Choose saved label:</label>
+                        <Select value={selectedLabelId || ''} onValueChange={(value) => setSelectedLabelId(value)}>
+                          <SelectTrigger className="w-full text-xs">
+                            <SelectValue placeholder="Select a label" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {userLabels.map(label => (
+                              <SelectItem key={label.id} value={label.id}>
+                                <div className="flex items-center gap-2">
+                                  <span>{label.name}</span>
+                                  {label.is_default && <Star className="h-3 w-3 text-yellow-500" />}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-blue-700">
+                          The R5 additional cost covers premium label printing and application.
+                          <button
+                            onClick={() => navigate('/profile?tab=labels')}
+                            className="text-primary underline ml-1"
+                          >
+                            Edit labels in profile
+                          </button>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1022,7 +1111,7 @@ const BulkCheckout = () => {
                       {item.size} Water Bottles
                       {item.hasCustomLabel && (
                         <Badge variant="outline" className="ml-2 text-xs border-primary text-primary">
-                          Custom Label
+                          {item.labelName || 'Custom Label'}
                         </Badge>
                       )}
                     </h4>
@@ -1208,7 +1297,7 @@ const BulkCheckout = () => {
                   {item.size} Water Bottles
                   {item.hasCustomLabel && (
                     <Badge variant="outline" className="ml-2 text-xs border-primary text-primary">
-                      Custom Label
+                      {item.labelName || 'Custom Label'}
                     </Badge>
                   )}
                 </h4>
