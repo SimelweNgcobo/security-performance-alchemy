@@ -1111,7 +1111,7 @@ const BulkCheckout = () => {
                       {item.size} Water Bottles
                       {item.hasCustomLabel && (
                         <Badge variant="outline" className="ml-2 text-xs border-primary text-primary">
-                          Custom Label
+                          {item.labelName || 'Custom Label'}
                         </Badge>
                       )}
                     </h4>
@@ -1297,7 +1297,7 @@ const BulkCheckout = () => {
                   {item.size} Water Bottles
                   {item.hasCustomLabel && (
                     <Badge variant="outline" className="ml-2 text-xs border-primary text-primary">
-                      Custom Label
+                      {item.labelName || 'Custom Label'}
                     </Badge>
                   )}
                 </h4>
