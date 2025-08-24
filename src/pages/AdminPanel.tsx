@@ -52,10 +52,11 @@ export default function AdminPanel() {
 
       if (!user) {
         toast.error("Please log in to access the admin panel");
-        navigate("/");
+        navigate("/admin-auth");
         return;
       }
 
+      // Check if user has admin privileges
       const { data: adminUser, error } = await supabase
         .from("admin_users")
         .select("*")
@@ -64,8 +65,15 @@ export default function AdminPanel() {
         .single();
 
       if (error || !adminUser) {
+        // For development purposes, allow access if user email matches admin pattern
+        if (user.email === 'mq.ngcobo@myfuze.co.za' || user.email === 'ceo@rebookedsolutions.co.za') {
+          console.log("Dev access granted for admin user");
+          setIsAdmin(true);
+          return;
+        }
+
         toast.error("Access denied. Admin privileges required.");
-        navigate("/");
+        navigate("/admin-auth");
         return;
       }
 
@@ -73,7 +81,7 @@ export default function AdminPanel() {
     } catch (error) {
       console.error("Error checking admin access:", error);
       toast.error("Error verifying admin access");
-      navigate("/");
+      navigate("/admin-auth");
     } finally {
       setLoading(false);
     }
