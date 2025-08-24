@@ -19,10 +19,11 @@ interface Bottle3DSimpleProps {
 }
 
 const bottleSizes: BottleSize[] = [
+  { id: "330ml", size: "330ml", dimensions: { diameter: 0.060, height: 0.180 } },
   { id: "500ml", size: "500ml", dimensions: { diameter: 0.066, height: 0.210 } },
+  { id: "750ml", size: "750ml", dimensions: { diameter: 0.080, height: 0.240 } },
   { id: "1L", size: "1L", dimensions: { diameter: 0.084, height: 0.260 } },
   { id: "1.5L", size: "1.5L", dimensions: { diameter: 0.100, height: 0.300 } },
-  { id: "2L", size: "2L", dimensions: { diameter: 0.110, height: 0.320 } },
   { id: "5L", size: "5L", dimensions: { diameter: 0.160, height: 0.380 } }
 ];
 
