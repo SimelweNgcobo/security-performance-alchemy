@@ -3,57 +3,97 @@ import { CheckCircle, Users, Globe, Heart } from "lucide-react";
 const Layout2About = () => {
   const features = [
     {
-      title: "Artisanal Source",
-      description: "Hand-selected from the world's most pristine alpine springs, where nature has perfected purity for millennia",
+      title: "Quality",
+      description: "Commitment to producing safe, premium-standard bottled water through advanced purification processes",
       stat: "100%",
       gradient: "from-blue-500/20 to-blue-600/5"
     },
     {
-      title: "Master Filtration",
-      description: "Seven-stage artisanal purification process, combining traditional methods with cutting-edge technology",
-      stat: "99.9%",
+      title: "Integrity",
+      description: "Operating with transparency and professionalism in all business dealings, building trust with our customers",
+      stat: "2020",
       gradient: "from-emerald-500/20 to-emerald-600/5"
     },
     {
-      title: "Earth Conscious",
-      description: "Pioneering sustainable practices with carbon-negative operations and regenerative packaging",
-      stat: "Zero",
+      title: "Sustainability",
+      description: "Promoting environmentally responsible production and packaging practices for a better tomorrow",
+      stat: "Eco",
       gradient: "from-green-500/20 to-green-600/5"
     },
     {
-      title: "Excellence Standard",
-      description: "Unwavering commitment to perfection through continuous quality monitoring and testing",
+      title: "Customer Focus",
+      description: "Building long-term, value-driven relationships with clients through innovation and excellent service",
       stat: "24/7",
       gradient: "from-amber-500/20 to-amber-600/5"
     }
   ];
 
   const stats = [
-    { icon: Users, value: "Endless", label: "Satisfied Customers" },
-    { icon: Globe, value: "SA", label: "South Africa Proud" },
-    { icon: Heart, value: "99.9%", label: "Purity Guaranteed" },
-    { icon: CheckCircle, value: "24/7", label: "Quality Control" }
+    { icon: Users, value: "Trusted", label: "Customer Partnerships" },
+    { icon: Globe, value: "SA", label: "South Africa Based" },
+    { icon: Heart, value: "100%", label: "Premium Quality" },
+    { icon: CheckCircle, value: "2020", label: "Established Since" }
   ];
 
   return (
     <section id="about" className="py-32 px-6 md:px-12 bg-gradient-to-b from-background to-primary/5">
       <div className="max-w-6xl mx-auto">
-        {/* Sophisticated centered heading */}
+        {/* Company Overview Header */}
         <div className="text-center space-y-8 mb-32 fade-in">
           <div className="inline-block">
             <h2 className="text-5xl md:text-6xl lg:text-7xl font-extralight text-foreground tracking-tight leading-none">
-              The MyFuze
+              MyFuze Beverages
             </h2>
             <div className="text-2xl md:text-3xl text-primary font-light mt-2 tracking-wide">
-              Philosophy
+              Pure Refreshment Company
             </div>
           </div>
           <div className="w-32 h-px bg-gradient-to-r from-transparent via-primary to-transparent mx-auto"></div>
-          <p className="text-xl text-muted-foreground font-light max-w-4xl mx-auto leading-relaxed">
-            We believe that exceptional water is not just a necessity, but an art form. Our philosophy centers on
-            the harmonious balance between nature's gifts and human innovation, creating hydration experiences
-            that elevate the everyday.
-          </p>
+          <div className="max-w-4xl mx-auto space-y-6">
+            <p className="text-xl text-muted-foreground font-light leading-relaxed">
+              MyFuze Beverages is a South African bottled water manufacturing company established in 2020. We were founded with the vision of providing consumers with safe, refreshing, and premium-quality drinking water.
+            </p>
+            <p className="text-lg text-muted-foreground font-light leading-relaxed">
+              With a growing demand for reliable hydration solutions, MyFuze Beverages has positioned itself as a trusted supplier to individuals, businesses, and organizations across multiple sectors.
+            </p>
+          </div>
+        </div>
+
+        {/* Vision and Mission */}
+        <div className="grid md:grid-cols-2 gap-12 mb-24">
+          <div className="group cursor-pointer fade-in-delay-1">
+            <div className="relative p-8 rounded-3xl border border-primary/10 bg-gradient-to-br from-background/80 to-primary/5 hover:from-primary/5 hover:to-primary/10 transition-all duration-500 hover:scale-105 hover:shadow-xl">
+              <div className="space-y-4">
+                <h3 className="text-3xl font-light text-primary group-hover:text-primary transition-colors duration-300">
+                  Our Vision
+                </h3>
+                <p className="text-muted-foreground font-light leading-relaxed">
+                  To become a leading and trusted bottled water brand in South Africa and beyond, recognized for quality, sustainability, and customer satisfaction.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="group cursor-pointer fade-in-delay-2">
+            <div className="relative p-8 rounded-3xl border border-primary/10 bg-gradient-to-br from-background/80 to-primary/5 hover:from-primary/5 hover:to-primary/10 transition-all duration-500 hover:scale-105 hover:shadow-xl">
+              <div className="space-y-4">
+                <h3 className="text-3xl font-light text-primary group-hover:text-primary transition-colors duration-300">
+                  Our Mission
+                </h3>
+                <p className="text-muted-foreground font-light leading-relaxed">
+                  To provide pure and refreshing bottled water through advanced purification processes, eco-friendly packaging, and efficient distribution channels, while building strong partnerships with customers and communities.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Core Values */}
+        <div className="mb-24">
+          <div className="text-center mb-16">
+            <h3 className="text-4xl font-light text-foreground mb-4">Core Values</h3>
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-primary to-transparent mx-auto"></div>
+          </div>
         </div>
 
         {/* Enhanced features grid */}
