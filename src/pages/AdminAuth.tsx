@@ -200,15 +200,10 @@ export default function AdminAuth() {
               <p className="text-xs text-blue-700">Password: MQ1973</p>
             </div>
             <div className="mt-3 px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-xs text-green-800 font-medium mb-2">⚡ Temporary Access:</p>
-              <Button
-                onClick={() => navigate("/panel-1973")}
-                variant="outline"
-                size="sm"
-                className="w-full text-xs border-green-300 text-green-700 hover:bg-green-100"
-              >
-                Access Admin Panel (No Password Required)
-              </Button>
+              <p className="text-xs text-green-800 font-medium mb-2">🔒 Secure Access Required</p>
+              <p className="text-xs text-green-700">
+                Admin access requires valid credentials for security. Use the test credentials above or contact system administrator.
+              </p>
             </div>
           </CardHeader>
           <CardContent>

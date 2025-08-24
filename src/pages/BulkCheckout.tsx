@@ -20,6 +20,16 @@ import { userLabelsService, UserLabel } from "@/services/userLabels";
 
 // Pricing data structure - max 10,000 bottles
 const pricingData = {
+  "330ml": [
+    { min: 1, max: 10, price: 8, notes: "Retail / single bottle" },
+    { min: 11, max: 50, price: 7.50, notes: "Small packs" },
+    { min: 51, max: 100, price: 7, notes: "Small events" },
+    { min: 101, max: 500, price: 6.50, notes: "Bulk" },
+    { min: 501, max: 1000, price: 6.00, notes: "Entry bulk" },
+    { min: 1001, max: 2500, price: 5.80, notes: "Corporate" },
+    { min: 2501, max: 5000, price: 5.50, notes: "Large bulk" },
+    { min: 5001, max: 10000, price: 5.00, notes: "Maximum bulk (Enterprise custom quote for higher quantities)" }
+  ],
   "500ml": [
     { min: 1, max: 10, price: 10, notes: "Retail / single bottle" },
     { min: 11, max: 50, price: 9, notes: "Small packs" },
@@ -29,6 +39,16 @@ const pricingData = {
     { min: 1001, max: 2500, price: 6.80, notes: "Corporate" },
     { min: 2501, max: 5000, price: 6.50, notes: "Large bulk" },
     { min: 5001, max: 10000, price: 6.00, notes: "Maximum bulk (Enterprise custom quote for higher quantities)" }
+  ],
+  "750ml": [
+    { min: 1, max: 10, price: 12, notes: "Retail / single bottle" },
+    { min: 11, max: 50, price: 11, notes: "Small packs" },
+    { min: 51, max: 100, price: 10, notes: "Small events" },
+    { min: 101, max: 500, price: 9.50, notes: "Bulk" },
+    { min: 501, max: 1000, price: 9.00, notes: "Entry bulk" },
+    { min: 1001, max: 2500, price: 8.80, notes: "Corporate" },
+    { min: 2501, max: 5000, price: 8.50, notes: "Large bulk" },
+    { min: 5001, max: 10000, price: 8.00, notes: "Maximum bulk (Enterprise custom quote for higher quantities)" }
   ],
   "1L": [
     { min: 1, max: 10, price: 15, notes: "" },
@@ -47,15 +67,6 @@ const pricingData = {
     { min: 501, max: 1000, price: 12, notes: "" },
     { min: 1001, max: 5000, price: 11.80, notes: "" },
     { min: 5001, max: 10000, price: 11.50, notes: "Maximum bulk" }
-  ],
-  "2L": [
-    { min: 1, max: 10, price: 16, notes: "" },
-    { min: 11, max: 50, price: 15.50, notes: "" },
-    { min: 51, max: 100, price: 15, notes: "" },
-    { min: 101, max: 500, price: 14.50, notes: "" },
-    { min: 501, max: 1000, price: 14, notes: "" },
-    { min: 1001, max: 5000, price: 13.80, notes: "" },
-    { min: 5001, max: 10000, price: 13.50, notes: "Maximum bulk" }
   ],
   "5L": [
     { min: 1, max: 10, price: 25, notes: "" },

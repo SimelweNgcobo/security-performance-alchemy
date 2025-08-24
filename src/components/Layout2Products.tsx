@@ -21,6 +21,15 @@ const Layout2Products = () => {
 
   const products = [
     {
+      name: "Compact Bottle",
+      size: "330ml",
+      description: "Perfect for on-the-go hydration. Ideal for kids, quick refreshment, and portability.",
+      image: "https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg",
+      gradient: "from-cyan-500/20 to-cyan-600/5",
+      volume: "330ml",
+      dimensions: "Portable & Convenient"
+    },
+    {
       name: "Classic Bottle",
       size: "500ml",
       description: "Our most popular size. Ideal for daily hydration, workouts, and office use.",
@@ -28,6 +37,15 @@ const Layout2Products = () => {
       gradient: "from-emerald-500/20 to-emerald-600/5",
       volume: "500ml",
       dimensions: "Standard & Versatile"
+    },
+    {
+      name: "Premium Bottle",
+      size: "750ml",
+      description: "Premium personal size. Perfect for extended activities and sophisticated hydration needs.",
+      image: "https://images.pexels.com/photos/3736302/pexels-photo-3736302.jpeg",
+      gradient: "from-teal-500/20 to-teal-600/5",
+      volume: "750ml",
+      dimensions: "Premium Personal"
     },
     {
       name: "Family Bottle",
@@ -46,15 +64,6 @@ const Layout2Products = () => {
       gradient: "from-purple-500/20 to-purple-600/5",
       volume: "1.5L",
       dimensions: "Sports & Outdoor"
-    },
-    {
-      name: "XL Bottle",
-      size: "2 litre",
-      description: "Maximum hydration capacity. Ideal for all-day events, camping, and group activities.",
-      image: "https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg",
-      gradient: "from-red-500/20 to-red-600/5",
-      volume: "2L",
-      dimensions: "Extra Large"
     },
     {
       name: "Bulk Bottle",
@@ -82,7 +91,7 @@ const Layout2Products = () => {
           </div>
           <div className="w-24 sm:w-32 h-px bg-gradient-to-r from-transparent via-primary to-transparent mx-auto"></div>
           <p className="text-base sm:text-lg lg:text-xl text-muted-foreground font-light max-w-2xl lg:max-w-3xl mx-auto leading-relaxed px-4">
-            From standard 500ml bottles to commercial 6-litre containers, discover the perfect size for every hydration need.
+            From compact 330ml bottles to commercial 5-litre containers, discover the perfect size for every hydration need.
           </p>
         </div>
 
