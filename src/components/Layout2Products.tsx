@@ -21,6 +21,15 @@ const Layout2Products = () => {
 
   const products = [
     {
+      name: "Compact Bottle",
+      size: "330ml",
+      description: "Perfect for on-the-go hydration. Ideal for kids, quick refreshment, and portability.",
+      image: "https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg",
+      gradient: "from-cyan-500/20 to-cyan-600/5",
+      volume: "330ml",
+      dimensions: "Portable & Convenient"
+    },
+    {
       name: "Classic Bottle",
       size: "500ml",
       description: "Our most popular size. Ideal for daily hydration, workouts, and office use.",
@@ -28,6 +37,15 @@ const Layout2Products = () => {
       gradient: "from-emerald-500/20 to-emerald-600/5",
       volume: "500ml",
       dimensions: "Standard & Versatile"
+    },
+    {
+      name: "Premium Bottle",
+      size: "750ml",
+      description: "Premium personal size. Perfect for extended activities and sophisticated hydration needs.",
+      image: "https://images.pexels.com/photos/3736302/pexels-photo-3736302.jpeg",
+      gradient: "from-teal-500/20 to-teal-600/5",
+      volume: "750ml",
+      dimensions: "Premium Personal"
     },
     {
       name: "Family Bottle",
@@ -46,15 +64,6 @@ const Layout2Products = () => {
       gradient: "from-purple-500/20 to-purple-600/5",
       volume: "1.5L",
       dimensions: "Sports & Outdoor"
-    },
-    {
-      name: "XL Bottle",
-      size: "2 litre",
-      description: "Maximum hydration capacity. Ideal for all-day events, camping, and group activities.",
-      image: "https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg",
-      gradient: "from-red-500/20 to-red-600/5",
-      volume: "2L",
-      dimensions: "Extra Large"
     },
     {
       name: "Bulk Bottle",
