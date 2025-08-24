@@ -6,10 +6,11 @@ interface BottleFallbackProps {
 }
 
 const bottleSizes = [
+  { id: "330ml", size: "330ml", volume: "Compact", dimensions: { width: 60, height: 180 } },
   { id: "500ml", size: "500ml", volume: "Regular", dimensions: { width: 66, height: 210 } },
+  { id: "750ml", size: "750ml", volume: "Premium", dimensions: { width: 80, height: 240 } },
   { id: "1L", size: "1L", volume: "Large", dimensions: { width: 84, height: 260 } },
   { id: "1.5L", size: "1.5L", volume: "Family", dimensions: { width: 100, height: 300 } },
-  { id: "2L", size: "2L", volume: "XL", dimensions: { width: 110, height: 320 } },
   { id: "5L", size: "5L", volume: "Bulk", dimensions: { width: 160, height: 380 } }
 ];
 
