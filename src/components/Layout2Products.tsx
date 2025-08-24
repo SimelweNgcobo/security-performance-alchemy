@@ -91,7 +91,7 @@ const Layout2Products = () => {
           </div>
           <div className="w-24 sm:w-32 h-px bg-gradient-to-r from-transparent via-primary to-transparent mx-auto"></div>
           <p className="text-base sm:text-lg lg:text-xl text-muted-foreground font-light max-w-2xl lg:max-w-3xl mx-auto leading-relaxed px-4">
-            From standard 500ml bottles to commercial 6-litre containers, discover the perfect size for every hydration need.
+            From compact 330ml bottles to commercial 5-litre containers, discover the perfect size for every hydration need.
           </p>
         </div>
 
