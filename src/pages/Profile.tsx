@@ -324,37 +324,8 @@ const Profile = () => {
 
       if (ordersError) {
         console.error("Error loading orders:", ordersError);
-
-        // If orders table doesn't exist or has issues, create demo data
-        const demoOrders: Purchase[] = [
-          {
-            id: "demo-1",
-            order_number: "BLK001234",
-            total_amount: 180.00,
-            status: "delivered",
-            payment_status: "paid",
-            delivery_status: "delivered",
-            created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-            items: [
-              { quantity: 12, unit_price: 15.00, products: { name: "Premium Water", size: "500ml", type: "bottle" } }
-            ]
-          },
-          {
-            id: "demo-2",
-            order_number: "BLK001235",
-            total_amount: 450.00,
-            status: "processing",
-            payment_status: "paid",
-            delivery_status: "processing",
-            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            items: [
-              { quantity: 30, unit_price: 15.00, products: { name: "Premium Water", size: "500ml", type: "bottle" } }
-            ]
-          }
-        ];
-
-        setPurchases(demoOrders);
-        toast.success("Showing recent orders");
+        toast.error("Failed to load orders. Please ensure the database is properly set up.");
+        setPurchases([]);
         return;
       }
 

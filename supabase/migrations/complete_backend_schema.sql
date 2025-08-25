@@ -894,24 +894,16 @@ CREATE POLICY "Admins can manage company settings" ON company_settings FOR ALL U
 -- 7. INITIAL DATA AND ADMIN SETUP
 -- =============================================================================
 
--- Insert default products
-INSERT INTO products (name, description, size, price, stock, type, image_url) VALUES
-('MyFuze Pure Water', 'Premium purified water with perfect mineral balance', '500ml', 12.99, 1000, 'standard', 'https://cdn.builder.io/api/v1/image/assets%2Fec9f96f2a6c749f59a8ec45944035032%2F00659aa0ba504268871e62110c6b52b6?format=webp&width=800'),
-('MyFuze Pure Water', 'Premium purified water with perfect mineral balance', '1L', 18.99, 1000, 'standard', 'https://cdn.builder.io/api/v1/image/assets%2Fec9f96f2a6c749f59a8ec45944035032%2F00659aa0ba504268871e62110c6b52b6?format=webp&width=800'),
-('MyFuze Pure Water', 'Premium purified water with perfect mineral balance', '1.5L', 24.99, 1000, 'standard', 'https://cdn.builder.io/api/v1/image/assets%2Fec9f96f2a6c749f59a8ec45944035032%2F00659aa0ba504268871e62110c6b52b6?format=webp&width=800'),
-('MyFuze Pure Water', 'Premium purified water with perfect mineral balance', '2L', 29.99, 1000, 'standard', 'https://cdn.builder.io/api/v1/image/assets%2Fec9f96f2a6c749f59a8ec45944035032%2F00659aa0ba504268871e62110c6b52b6?format=webp&width=800')
-ON CONFLICT DO NOTHING;
+-- Default products removed for production - add your own products via admin panel
 
--- Insert default company settings
+-- Insert default company settings (update these values for production)
 INSERT INTO company_settings (setting_key, setting_value) VALUES
-('company_name', '"MyFuze"'),
-('company_email', '"info@myfuze.co.za"'),
-('company_phone', '"+27 11 123 4567"'),
-('company_address', '"123 Business Street, Johannesburg, South Africa"'),
-('paystack_public_key', '"pk_test_your_paystack_public_key"'),
-('paystack_secret_key', '"sk_test_your_paystack_secret_key"'),
-('email_from_address', '"noreply@myfuze.co.za"'),
-('email_from_name', '"MyFuze"'),
+('company_name', '"Your Company Name"'),
+('company_email', '"info@yourcompany.com"'),
+('company_phone', '"+27 XX XXX XXXX"'),
+('company_address', '"Your Business Address"'),
+('email_from_address', '"noreply@yourcompany.com"'),
+('email_from_name', '"Your Company Name"'),
 ('free_delivery_threshold', '1000'),
 ('delivery_fee', '150'),
 ('tax_rate', '0.15')

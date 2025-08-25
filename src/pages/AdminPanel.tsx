@@ -7,14 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { 
-  ShoppingCart, 
-  Package, 
-  Users, 
-  CreditCard, 
-  Truck, 
-  BarChart3, 
-  UserCog, 
+import {
+  ShoppingCart,
+  Package,
+  Users,
+  CreditCard,
+  Truck,
+  BarChart3,
+  UserCog,
   Settings,
   LogOut,
   Building2,
@@ -22,7 +22,8 @@ import {
   Menu,
   X,
   Home,
-  Bell
+  Bell,
+  MessageSquare
 } from "lucide-react";
 import { OrdersManagement } from "@/components/admin/OrdersManagement";
 import { ProductsManagement } from "@/components/admin/ProductsManagement";
@@ -34,9 +35,10 @@ import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { EnterpriseRequests } from "@/components/admin/EnterpriseRequests";
 import { UserLabelsManagement } from "@/components/admin/UserLabelsManagement";
+import { ContactReportsWrapper } from "@/components/admin/ContactReportsWrapper";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
-type AdminTab = 'dashboard' | 'orders' | 'products' | 'customers' | 'payments' | 'delivery' | 'enterprise' | 'labels' | 'reports' | 'admin-users' | 'settings';
+type AdminTab = 'dashboard' | 'orders' | 'products' | 'customers' | 'payments' | 'delivery' | 'enterprise' | 'labels' | 'contact' | 'reports' | 'admin-users' | 'settings';
 
 interface NavigationItem {
   id: AdminTab;
@@ -104,6 +106,13 @@ const navigationItems: NavigationItem[] = [
     category: 'business'
   },
   {
+    id: 'contact',
+    label: 'Contact Reports',
+    icon: <MessageSquare className="h-5 w-5" />,
+    description: 'Contact form submissions',
+    category: 'business'
+  },
+  {
     id: 'reports',
     label: 'Reports',
     icon: <BarChart3 className="h-5 w-5" />,
@@ -154,7 +163,7 @@ export default function AdminPanel() {
 
       if (!user) {
         toast.error("Please log in to access the admin panel");
-        navigate("/admin-auth");
+        navigate("/auth");
         return;
       }
 
@@ -175,7 +184,7 @@ export default function AdminPanel() {
         }
 
         toast.error("Access denied. Admin privileges required.");
-        navigate("/admin-auth");
+        navigate("/auth");
         return;
       }
 
@@ -183,7 +192,7 @@ export default function AdminPanel() {
     } catch (error) {
       console.error("Error checking admin access:", error);
       toast.error("Error verifying admin access");
-      navigate("/admin-auth");
+      navigate("/auth");
     } finally {
       setLoading(false);
     }
@@ -422,6 +431,8 @@ export default function AdminPanel() {
         return <EnterpriseRequests />;
       case 'labels':
         return <UserLabelsManagement />;
+      case 'contact':
+        return <ContactReportsWrapper />;
       case 'reports':
         return <ReportsAnalytics />;
       case 'admin-users':
