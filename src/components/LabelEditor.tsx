@@ -489,26 +489,21 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     setIsDragging(false);
   }, []);
 
+  // Consolidated event listener management
   useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove, { passive: false });
-      document.addEventListener('mouseup', handleMouseUp, { passive: false });
+    if (!isDragging) return;
 
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+    const onMove = handleMouseMove;
+    const onUp = handleMouseUp;
 
-  // Cleanup function to prevent memory leaks
-  useEffect(() => {
+    document.addEventListener('mousemove', onMove, { passive: false });
+    document.addEventListener('mouseup', onUp, { passive: false });
+
     return () => {
-      // Clean up any remaining event listeners
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
     };
-  }, [handleMouseMove, handleMouseUp]);
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   return (
     <div className="label-editor grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto p-2 sm:p-4">
