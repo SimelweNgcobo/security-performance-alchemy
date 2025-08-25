@@ -39,18 +39,6 @@ export function ContactReports() {
 
   const loadSubmissions = async () => {
     try {
-      // First test table access
-      const hasAccess = await testTableAccess();
-
-      if (!hasAccess) {
-        console.log("No table access, attempting to set up table...");
-        const setupSuccess = await setupContactSubmissionsTable();
-
-        if (!setupSuccess) {
-          throw new Error("Unable to access or create contact_submissions table. Please ensure the database migration has been run.");
-        }
-      }
-
       let query = supabase
         .from("contact_submissions")
         .select("*")
@@ -62,7 +50,14 @@ export function ContactReports() {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        // Check if it's a table not found error
+        if (error.code === '42P01' || error.message.includes('does not exist')) {
+          throw new Error("Contact submissions table not found. Please run the SQL setup script in your Supabase dashboard.");
+        }
+        throw error;
+      }
+
       setSubmissions(data || []);
     } catch (error: any) {
       console.error("Error loading contact submissions:", error);
@@ -72,7 +67,13 @@ export function ContactReports() {
         hint: error?.hint,
         code: error?.code
       });
-      toast.error(`Failed to load contact submissions: ${error?.message || 'Unknown error'}`);
+
+      let errorMessage = error?.message || 'Unknown error';
+      if (error.code === '42P01' || errorMessage.includes('does not exist')) {
+        errorMessage = 'Contact submissions table does not exist. Please run SETUP_CONTACT_SUBMISSIONS.sql in your Supabase SQL editor.';
+      }
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
