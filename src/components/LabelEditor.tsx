@@ -203,10 +203,12 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
 
     reader.onload = (e) => {
       try {
-        const result = e.target?.result as string;
-        if (result) {
+        const result = e.target?.result;
+        if (typeof result === 'string' && result) {
           addImageElement(result);
           toast.success('Image added to canvas!');
+        } else {
+          toast.error('Invalid image data received');
         }
       } catch (error) {
         console.error('Error processing image:', error);
