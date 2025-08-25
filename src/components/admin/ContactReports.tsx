@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Eye, Mail, MessageSquare, Clock, CheckCircle, XCircle } from "lucide-react";
+import { setupContactSubmissionsTable, testTableAccess } from "@/utils/setupContactSubmissions";
 
 interface ContactSubmission {
   id: string;
@@ -38,6 +39,18 @@ export function ContactReports() {
 
   const loadSubmissions = async () => {
     try {
+      // First test table access
+      const hasAccess = await testTableAccess();
+
+      if (!hasAccess) {
+        console.log("No table access, attempting to set up table...");
+        const setupSuccess = await setupContactSubmissionsTable();
+
+        if (!setupSuccess) {
+          throw new Error("Unable to access or create contact_submissions table. Please ensure the database migration has been run.");
+        }
+      }
+
       let query = supabase
         .from("contact_submissions")
         .select("*")
