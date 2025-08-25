@@ -282,11 +282,28 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     const element = design.elements.find(el => el.id === id);
     if (!element) return;
 
-    const newLayer = direction === 'up' 
-      ? Math.min(element.layer + 1, design.elements.length - 1)
-      : Math.max(element.layer - 1, 0);
+    const sortedElements = [...design.elements].sort((a, b) => a.layer - b.layer);
+    const currentIndex = sortedElements.findIndex(el => el.id === id);
 
-    updateElement(id, { layer: newLayer });
+    if (currentIndex === -1) return;
+
+    const targetIndex = direction === 'up'
+      ? Math.min(currentIndex + 1, sortedElements.length - 1)
+      : Math.max(currentIndex - 1, 0);
+
+    // If no change in position, return early
+    if (currentIndex === targetIndex) return;
+
+    // Swap elements
+    [sortedElements[currentIndex], sortedElements[targetIndex]] = [sortedElements[targetIndex], sortedElements[currentIndex]];
+
+    // Reassign layer indices to maintain order
+    const updatedElements = design.elements.map(el => {
+      const newIndex = sortedElements.findIndex(sorted => sorted.id === el.id);
+      return { ...el, layer: newIndex };
+    });
+
+    setDesign(prev => ({ ...prev, elements: updatedElements }));
   };
 
   const resetCanvas = useCallback((e?: React.MouseEvent) => {
