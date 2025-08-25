@@ -7,14 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { 
-  ShoppingCart, 
-  Package, 
-  Users, 
-  CreditCard, 
-  Truck, 
-  BarChart3, 
-  UserCog, 
+import {
+  ShoppingCart,
+  Package,
+  Users,
+  CreditCard,
+  Truck,
+  BarChart3,
+  UserCog,
   Settings,
   LogOut,
   Building2,
@@ -22,7 +22,8 @@ import {
   Menu,
   X,
   Home,
-  Bell
+  Bell,
+  MessageSquare
 } from "lucide-react";
 import { OrdersManagement } from "@/components/admin/OrdersManagement";
 import { ProductsManagement } from "@/components/admin/ProductsManagement";
