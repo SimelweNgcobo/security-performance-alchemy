@@ -45,51 +45,7 @@ export const EnterpriseRequests = () => {
   const [responseNotes, setResponseNotes] = useState("");
   const [newStatus, setNewStatus] = useState<string>("");
 
-  // Mock data since we don't have the table yet
-  const mockRequests: EnterpriseRequest[] = [
-    {
-      id: "1",
-      company_name: "TechCorp SA",
-      contact_email: "events@techcorp.co.za",
-      requirements: "We need 500 bottles for our annual conference with our logo. Need delivery by March 15th.",
-      status: "pending",
-      user_id: "user-123",
-      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      designs: null,
-      quote_amount: null,
-      quote_valid_until: null,
-      notes: ""
-    },
-    {
-      id: "2", 
-      company_name: "Green Earth Marketing",
-      contact_email: "sarah@greenearth.co.za",
-      requirements: "1000 eco-friendly bottles for our sustainability campaign. Custom green label design needed.",
-      status: "reviewing",
-      user_id: "user-456",
-      created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      designs: { label_design_url: "https://example.com/design.png" },
-      quote_amount: null,
-      quote_valid_until: null,
-      notes: "Customer interested in recyclable materials"
-    },
-    {
-      id: "3",
-      company_name: "Sports World",
-      contact_email: "orders@sportsworld.co.za", 
-      requirements: "2000 bottles for marathon event. Need logo on both sides, urgent delivery needed.",
-      status: "quoted",
-      user_id: "user-789",
-      created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      designs: null,
-      quote_amount: 45000,
-      quote_valid_until: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-      notes: "Quote sent R45,000 including rush delivery"
-    }
-  ];
+  // Removed mock data - using real database data only
 
   useEffect(() => {
     loadRequests();
@@ -111,10 +67,8 @@ export const EnterpriseRequests = () => {
       setRequests(data || []);
     } catch (error) {
       console.error("Error loading enterprise requests:", error);
-      toast.error("Failed to load enterprise requests");
-
-      // Fallback to mock data in case of error
-      setRequests(mockRequests);
+      toast.error("Failed to load enterprise requests. Please ensure the database is properly set up.");
+      setRequests([]);
     } finally {
       setLoading(false);
     }

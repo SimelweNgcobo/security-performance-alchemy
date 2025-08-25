@@ -358,22 +358,7 @@ export class OrderTrackingService {
     }
   }
 
-  // Initialize with some demo data
-  public async initializeDemoData(): Promise<void> {
-    const demoOrders = [
-      {
-        order_id: 'ORD-001',
-        customer_email: 'demo@example.com',
-        customer_id: 'customer-1',
-        total_amount: 149.99,
-        items: [{ quantity: 2, size: '500ml' }, { quantity: 1, size: '1L' }]
-      }
-    ];
-
-    for (const order of demoOrders) {
-      await this.createOrderTracking(order);
-    }
-  }
+  // Demo data initialization removed - using real orders only
 }
 
 // Export singleton instance
