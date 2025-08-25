@@ -430,6 +430,8 @@ export default function AdminPanel() {
         return <EnterpriseRequests />;
       case 'labels':
         return <UserLabelsManagement />;
+      case 'contact':
+        return <ContactReports />;
       case 'reports':
         return <ReportsAnalytics />;
       case 'admin-users':
