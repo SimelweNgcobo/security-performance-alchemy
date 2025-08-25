@@ -888,7 +888,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                         id="font-size"
                         type="number"
                         value={(selectedElementData as TextElement).fontSize}
-                        onChange={(e) => updateElement(selectedElementData.id, { fontSize: parseInt(e.target.value) || 16 })}
+                        onChange={(e) => updateElement(selectedElementData.id, { fontSize: parseInt(e.target.value, 10) || 16 })}
                         min="8"
                         max="72"
                       />
@@ -974,7 +974,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                       id="element-x"
                       type="number"
                       value={Math.round(selectedElementData.x)}
-                      onChange={(e) => updateElement(selectedElementData.id, { x: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => updateElement(selectedElementData.id, { x: parseInt(e.target.value, 10) || 0 })}
                       className="h-8"
                     />
                   </div>
@@ -984,7 +984,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                       id="element-y"
                       type="number"
                       value={Math.round(selectedElementData.y)}
-                      onChange={(e) => updateElement(selectedElementData.id, { y: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => updateElement(selectedElementData.id, { y: parseInt(e.target.value, 10) || 0 })}
                       className="h-8"
                     />
                   </div>
@@ -994,7 +994,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                       id="element-width"
                       type="number"
                       value={Math.round(selectedElementData.width)}
-                      onChange={(e) => updateElement(selectedElementData.id, { width: parseInt(e.target.value) || 10 })}
+                      onChange={(e) => updateElement(selectedElementData.id, { width: parseInt(e.target.value, 10) || 10 })}
                       className="h-8"
                     />
                   </div>
@@ -1004,7 +1004,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                       id="element-height"
                       type="number"
                       value={Math.round(selectedElementData.height)}
-                      onChange={(e) => updateElement(selectedElementData.id, { height: parseInt(e.target.value) || 10 })}
+                      onChange={(e) => updateElement(selectedElementData.id, { height: parseInt(e.target.value, 10) || 10 })}
                       className="h-8"
                     />
                   </div>
