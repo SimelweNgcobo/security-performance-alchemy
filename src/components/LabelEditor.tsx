@@ -439,6 +439,15 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     setShowSaveDialog(true);
   }, [user, design.elements.length]);
 
+  // Memoize sorted elements to prevent state mutation and unnecessary re-renders
+  const elementsSortedByLayer = useMemo(() => {
+    return [...design.elements].sort((a, b) => a.layer - b.layer);
+  }, [design.elements]);
+
+  const elementsReverseSorted = useMemo(() => {
+    return [...design.elements].sort((a, b) => b.layer - a.layer);
+  }, [design.elements]);
+
   // Memoize the selected element data to prevent unnecessary re-renders
   const selectedElementData = useMemo(() => {
     return selectedElement
@@ -581,9 +590,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                   onClick={() => setSelectedElement(null)}
                 >
                   {/* Render elements sorted by layer */}
-                  {design.elements
-                    .sort((a, b) => a.layer - b.layer)
-                    .map((element) => (
+                  {elementsSortedByLayer.map((element) => (
                       <div
                         key={element.id}
                         className={`absolute cursor-move border-2 transition-all ${
@@ -1037,9 +1044,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 max-h-40 overflow-y-auto">
-              {design.elements
-                .sort((a, b) => b.layer - a.layer)
-                .map((element) => (
+              {elementsReverseSorted.map((element) => (
                   <div
                     key={element.id}
                     className={`flex items-center justify-between p-2 rounded border cursor-pointer ${
