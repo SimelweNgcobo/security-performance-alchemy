@@ -313,7 +313,7 @@ export function ReportsAnalytics() {
                         <Badge variant={product.type === "custom" ? "secondary" : "outline"} className="text-xs">
                           {product.type === "custom" ? "Custom" : "Standard"}
                         </Badge>
-                        <span className="text-sm text-muted-foregroup">
+                        <span className="text-sm text-muted-foreground">
                           {product.totalSold} sold
                         </span>
                       </div>
@@ -322,7 +322,7 @@ export function ReportsAnalytics() {
                   <div className="text-right">
                     <div className="font-bold">R{product.revenue.toFixed(2)}</div>
                     <div className="text-sm text-muted-foreground">
-                      R{(product.revenue / product.totalSold).toFixed(2)} avg
+                      R{product.totalSold > 0 ? (product.revenue / product.totalSold).toFixed(2) : "0.00"} avg
                     </div>
                   </div>
                 </div>
