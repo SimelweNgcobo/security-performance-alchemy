@@ -51,7 +51,18 @@ const Layout2Contact = () => {
 
       if (error) {
         console.error("Error saving contact submission:", error);
-        throw new Error("Failed to submit your message");
+        console.error("Error details:", {
+          message: error?.message,
+          details: error?.details,
+          hint: error?.hint,
+          code: error?.code
+        });
+
+        if (error.code === '42P01' || error.message.includes('does not exist')) {
+          throw new Error("Contact form is not properly configured. Please contact support.");
+        }
+
+        throw new Error(error.message || "Failed to submit your message");
       }
 
       toast.success("Thank you! Your message has been sent successfully. We'll get back to you soon!");
