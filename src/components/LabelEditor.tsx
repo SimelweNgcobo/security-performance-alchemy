@@ -395,7 +395,8 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     link.download = 'label-design.json';
     link.click();
 
-    URL.revokeObjectURL(url);
+    // Revoke URL after a brief delay to ensure download completes
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     toast.success("Design exported successfully!");
   };
 
