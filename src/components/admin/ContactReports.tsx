@@ -51,9 +51,15 @@ export function ContactReports() {
 
       if (error) throw error;
       setSubmissions(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error loading contact submissions:", error);
-      toast.error("Failed to load contact submissions");
+      console.error("Error details:", {
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code
+      });
+      toast.error(`Failed to load contact submissions: ${error?.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -87,9 +93,15 @@ export function ContactReports() {
       setSelectedSubmission(null);
       setAdminNotes("");
       loadSubmissions();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating contact submission:", error);
-      toast.error("Failed to update contact submission");
+      console.error("Error details:", {
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code
+      });
+      toast.error(`Failed to update contact submission: ${error?.message || 'Unknown error'}`);
     } finally {
       setUpdating(false);
     }
