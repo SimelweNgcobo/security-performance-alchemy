@@ -106,16 +106,22 @@ export function AdminUsers() {
       };
 
       let error;
-      
+      let adminId = editingAdmin?.id || null;
+
       if (editingAdmin) {
         ({ error } = await supabase
           .from("admin_users")
           .update(adminData)
           .eq("id", editingAdmin.id));
       } else {
-        ({ error } = await supabase
+        const { data: insertResult, error: insertError } = await supabase
           .from("admin_users")
-          .insert([adminData]));
+          .insert([adminData])
+          .select()
+          .single();
+
+        error = insertError;
+        adminId = insertResult?.id || null;
       }
 
       if (error) throw error;
@@ -124,10 +130,10 @@ export function AdminUsers() {
       await supabase
         .from("admin_activity_log")
         .insert([{
-          admin_user_id: editingAdmin?.id || null,
+          admin_user_id: adminId,
           action: editingAdmin ? "updated_admin_user" : "created_admin_user",
           entity_type: "admin_user",
-          entity_id: editingAdmin?.id || null,
+          entity_id: adminId,
           details: { role: formData.role }
         }]);
 

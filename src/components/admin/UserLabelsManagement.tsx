@@ -284,7 +284,7 @@ export const UserLabelsManagement = () => {
                                         </div>
                                         <div className="flex justify-between">
                                           <span className="text-muted-foreground">User:</span>
-                                          <span>{label.user_id}</span>
+                                          <span>{selectedLabel?.user_id}</span>
                                         </div>
                                         <div className="flex justify-between">
                                           <span className="text-muted-foreground">Status:</span>

@@ -14,7 +14,6 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { userLabelsService } from '@/services/userLabels';
 import {
-  Upload,
   Type,
   Image as ImageIcon,
   Palette,
@@ -27,14 +26,12 @@ import {
   RotateCcw,
   Download,
   Trash2,
-  Move,
   ZoomIn,
   ZoomOut,
   Layers,
   Eye,
   EyeOff,
   Copy,
-  Settings,
   Send,
   Save,
   Star
@@ -104,8 +101,6 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(100);
-  const [isResizing, setIsResizing] = useState(false);
-  const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveForm, setSaveForm] = useState({
     name: '',
@@ -208,10 +203,12 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
 
     reader.onload = (e) => {
       try {
-        const result = e.target?.result as string;
-        if (result) {
+        const result = e.target?.result;
+        if (typeof result === 'string' && result) {
           addImageElement(result);
           toast.success('Image added to canvas!');
+        } else {
+          toast.error('Invalid image data received');
         }
       } catch (error) {
         console.error('Error processing image:', error);
@@ -287,11 +284,28 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     const element = design.elements.find(el => el.id === id);
     if (!element) return;
 
-    const newLayer = direction === 'up' 
-      ? Math.min(element.layer + 1, design.elements.length - 1)
-      : Math.max(element.layer - 1, 0);
+    const sortedElements = [...design.elements].sort((a, b) => a.layer - b.layer);
+    const currentIndex = sortedElements.findIndex(el => el.id === id);
 
-    updateElement(id, { layer: newLayer });
+    if (currentIndex === -1) return;
+
+    const targetIndex = direction === 'up'
+      ? Math.min(currentIndex + 1, sortedElements.length - 1)
+      : Math.max(currentIndex - 1, 0);
+
+    // If no change in position, return early
+    if (currentIndex === targetIndex) return;
+
+    // Swap elements
+    [sortedElements[currentIndex], sortedElements[targetIndex]] = [sortedElements[targetIndex], sortedElements[currentIndex]];
+
+    // Reassign layer indices to maintain order
+    const updatedElements = design.elements.map(el => {
+      const newIndex = sortedElements.findIndex(sorted => sorted.id === el.id);
+      return { ...el, layer: newIndex };
+    });
+
+    setDesign(prev => ({ ...prev, elements: updatedElements }));
   };
 
   const resetCanvas = useCallback((e?: React.MouseEvent) => {
@@ -360,7 +374,6 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     localStorage.setItem('quoteDesigns', JSON.stringify(existingDesigns));
 
     toast.success("Design added to quote request! You can now submit your custom quote.");
-    setShowQuoteModal(true);
   };
 
   const exportDesign = (e?: React.MouseEvent) => {
@@ -382,7 +395,8 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     link.download = 'label-design.json';
     link.click();
 
-    URL.revokeObjectURL(url);
+    // Revoke URL after a brief delay to ensure download completes
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     toast.success("Design exported successfully!");
   };
 
@@ -445,6 +459,15 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     setShowSaveDialog(true);
   }, [user, design.elements.length]);
 
+  // Memoize sorted elements to prevent state mutation and unnecessary re-renders
+  const elementsSortedByLayer = useMemo(() => {
+    return [...design.elements].sort((a, b) => a.layer - b.layer);
+  }, [design.elements]);
+
+  const elementsReverseSorted = useMemo(() => {
+    return [...design.elements].sort((a, b) => b.layer - a.layer);
+  }, [design.elements]);
+
   // Memoize the selected element data to prevent unnecessary re-renders
   const selectedElementData = useMemo(() => {
     return selectedElement
@@ -486,26 +509,21 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     setIsDragging(false);
   }, []);
 
+  // Consolidated event listener management
   useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove, { passive: false });
-      document.addEventListener('mouseup', handleMouseUp, { passive: false });
+    if (!isDragging) return;
 
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+    const onMove = handleMouseMove;
+    const onUp = handleMouseUp;
 
-  // Cleanup function to prevent memory leaks
-  useEffect(() => {
+    document.addEventListener('mousemove', onMove, { passive: false });
+    document.addEventListener('mouseup', onUp, { passive: false });
+
     return () => {
-      // Clean up any remaining event listeners
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
     };
-  }, [handleMouseMove, handleMouseUp]);
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   return (
     <div className="label-editor grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto p-2 sm:p-4">
@@ -587,9 +605,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                   onClick={() => setSelectedElement(null)}
                 >
                   {/* Render elements sorted by layer */}
-                  {design.elements
-                    .sort((a, b) => a.layer - b.layer)
-                    .map((element) => (
+                  {elementsSortedByLayer.map((element) => (
                       <div
                         key={element.id}
                         className={`absolute cursor-move border-2 transition-all ${
@@ -873,7 +889,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                         id="font-size"
                         type="number"
                         value={(selectedElementData as TextElement).fontSize}
-                        onChange={(e) => updateElement(selectedElementData.id, { fontSize: parseInt(e.target.value) || 16 })}
+                        onChange={(e) => updateElement(selectedElementData.id, { fontSize: parseInt(e.target.value, 10) || 16 })}
                         min="8"
                         max="72"
                       />
@@ -959,7 +975,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                       id="element-x"
                       type="number"
                       value={Math.round(selectedElementData.x)}
-                      onChange={(e) => updateElement(selectedElementData.id, { x: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => updateElement(selectedElementData.id, { x: parseInt(e.target.value, 10) || 0 })}
                       className="h-8"
                     />
                   </div>
@@ -969,7 +985,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                       id="element-y"
                       type="number"
                       value={Math.round(selectedElementData.y)}
-                      onChange={(e) => updateElement(selectedElementData.id, { y: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => updateElement(selectedElementData.id, { y: parseInt(e.target.value, 10) || 0 })}
                       className="h-8"
                     />
                   </div>
@@ -979,7 +995,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                       id="element-width"
                       type="number"
                       value={Math.round(selectedElementData.width)}
-                      onChange={(e) => updateElement(selectedElementData.id, { width: parseInt(e.target.value) || 10 })}
+                      onChange={(e) => updateElement(selectedElementData.id, { width: parseInt(e.target.value, 10) || 10 })}
                       className="h-8"
                     />
                   </div>
@@ -989,7 +1005,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
                       id="element-height"
                       type="number"
                       value={Math.round(selectedElementData.height)}
-                      onChange={(e) => updateElement(selectedElementData.id, { height: parseInt(e.target.value) || 10 })}
+                      onChange={(e) => updateElement(selectedElementData.id, { height: parseInt(e.target.value, 10) || 10 })}
                       className="h-8"
                     />
                   </div>
@@ -1043,9 +1059,7 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 max-h-40 overflow-y-auto">
-              {design.elements
-                .sort((a, b) => b.layer - a.layer)
-                .map((element) => (
+              {elementsReverseSorted.map((element) => (
                   <div
                     key={element.id}
                     className={`flex items-center justify-between p-2 rounded border cursor-pointer ${
