@@ -235,16 +235,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER auto_order_number BEFORE INSERT ON public.orders FOR EACH ROW EXECUTE FUNCTION public.auto_generate_order_number();
 
--- Insert some sample data
-INSERT INTO public.products (name, size, price, stock, type, description) VALUES
-('Standard Water Bottle', '500ml', 25.00, 100, 'standard', 'Clear plastic water bottle'),
-('Standard Water Bottle', '1L', 35.00, 80, 'standard', 'Large clear plastic water bottle'),
-('Custom Branded Bottle', '500ml', 45.00, 50, 'custom', 'Customizable water bottle with your logo'),
-('Custom Branded Bottle', '1L', 55.00, 30, 'custom', 'Large customizable water bottle with your logo');
-
-INSERT INTO public.customers (name, email, phone, address, city, postal_code) VALUES
-('John Doe', 'john@example.com', '+27123456789', '123 Main St', 'Cape Town', '8001'),
-('Jane Smith', 'jane@example.com', '+27987654321', '456 Oak Ave', 'Johannesburg', '2000');
+-- Sample data removed for production
 
 -- Insert default company settings
 INSERT INTO public.company_settings (setting_key, setting_value) VALUES

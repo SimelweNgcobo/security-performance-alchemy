@@ -67,11 +67,7 @@ CREATE TRIGGER update_contact_submissions_updated_at
     BEFORE UPDATE ON contact_submissions
     FOR EACH ROW EXECUTE FUNCTION update_contact_submission_timestamp();
 
--- Insert some test data (optional)
-INSERT INTO contact_submissions (first_name, last_name, email, subject, message, status) VALUES
-('John', 'Doe', 'john.doe@example.com', 'Test Subject', 'This is a test message', 'new'),
-('Jane', 'Smith', 'jane.smith@example.com', 'Product Inquiry', 'I have questions about your products', 'new')
-ON CONFLICT DO NOTHING;
+-- Test data removed for production
 
 -- Verify the table was created
 SELECT 'Table created successfully!' as message;
