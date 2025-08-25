@@ -35,7 +35,7 @@ import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { EnterpriseRequests } from "@/components/admin/EnterpriseRequests";
 import { UserLabelsManagement } from "@/components/admin/UserLabelsManagement";
-import { ContactReports } from "@/components/admin/ContactReports";
+import { ContactReportsWrapper } from "@/components/admin/ContactReportsWrapper";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 type AdminTab = 'dashboard' | 'orders' | 'products' | 'customers' | 'payments' | 'delivery' | 'enterprise' | 'labels' | 'contact' | 'reports' | 'admin-users' | 'settings';
@@ -432,7 +432,7 @@ export default function AdminPanel() {
       case 'labels':
         return <UserLabelsManagement />;
       case 'contact':
-        return <ContactReports />;
+        return <ContactReportsWrapper />;
       case 'reports':
         return <ReportsAnalytics />;
       case 'admin-users':

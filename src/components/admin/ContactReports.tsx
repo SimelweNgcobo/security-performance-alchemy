@@ -381,9 +381,15 @@ export function ContactReports() {
             </TableBody>
           </Table>
           
-          {submissions.length === 0 && (
+          {submissions.length === 0 && !loading && (
             <div className="text-center py-8 text-muted-foreground">
               {filterStatus === "all" ? "No contact submissions yet" : `No ${filterStatus} submissions`}
+            </div>
+          )}
+
+          {loading && (
+            <div className="text-center py-8 text-muted-foreground">
+              Loading contact submissions...
             </div>
           )}
         </CardContent>
