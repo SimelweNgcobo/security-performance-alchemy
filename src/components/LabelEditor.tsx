@@ -14,7 +14,6 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { userLabelsService } from '@/services/userLabels';
 import {
-  Upload,
   Type,
   Image as ImageIcon,
   Palette,
@@ -27,14 +26,12 @@ import {
   RotateCcw,
   Download,
   Trash2,
-  Move,
   ZoomIn,
   ZoomOut,
   Layers,
   Eye,
   EyeOff,
   Copy,
-  Settings,
   Send,
   Save,
   Star
@@ -104,8 +101,6 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(100);
-  const [isResizing, setIsResizing] = useState(false);
-  const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveForm, setSaveForm] = useState({
     name: '',
@@ -360,7 +355,6 @@ const LabelEditor: React.FC<LabelEditorProps> = ({ onSave }) => {
     localStorage.setItem('quoteDesigns', JSON.stringify(existingDesigns));
 
     toast.success("Design added to quote request! You can now submit your custom quote.");
-    setShowQuoteModal(true);
   };
 
   const exportDesign = (e?: React.MouseEvent) => {
