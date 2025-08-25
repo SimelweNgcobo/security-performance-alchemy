@@ -162,7 +162,7 @@ export default function AdminPanel() {
 
       if (!user) {
         toast.error("Please log in to access the admin panel");
-        navigate("/admin-auth");
+        navigate("/auth");
         return;
       }
 
@@ -183,7 +183,7 @@ export default function AdminPanel() {
         }
 
         toast.error("Access denied. Admin privileges required.");
-        navigate("/admin-auth");
+        navigate("/auth");
         return;
       }
 
@@ -191,7 +191,7 @@ export default function AdminPanel() {
     } catch (error) {
       console.error("Error checking admin access:", error);
       toast.error("Error verifying admin access");
-      navigate("/admin-auth");
+      navigate("/auth");
     } finally {
       setLoading(false);
     }
