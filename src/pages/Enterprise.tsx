@@ -252,201 +252,46 @@ const Enterprise = () => {
             </div>
           </div>
 
-          {/* Enterprise Actions Section */}
-          <div className="mb-12">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
-                Quick Enterprise Actions
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Choose how you want to proceed with your enterprise order
-              </p>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {/* Use Default Label */}
-              <Card className="relative group hover:shadow-lg transition-shadow">
-                <CardHeader className="text-center">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Settings className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">Use Default</CardTitle>
-                  <CardDescription>
-                    {defaultLabel ? `"${defaultLabel.name}"` : 'MyFuze Default Branding'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  {defaultLabel && (
-                    <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
-                      <p className="font-medium text-gray-700">{defaultLabel.description}</p>
-                      <Badge variant="outline" className="mt-2">
-                        {defaultLabel.design_data.elements?.length || 0} elements
-                      </Badge>
-                    </div>
-                  )}
-                  {profileLabels.length > 0 ? (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-gray-700">Select from your labels:</p>
-                      <div className="space-y-1">
-                        {profileLabels.map((label) => (
-                          <Button
-                            key={label.id}
-                            onClick={() => selectLabel(label)}
-                            variant={label.is_default ? "default" : "outline"}
-                            className="w-full text-left justify-start h-auto p-3"
-                          >
-                            <div className="w-full">
-                              <div className="flex items-center justify-between">
-                                <span className="font-medium">{label.name}</span>
-                                {label.is_default && <Star className="h-3 w-3 text-yellow-500" />}
-                              </div>
-                              {label.description && (
-                                <p className="text-xs text-muted-foreground mt-1 text-left">{label.description}</p>
-                              )}
-                            </div>
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <Button
-                      onClick={() => navigate('/profile?tab=labels')}
-                      variant="outline"
-                      className="w-full"
-                      disabled={loadingLabels}
-                    >
-                      <Palette className="w-4 h-4 mr-2" />
-                      {loadingLabels ? 'Loading...' : 'Create Labels in Profile'}
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Use My Views */}
-              <Card className="relative group hover:shadow-lg transition-shadow border-primary/20">
-                <CardHeader className="text-center">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <User className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">Use My Views</CardTitle>
-                  <CardDescription>
-                    {profileLabels.length} saved label{profileLabels.length !== 1 ? 's' : ''}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  {profileLabels.length > 0 ? (
-                    <div className="mb-4 space-y-2">
-                      {profileLabels.slice(0, 2).map((label) => (
-                        <div key={label.id} className="p-2 bg-gray-50 rounded text-sm">
-                          <span className="font-medium">{label.name}</span>
-                          {label.is_default && (
-                            <Badge variant="secondary" className="ml-2 text-xs">Default</Badge>
-                          )}
-                        </div>
-                      ))}
-                      {profileLabels.length > 2 && (
-                        <p className="text-xs text-gray-500">+{profileLabels.length - 2} more</p>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 mb-4">No saved labels yet</p>
-                  )}
-                  <Button
-                    onClick={useMyViews}
-                    className="w-full"
-                    disabled={loadingLabels}
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    {profileLabels.length > 0 ? 'Proceed to Checkout' : 'Create Labels First'}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Bulk Purchase */}
-              <Card className="relative group hover:shadow-lg transition-shadow">
-                <CardHeader className="text-center">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ShoppingCart className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">Bulk Purchase</CardTitle>
-                  <CardDescription>
-                    Standard bottles with volume discounts
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
-                    <p className="font-medium text-gray-700">Skip custom design</p>
-                    <p className="text-gray-600">Fast processing</p>
-                  </div>
-                  <Button
-                    onClick={() => {
-                      if (!user) {
-                        toast.error("Please sign in to access bulk purchasing");
-                        navigate('/auth');
-                        return;
-                      }
-                      navigate('/bulk-checkout');
-                    }}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Start Bulk Order
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Label Design Section */}
-          <div className="mb-12">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
-                Custom Label Design
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Create your own label design in your profile. Design stunning custom labels with our intuitive design tool,
-                then use them for your enterprise orders.
-              </p>
-            </div>
-
-            {/* Profile Redirect Card */}
-            <Card className="max-w-2xl mx-auto">
-              <CardHeader className="text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Palette className="w-8 h-8 text-primary" />
+          {/* Custom Label Design Section - moved under quote request */}
+          <div className="mb-8">
+            {/* Profile Redirect Card - Made thinner */}
+            <Card className="max-w-4xl mx-auto">
+              <CardHeader className="text-center py-3">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <Palette className="w-6 h-6 text-primary" />
                 </div>
-                <CardTitle className="text-xl">Label Design Studio</CardTitle>
+                <CardTitle className="text-lg">Custom Label Design</CardTitle>
                 <CardDescription>
                   Access our professional label editor in your profile to create custom designs
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <User className="w-4 h-4 text-primary" />
+              <CardContent className="py-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center mb-4">
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-1">
+                      <User className="w-3 h-3 text-primary" />
                     </div>
-                    <h4 className="font-medium text-sm mb-1">Create</h4>
+                    <h4 className="font-medium text-xs mb-1">Create</h4>
                     <p className="text-xs text-muted-foreground">Design labels in your profile</p>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Star className="w-4 h-4 text-primary" />
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-1">
+                      <Star className="w-3 h-3 text-primary" />
                     </div>
-                    <h4 className="font-medium text-sm mb-1">Save</h4>
+                    <h4 className="font-medium text-xs mb-1">Save</h4>
                     <p className="text-xs text-muted-foreground">Set as default for orders</p>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <ShoppingCart className="w-4 h-4 text-primary" />
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-1">
+                      <ShoppingCart className="w-3 h-3 text-primary" />
                     </div>
-                    <h4 className="font-medium text-sm mb-1">Use</h4>
+                    <h4 className="font-medium text-xs mb-1">Use</h4>
                     <p className="text-xs text-muted-foreground">Apply to enterprise orders</p>
                   </div>
                 </div>
 
-                <div className="text-center pt-4">
+                <div className="text-center">
                   <Button
                     onClick={() => {
                       if (!user) {
@@ -457,19 +302,12 @@ const Enterprise = () => {
                       navigate('/profile', { state: { openTab: 'labels' } });
                       toast.success("Redirecting to your profile label designer...");
                     }}
-                    size="lg"
-                    className="w-full sm:w-auto"
+                    size="sm"
+                    className="px-6"
                   >
                     <Palette className="w-4 h-4 mr-2" />
                     Go to Label Design Studio
                   </Button>
-                </div>
-
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">
-                    Design 264mm × 60mm labels with professional tools, save multiple designs,
-                    and set your favorites as defaults for quick ordering.
-                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -503,11 +341,11 @@ const Enterprise = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email">Contact Email *</Label>
+                    <Label htmlFor="email">Get in Touch *</Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="your@company.com"
+                      placeholder="inquiries@yourcompany.com"
                       value={contactEmail}
                       onChange={(e) => setContactEmail(e.target.value)}
                       className="mt-1"
@@ -681,6 +519,49 @@ const Enterprise = () => {
                   </CardContent>
                 </Card>
               </div>
+            </div>
+          </div>
+
+          {/* Quick Enterprise Actions - moved to bottom */}
+          <div className="mb-12">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
+                Quick Enterprise Actions
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Choose how you want to proceed with your enterprise order
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {/* Bulk Purchase - made thinner and wider */}
+              <Card className="relative group hover:shadow-lg transition-shadow md:col-span-2">
+                <CardHeader className="text-center py-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <ShoppingCart className="w-5 h-5 text-primary" />
+                  </div>
+                  <CardTitle className="text-base">Bulk Purchase</CardTitle>
+                  <CardDescription>
+                    Standard bottles with volume discounts - skip custom design for fast processing
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center py-3">
+                  <Button
+                    onClick={() => {
+                      if (!user) {
+                        toast.error("Please sign in to access bulk purchasing");
+                        navigate('/auth');
+                        return;
+                      }
+                      navigate('/bulk-checkout');
+                    }}
+                    className="w-full max-w-md mx-auto"
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    Start Bulk Order
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
 

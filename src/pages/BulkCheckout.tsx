@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -105,8 +105,14 @@ interface ShippingAddress {
 
 const BulkCheckout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(1);
+
+  // Handle reorder data from location state
+  const reorderData = location.state?.reorderData;
+  const isReorder = location.state?.isReorder || false;
+
+  const [currentStep, setCurrentStep] = useState(isReorder ? 3 : 1);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedSize, setSelectedSize] = useState<BottleSize>("500ml");
   const [quantity, setQuantity] = useState<number>(500);
@@ -135,6 +141,32 @@ const BulkCheckout = () => {
       navigate('/auth');
     }
   }, [user, navigate]);
+
+  // Handle reorder initialization
+  useEffect(() => {
+    if (isReorder && reorderData && user) {
+      try {
+        // Convert reorder items to cart items
+        const reorderCartItems: CartItem[] = reorderData.items.map((item: any, index: number) => ({
+          id: `reorder-${item.id || index}-${Date.now()}`,
+          size: item.size || "500ml",
+          quantity: item.quantity || 1,
+          unitPrice: item.unit_price || item.unitPrice || 0,
+          subtotal: item.total_price || item.subtotal || 0,
+          hasCustomLabel: item.hasCustomLabel || false,
+          labelId: item.labelId || null,
+          labelName: item.labelName || null
+        }));
+
+        setCartItems(reorderCartItems);
+        toast.success(`Reordering from ${reorderData.orderNumber} - review and complete payment`);
+      } catch (error) {
+        console.error('Error processing reorder data:', error);
+        toast.error('Error loading reorder data. Starting fresh order.');
+        setCurrentStep(1);
+      }
+    }
+  }, [isReorder, reorderData, user]);
 
   // Load user labels when user is available
   useEffect(() => {
@@ -1097,6 +1129,26 @@ const BulkCheckout = () => {
         <p className="text-sm lg:text-base text-slate-600">Review your order details and complete secure payment</p>
       </div>
 
+      {/* Reorder Information */}
+      {isReorder && reorderData && (
+        <Card className="border-blue-200 bg-blue-50 mb-6">
+          <CardContent className="p-4 lg:p-6">
+            <div className="flex gap-3">
+              <CheckCircle className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-medium text-blue-900 mb-2 text-sm lg:text-base">Reorder Information</h4>
+                <div className="space-y-1 text-xs lg:text-sm text-blue-800">
+                  <p>• Original Order: {reorderData.orderNumber}</p>
+                  <p>• Original Date: {new Date(reorderData.originalDate).toLocaleDateString()}</p>
+                  <p>• Using saved address from your profile</p>
+                  <p>• {cartItems.length} item(s) added to cart</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
         {/* Order Summary */}
         <div className="lg:col-span-3 space-y-4 lg:space-y-6">
@@ -1404,21 +1456,25 @@ const BulkCheckout = () => {
       <div className="pt-16 flex-grow">
         <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 lg:mb-8 gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/products')}
-              className="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 self-start"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm lg:text-base">Back to Products</span>
-            </Button>
-            <div className="text-center sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2">
-              <h1 className="text-2xl lg:text-3xl font-bold text-slate-900">Bulk Purchase</h1>
-              <p className="text-slate-600 mt-1 text-sm lg:text-base">Professional ordering made simple</p>
-            </div>
-            <div className="hidden sm:block w-32"></div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 lg:mb-8 gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(isReorder ? '/profile' : '/products')}
+            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 self-start"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="text-sm lg:text-base">{isReorder ? 'Back to Profile' : 'Back to Products'}</span>
+          </Button>
+          <div className="text-center sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2">
+            <h1 className="text-2xl lg:text-3xl font-bold text-slate-900">
+              {isReorder ? 'Reorder Items' : 'Bulk Purchase'}
+            </h1>
+            <p className="text-slate-600 mt-1 text-sm lg:text-base">
+              {isReorder ? `Reordering from ${reorderData?.orderNumber || 'previous order'}` : 'Professional ordering made simple'}
+            </p>
           </div>
+          <div className="hidden sm:block w-32"></div>
+        </div>
 
           {/* Progress Steps */}
           <div className="relative mb-8 lg:mb-12">

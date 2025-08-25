@@ -621,8 +621,26 @@ const Profile = () => {
   }, []);
 
   const reorderItems = useCallback(async (purchase: Purchase) => {
-    toast.success(`${purchase.items.length} items re-added to cart`);
-    navigate("/products");
+    try {
+      // Navigate directly to bulk checkout with reorder data
+      // This will skip the normal checkout steps and go to final checkout
+      navigate('/bulk-checkout', {
+        state: {
+          isReorder: true,
+          reorderData: {
+            orderId: purchase.id,
+            orderNumber: purchase.order_number,
+            items: purchase.items,
+            totalAmount: purchase.total_amount,
+            originalDate: purchase.created_at
+          }
+        }
+      });
+      toast.success(`Reordering ${purchase.items.length} items - proceeding to checkout`);
+    } catch (error) {
+      console.error('Error processing reorder:', error);
+      toast.error('Failed to process reorder. Please try again.');
+    }
   }, [navigate]);
 
   // Label management functions
