@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Phone, MapPin, Send, Clock, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Layout2Contact = () => {
   const [formData, setFormData] = useState({
@@ -26,7 +27,7 @@ const Layout2Contact = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.message) {
       toast.error("Please fill in all required fields");
@@ -34,12 +35,27 @@ const Layout2Contact = () => {
     }
 
     setIsSubmitting(true);
-    
-    // Simulate form submission
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success("Thank you! Your message has been sent successfully.");
-      
+      // Save to database
+      const { error } = await supabase
+        .from("contact_submissions")
+        .insert({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          subject: formData.subject || null,
+          message: formData.message,
+          status: 'new'
+        });
+
+      if (error) {
+        console.error("Error saving contact submission:", error);
+        throw new Error("Failed to submit your message");
+      }
+
+      toast.success("Thank you! Your message has been sent successfully. We'll get back to you soon!");
+
       // Reset form
       setFormData({
         firstName: "",
@@ -49,6 +65,7 @@ const Layout2Contact = () => {
         message: ""
       });
     } catch (error) {
+      console.error("Contact form submission error:", error);
       toast.error("Failed to send message. Please try again.");
     } finally {
       setIsSubmitting(false);

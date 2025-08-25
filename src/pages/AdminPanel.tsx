@@ -34,9 +34,10 @@ import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { EnterpriseRequests } from "@/components/admin/EnterpriseRequests";
 import { UserLabelsManagement } from "@/components/admin/UserLabelsManagement";
+import { ContactReports } from "@/components/admin/ContactReports";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
-type AdminTab = 'dashboard' | 'orders' | 'products' | 'customers' | 'payments' | 'delivery' | 'enterprise' | 'labels' | 'reports' | 'admin-users' | 'settings';
+type AdminTab = 'dashboard' | 'orders' | 'products' | 'customers' | 'payments' | 'delivery' | 'enterprise' | 'labels' | 'contact' | 'reports' | 'admin-users' | 'settings';
 
 interface NavigationItem {
   id: AdminTab;
