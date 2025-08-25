@@ -187,7 +187,7 @@ export default function AdminAuth() {
             </div>
             <CardTitle className="text-2xl font-bold">Admin Panel Access</CardTitle>
             <CardDescription className="text-sm">
-              {isLogin ? "Sign in to your admin account" : "Create a new admin account"}
+              Sign in with your admin credentials
             </CardDescription>
             <div className="mt-3 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="text-xs text-amber-800">
