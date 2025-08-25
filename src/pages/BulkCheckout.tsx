@@ -440,47 +440,51 @@ const BulkCheckout = () => {
   const handlePaystackSuccess = async (reference: any) => {
     console.log('Paystack success callback triggered with reference:', reference);
     try {
-      // Generate order number
-      const orderNum = `BLK${Date.now().toString().slice(-6)}`;
-      setOrderNumber(orderNum);
-
-      // Create order in database
-      const orderData = {
-        order_number: orderNum,
-        user_id: user?.id,
-        status: "paid",
-        payment_status: "paid",
-        delivery_status: "processing",
-        total_amount: cartTotal,
-        payment_reference: reference.reference,
-        shipping_address: JSON.stringify(shippingAddress),
-        metadata: JSON.stringify({
-          cart_items: cartItems.map(item => ({
-            id: item.id,
-            size: item.size,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            subtotal: item.subtotal,
-            hasCustomLabel: item.hasCustomLabel,
-            labelId: item.labelId || null,
-            labelName: item.labelName || null
-          })),
-          total_quantity: totalQuantity,
-          payment_method: "paystack"
-        })
+      // Use server-side order creation for security and atomicity
+      const createOrderData = {
+        paymentReference: reference.reference,
+        orderData: {
+          total_amount: cartTotal,
+          payment_method: "paystack",
+          delivery_status: "processing"
+        },
+        cartItems: cartItems.map(item => ({
+          size: item.size,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          subtotal: item.subtotal,
+          hasCustomLabel: item.hasCustomLabel,
+          labelId: item.labelId || null,
+          labelName: item.labelName || null
+        })),
+        shippingAddress: shippingAddress,
+        userEmail: user?.email || ''
       };
 
-      console.log('Creating order with data:', orderData);
+      console.log('Creating order via server-side function with data:', createOrderData);
 
-      const { error: orderError } = await supabase
-        .from("orders")
-        .insert([orderData]);
+      const { data: orderResult, error: functionError } = await supabase.functions.invoke('paystack-webhook', {
+        body: {
+          action: 'verify-and-create-order',
+          ...createOrderData
+        }
+      });
 
-      if (orderError) {
-        console.error("Error creating order:", orderError);
-        toast.error(`Failed to save order: ${orderError.message || 'Unknown error'}. Please contact support.`);
+      if (functionError) {
+        console.error("Error calling order creation function:", functionError);
+        toast.error(`Failed to process order: ${functionError.message || 'Unknown error'}. Please contact support.`);
         return;
       }
+
+      if (!orderResult?.success) {
+        console.error("Order creation failed:", orderResult);
+        toast.error(`Failed to create order: ${orderResult?.error || 'Unknown error'}. Please contact support.`);
+        return;
+      }
+
+      // Extract order number from result
+      const orderNum = orderResult.order_number || `BLK${Date.now().toString().slice(-6)}`;
+      setOrderNumber(orderNum);
 
       toast.success("Payment successful! Order created.");
       setCurrentStep(4);
