@@ -1129,6 +1129,26 @@ const BulkCheckout = () => {
         <p className="text-sm lg:text-base text-slate-600">Review your order details and complete secure payment</p>
       </div>
 
+      {/* Reorder Information */}
+      {isReorder && reorderData && (
+        <Card className="border-blue-200 bg-blue-50 mb-6">
+          <CardContent className="p-4 lg:p-6">
+            <div className="flex gap-3">
+              <CheckCircle className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-medium text-blue-900 mb-2 text-sm lg:text-base">Reorder Information</h4>
+                <div className="space-y-1 text-xs lg:text-sm text-blue-800">
+                  <p>• Original Order: {reorderData.orderNumber}</p>
+                  <p>• Original Date: {new Date(reorderData.originalDate).toLocaleDateString()}</p>
+                  <p>• Using saved address from your profile</p>
+                  <p>• {cartItems.length} item(s) added to cart</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
         {/* Order Summary */}
         <div className="lg:col-span-3 space-y-4 lg:space-y-6">
