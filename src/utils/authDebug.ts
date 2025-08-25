@@ -15,48 +15,7 @@ export const debugAuth = {
     }
   },
 
-  // Create a test user (for development only)
-  async createTestUser() {
-    try {
-      const testEmail = "test@myfuze.com";
-      const testPassword = "test123456";
-      
-      console.log("🔧 Creating test user...");
-      
-      const { data, error } = await supabase.auth.signUp({
-        email: testEmail,
-        password: testPassword,
-        options: {
-          data: {
-            full_name: "Test User",
-          },
-        },
-      });
-
-      if (error) {
-        if (error.message.includes("already registered")) {
-          console.log("ℹ️ Test user already exists");
-          return { success: true, message: "Test user already exists", email: testEmail, password: testPassword };
-        }
-        throw error;
-      }
-
-      console.log("✅ Test user created successfully!");
-      console.log("📧 Email:", testEmail);
-      console.log("🔑 Password:", testPassword);
-      
-      return { 
-        success: true, 
-        user: data.user, 
-        email: testEmail, 
-        password: testPassword,
-        message: "Test user created - check email for verification" 
-      };
-    } catch (error) {
-      console.error("❌ Failed to create test user:", error);
-      return { success: false, error };
-    }
-  },
+  // Test user creation removed for production
 
   // List existing users (requires admin access)
   async listUsers() {
