@@ -105,6 +105,13 @@ const navigationItems: NavigationItem[] = [
     category: 'business'
   },
   {
+    id: 'contact',
+    label: 'Contact Reports',
+    icon: <MessageSquare className="h-5 w-5" />,
+    description: 'Contact form submissions',
+    category: 'business'
+  },
+  {
     id: 'reports',
     label: 'Reports',
     icon: <BarChart3 className="h-5 w-5" />,
