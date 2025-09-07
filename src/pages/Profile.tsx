@@ -112,10 +112,7 @@ const Profile = () => {
 
   // UI states
   const [saving, setSaving] = useState(false);
-  const [userLabels, setUserLabels] = useState<UserLabel[]>([]);
-  const [defaultLabel, setDefaultLabel] = useState<UserLabel | null>(null);
   const [savedShippingDetails, setSavedShippingDetails] = useState<any[]>([]);
-  const [loadingLabels, setLoadingLabels] = useState(false);
 
   // Encrypted address state
   const [encryptedAddresses, setEncryptedAddresses] = useState<EncryptedAddress[]>([]);
