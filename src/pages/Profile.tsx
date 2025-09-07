@@ -881,7 +881,7 @@ const Profile = () => {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle>My Saved Labels</CardTitle>
+                      <CardTitle>Labels</CardTitle>
                       <CardDescription>
                         Manage your custom bottle label designs for enterprise orders
                       </CardDescription>
