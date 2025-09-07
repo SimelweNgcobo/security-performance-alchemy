@@ -845,7 +845,7 @@ const Profile = () => {
                       <Tag className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium">Saved Labels</h3>
+                      <h3 className="font-medium">Labels</h3>
                       <p className="text-sm text-muted-foreground">{userLabels.length} designs</p>
                     </div>
                   </div>
