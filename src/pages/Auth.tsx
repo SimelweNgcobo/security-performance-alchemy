@@ -147,8 +147,8 @@ export default function Auth() {
           {/* Logo and Brand */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center space-x-3 group">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <Droplets className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors overflow-hidden">
+                <img src="https://cdn.builder.io/api/v1/image/assets%2F718ec5593282430bba673a5738fa1463%2Fb93252dcac184807a796a96ec1f14f60?format=webp&width=800" alt="MyFuze Logo" className="w-full h-full object-cover" />
               </div>
               <span className="text-2xl font-bold text-foreground">MyFuze</span>
             </div>
