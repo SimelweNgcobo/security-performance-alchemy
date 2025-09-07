@@ -1074,7 +1074,7 @@ const Profile = () => {
               <Card>
                 <CardHeader>
                   <div>
-                    <CardTitle>My Saved Labels</CardTitle>
+                    <CardTitle>Labels</CardTitle>
                     <CardDescription>
                       Manage your custom bottle label designs. Use the Labels tab to create new designs.
                     </CardDescription>
