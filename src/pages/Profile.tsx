@@ -1010,16 +1010,7 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Suspense fallback={
-                    <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
-                      <div className="text-center">
-                        <LoadingSpinner message="Loading Label Designer..." />
-                        <p className="text-sm text-muted-foreground mt-2">Please wait while we prepare the design tools</p>
-                      </div>
-                    </div>
-                  }>
-                    <LabelEditor onSave={loadUserLabels} />
-                  </Suspense>
+                  <CustomLabelUpload />
                 </CardContent>
               </Card>
             </TabsContent>
