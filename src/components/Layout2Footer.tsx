@@ -37,7 +37,7 @@ const Layout2Footer = () => {
                 <img
                   src="https://cdn.builder.io/api/v1/image/assets%2F718ec5593282430bba673a5738fa1463%2Fb93252dcac184807a796a96ec1f14f60?format=webp&width=800"
                   alt="MyFuze Logo"
-                  className="w-8 h-8 object-contain"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <span className="text-2xl font-semibold text-foreground">MyFuze</span>
