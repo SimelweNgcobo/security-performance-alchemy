@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,8 +44,7 @@ import {
   RotateCcw
 } from "lucide-react";
 
-// Lazy load heavy components
-const LabelEditor = lazy(() => import("@/components/LabelEditor"));
+import CustomLabelUpload from "@/components/CustomLabelUpload";
 
 interface BasicProfile {
   name: string;
