@@ -998,7 +998,7 @@ const Profile = () => {
               </Card>
 
               {/* Label Designer */}
-              <Card data-label-designer>
+              <Card data-label-upload>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Palette className="w-5 h-5" />
