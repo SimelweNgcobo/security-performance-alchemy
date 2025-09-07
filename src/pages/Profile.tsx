@@ -230,7 +230,7 @@ const Profile = () => {
     } catch (e) {
       console.log("Error loading localStorage data:", e);
     }
-  }, [user, loadUserLabels]);
+  }, [user]);
 
   // Lazy load activity data
   const loadActivityData = useCallback(async () => {
