@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, User, LogOut, ShoppingBag, Heart, Shield } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import logoM from "@/assets/logo-m.png";
+const footerLogoUrl = "https://cdn.builder.io/api/v1/image/assets%2F718ec5593282430bba673a5738fa1463%2Fb93252dcac184807a796a96ec1f14f60?format=webp&width=800";
 import {
   DropdownMenu,
   DropdownMenuContent,
