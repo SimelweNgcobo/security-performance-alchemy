@@ -1005,8 +1005,7 @@ const Profile = () => {
                     Custom Label Service
                   </CardTitle>
                   <CardDescription>
-                    Create and save custom labels for your bottles. Design with text, images, and branding elements.
-                    All labels are automatically sized for water bottles (264mm × 60mm).
+                    Upload your logo or design and we’ll create the label for you. See the guidelines below.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
