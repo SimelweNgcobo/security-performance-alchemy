@@ -224,8 +224,6 @@ const Profile = () => {
         setSavedShippingDetails(JSON.parse(savedShipping));
       }
 
-      // Load user labels from Supabase instead of localStorage
-      await loadUserLabels();
 
       // Load encrypted addresses
       await loadEncryptedAddresses();
@@ -457,14 +455,9 @@ const Profile = () => {
         case "purchases":
           loadPurchasesData();
           break;
-        case "labels":
-          if (userLabels.length === 0 && !loadingLabels) {
-            loadUserLabels();
-          }
-          break;
       }
     }, 50);
-  }, [loadActivityData, loadPurchasesData, loadUserLabels, userLabels.length, loadingLabels]);
+  }, [loadActivityData, loadPurchasesData]);
 
   // Optimistic profile update
   const updateProfile = useCallback(async () => {
@@ -581,22 +574,6 @@ const Profile = () => {
     }
   }, [navigate]);
 
-  // Label management functions
-  const handleSetDefaultLabel = useCallback(async (labelId: string) => {
-    if (!user?.id) return;
-
-    const success = await userLabelsService.setDefaultLabel(labelId, user.id);
-    if (success) {
-      await loadUserLabels(); // Refresh labels
-    }
-  }, [user, loadUserLabels]);
-
-  const handleDeleteLabel = useCallback(async (labelId: string) => {
-    const success = await userLabelsService.deleteLabel(labelId);
-    if (success) {
-      await loadUserLabels(); // Refresh labels
-    }
-  }, [loadUserLabels]);
 
   // Load encrypted addresses
   const loadEncryptedAddresses = useCallback(async () => {
@@ -857,10 +834,8 @@ const Profile = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => loadUserLabels()}
-                      disabled={loadingLabels}
                     >
-                      <RotateCcw className={`w-4 h-4 mr-2 ${loadingLabels ? 'animate-spin' : ''}`} />
+                      <RotateCcw className="w-4 h-4 mr-2" />
                       Refresh
                     </Button>
                   </div>
