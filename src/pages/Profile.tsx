@@ -762,10 +762,6 @@ const Profile = () => {
                 <User className="w-4 h-4" />
                 Settings
               </TabsTrigger>
-              <TabsTrigger value="labels" className="flex items-center gap-2">
-                <Tag className="w-4 h-4" />
-                Labels
-              </TabsTrigger>
               <TabsTrigger value="purchases" className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4" />
                 Orders
