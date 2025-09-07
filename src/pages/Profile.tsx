@@ -1002,7 +1002,7 @@ const Profile = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Palette className="w-5 h-5" />
-                    Custom Label Designer
+                    Custom Label Service
                   </CardTitle>
                   <CardDescription>
                     Create and save custom labels for your bottles. Design with text, images, and branding elements.
