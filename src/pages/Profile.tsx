@@ -983,7 +983,7 @@ const Profile = () => {
                         variant="outline"
                         onClick={() => {
                           // Scroll to the label designer section
-                          const designerSection = document.querySelector('[data-label-designer]');
+                          const designerSection = document.querySelector('[data-label-upload]');
                           if (designerSection) {
                             designerSection.scrollIntoView({ behavior: 'smooth' });
                           }
