@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Layout2Footer from "@/components/Layout2Footer";
 import { debugAuth } from "@/utils/authDebug";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Auth() {
   const { signIn, signUp } = useAuth();
@@ -94,6 +95,28 @@ export default function Auth() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      toast.error("Please enter your email address first");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+        redirectTo: `${window.location.origin}/auth?tab=reset`,
+      });
+      
+      if (error) throw error;
+      
+      toast.success("Password reset email sent! Check your inbox.");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -140,7 +163,7 @@ export default function Auth() {
               <CardDescription>
                 {isLogin 
                   ? "Sign in to your account to continue shopping" 
-                  : "Join MyFuze to start your wellness journey"
+                  : "Join MyFuze to start your pure refreshments journey"
                 }
               </CardDescription>
             </CardHeader>
@@ -221,6 +244,16 @@ export default function Auth() {
                     >
                       {loading ? "Signing in..." : "Sign In"}
                     </Button>
+
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="text-sm text-primary hover:text-primary/80 transition-colors"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
 
                   </form>
                 </TabsContent>

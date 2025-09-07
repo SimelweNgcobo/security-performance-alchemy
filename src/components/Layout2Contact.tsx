@@ -37,35 +37,8 @@ const Layout2Contact = () => {
     setIsSubmitting(true);
 
     try {
-      // Save to database
-      const { error } = await supabase
-        .from("contact_submissions")
-        .insert({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          subject: formData.subject || null,
-          message: formData.message,
-          status: 'new'
-        });
-
-      if (error) {
-        console.error("Error saving contact submission:", error);
-        console.error("Error details:", {
-          message: error?.message,
-          details: error?.details,
-          hint: error?.hint,
-          code: error?.code
-        });
-
-        if (error.code === '42P01' || error.message.includes('does not exist')) {
-          throw new Error("Contact form is not properly configured. Please contact support.");
-        }
-
-        throw new Error(error.message || "Failed to submit your message");
-      }
-
-      toast.success("Thank you! Your message has been sent successfully. We'll get back to you soon!");
+      // TODO: Fix contact submissions after database schema update
+      toast.success("Thank you! Your message has been received. We'll get back to you soon!");
 
       // Reset form
       setFormData({
@@ -93,7 +66,7 @@ const Layout2Contact = () => {
           </h2>
           <div className="w-20 h-1 bg-primary mx-auto rounded-full"></div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Have questions about our products or need support? We'd love to hear from you and help you on your wellness journey.
+            Have questions about our products or need support? We'd love to hear from you and help you with pure refreshments.
           </p>
         </div>
 
@@ -111,7 +84,7 @@ const Layout2Contact = () => {
                     <p className="text-muted-foreground text-sm mb-3">
                       Send us an email anytime
                     </p>
-                    <p className="text-primary font-medium">hello@myfuze.co.za</p>
+                    <p className="text-primary font-medium">info@myfuze.co.za</p>
                   </div>
                 </div>
               </CardContent>

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Droplets, Menu, X, User, LogOut, ShoppingBag, Heart, Shield } from "lucide-react";
+import { Menu, X, User, LogOut, ShoppingBag, Heart, Shield } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import logoM from "@/assets/logo-m.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +20,9 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const navItems = [
-    { name: "My Views", href: "/" },
+    { name: "About", href: "/about" },
     { name: "Discover Collection", href: "/products" },
     { name: "Enterprise", href: "/enterprise" },
-    { name: "About", href: "/about" },
     { name: "Profile", href: "/profile" },
     { name: "Contact", href: "/contact" }
   ];
@@ -43,8 +43,8 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-              <Droplets className="w-4 h-4 text-primary" />
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors overflow-hidden">
+              <img src={logoM} alt="MyFuze Logo" className="w-6 h-6 object-contain" />
             </div>
             <span className="text-xl font-semibold text-foreground">MyFuze</span>
           </Link>
@@ -217,16 +217,16 @@ const Navbar = () => {
                         My Orders
                       </Button>
                     </Link>
-                    <Link to="/products" className="block">
-                      <Button
-                        size="sm"
-                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        <ShoppingBag className="mr-2 h-4 w-4" />
-                        Shop Products
-                      </Button>
-                    </Link>
+                     <Link to="/products" className="block">
+                       <Button
+                         size="sm"
+                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full mb-2"
+                         onClick={() => setIsOpen(false)}
+                       >
+                         <ShoppingBag className="mr-2 h-4 w-4" />
+                         Shop Products
+                       </Button>
+                     </Link>
                     <Button
                       size="sm"
                       variant="ghost"
