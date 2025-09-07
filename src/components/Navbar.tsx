@@ -44,7 +44,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors overflow-hidden">
-              <img src={logoM} alt="MyFuze Logo" className="w-6 h-6 object-contain" />
+              <img src={footerLogoUrl} alt="MyFuze Logo" className="w-full h-full object-cover" />
             </div>
             <span className="text-xl font-semibold text-foreground">MyFuze</span>
           </Link>
