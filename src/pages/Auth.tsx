@@ -246,13 +246,12 @@ export default function Auth() {
                     </Button>
 
                     <div className="text-center">
-                      <button
-                        type="button"
-                        onClick={handleForgotPassword}
+                      <Link
+                        to="/forgot-password"
                         className="text-sm text-primary hover:text-primary/80 transition-colors"
                       >
                         Forgot Password?
-                      </button>
+                      </Link>
                     </div>
 
                   </form>
