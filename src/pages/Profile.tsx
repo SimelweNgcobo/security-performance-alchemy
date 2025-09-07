@@ -213,34 +213,6 @@ const Profile = () => {
     }
   }, [user]);
 
-  // Load user labels from Supabase
-  const loadUserLabels = useCallback(async () => {
-    if (!user?.id) return;
-
-    setLoadingLabels(true);
-    try {
-      const [labels, defaultLabelData] = await Promise.all([
-        userLabelsService.getUserLabels(user.id),
-        userLabelsService.getDefaultLabel(user.id)
-      ]);
-
-      setUserLabels(labels);
-      setDefaultLabel(defaultLabelData);
-
-      // If no labels exist, create a default one
-      if (labels.length === 0) {
-        const newDefaultLabel = await userLabelsService.createDefaultMyFuzeLabel(user.id);
-        if (newDefaultLabel) {
-          setUserLabels([newDefaultLabel]);
-          setDefaultLabel(newDefaultLabel);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading user labels:', error);
-    } finally {
-      setLoadingLabels(false);
-    }
-  }, [user]);
 
   // Load localStorage data and user labels
   const loadLocalStorageData = useCallback(async () => {
