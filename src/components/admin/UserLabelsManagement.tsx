@@ -303,8 +303,12 @@ export const UserLabelsManagement = () => {
                                           <span>{selectedLabel.description || 'None'}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                          <span className="text-muted-foreground">User:</span>
-                                          <span>{selectedLabel?.user_id}</span>
+                                          <span className="text-muted-foreground">User Email:</span>
+                                          <span>{selectedLabel?.users?.email || selectedLabel?.user_id}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">User Phone:</span>
+                                          <span>{selectedLabel?.users?.phone || '—'}</span>
                                         </div>
                                         <div className="flex justify-between">
                                           <span className="text-muted-foreground">Status:</span>
