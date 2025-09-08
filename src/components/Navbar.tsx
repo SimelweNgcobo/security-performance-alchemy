@@ -22,7 +22,6 @@ const Navbar = () => {
   const navItems = [
     { name: "About", href: "/about" },
     { name: "Discover Collection", href: "/products" },
-    { name: "Enterprise", href: "/enterprise" },
     { name: "Profile", href: "/profile" },
     { name: "Contact", href: "/contact" }
   ];
