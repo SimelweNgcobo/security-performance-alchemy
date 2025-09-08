@@ -850,6 +850,145 @@ const Profile = () => {
               {/* Saved Labels Management */}
             </TabsContent>
 
+            {/* Labels Tab */}
+            <TabsContent value='labels' className='space-y-4'>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Label Submission</CardTitle>
+                  <CardDescription>
+                    Upload your logo/design and describe how you want your label. We'll save the file to Supabase storage and create a submission.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                  <div className='grid gap-4'>
+                    <div className='space-y-2'>
+                      <Label htmlFor='labelName'>Label Name</Label>
+                      <Input
+                        id='labelName'
+                        value={labelName}
+                        onChange={(e) => setLabelName(e.target.value)}
+                        placeholder='e.g. Company Event Label'
+                      />
+                    </div>
+
+                    <div className='space-y-2'>
+                      <Label htmlFor='labelFile'>Upload Logo/Design</Label>
+                      <Input
+                        id='labelFile'
+                        type='file'
+                        accept='image/*'
+                        onChange={(e) => {
+                          const f = e.target.files?.[0] || null;
+                          setLabelFile(f);
+                          if (f) {
+                            const reader = new FileReader();
+                            reader.onload = () => setLabelPreview(reader.result as string);
+                            reader.readAsDataURL(f);
+                          } else {
+                            setLabelPreview(null);
+                          }
+                        }}
+                      />
+                      {labelPreview && (
+                        <div className='mt-2'>
+                          <img src={labelPreview} alt='Preview' className='h-24 rounded border' />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className='space-y-2'>
+                      <Label htmlFor='labelDesc'>Description</Label>
+                      <Textarea
+                        id='labelDesc'
+                        value={labelDescription}
+                        onChange={(e) => setLabelDescription(e.target.value)}
+                        placeholder='Describe the style, colors, text, etc.'
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className='space-y-2'>
+                      <Label htmlFor='labelMore'>More Info</Label>
+                      <Textarea
+                        id='labelMore'
+                        value={labelMoreInfo}
+                        onChange={(e) => setLabelMoreInfo(e.target.value)}
+                        placeholder='Anything else we should know (fonts, layout, references)'
+                        rows={3}
+                      />
+                    </div>
+
+                  </div>
+
+                  <Button
+                    className='w-full'
+                    disabled={labelSubmitting}
+                    onClick={async () => {
+                      if (!user) { toast.error('Please sign in to submit a label'); return; }
+                      if (!labelFile) { toast.error('Please upload a logo/design image'); return; }
+                      try {
+                        setLabelSubmitting(true);
+
+                        // Upload to Supabase storage
+                        const filePath = 'labels/' + user.id + '/' + Date.now() + '_' + labelFile.name;
+                        const { error: uploadError } = await supabase.storage
+                          .from('labels')
+                          .upload(filePath, labelFile, { upsert: false });
+
+                        if (uploadError) {
+                          console.error('Upload error', uploadError);
+                          toast.error('Failed to upload file');
+                          setLabelSubmitting(false);
+                          return;
+                        }
+
+                        // Get public URL
+                        const { data: publicData } = await supabase.storage.from('labels').getPublicUrl(filePath);
+                        const publicUrl = (publicData as any)?.publicUrl || '';
+
+                        // Build design data referencing the uploaded file
+                        const designData = {
+                          backgroundColor: '#ffffff',
+                          elements: [
+                            {
+                              id: 'img-' + Date.now(),
+                              type: 'image',
+                              src: publicUrl,
+                              x: 0,
+                              y: 0,
+                              width: 264 * 3.78,
+                              height: 60 * 3.78
+                            }
+                          ]
+                        };
+
+                        const desc = [labelDescription.trim(), labelMoreInfo.trim()].filter(Boolean).join('\n\n');
+
+                        const saved = await userLabelsService.saveLabel(user.id, labelName || 'Custom Label', designData, desc, false);
+                        if (saved) {
+                          toast.success('Label submitted successfully');
+                          setLabelFile(null);
+                          setLabelPreview(null);
+                          setLabelName('Custom Label');
+                          setLabelDescription('');
+                          setLabelMoreInfo('');
+                        }
+                      } catch (e) {
+                        console.error(e);
+                        toast.error('Failed to submit label');
+                      } finally {
+                        setLabelSubmitting(false);
+                      }
+                    }}
+                  >
+                    {labelSubmitting ? 'Submitting...' : 'Submit Label'}
+                  </Button>
+
+                </CardContent>
+              </Card>
+
+            </TabsContent>
+
             {/* Purchases Tab */}
             <TabsContent value="purchases" className="space-y-4">
               <Card>
