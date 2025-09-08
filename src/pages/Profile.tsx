@@ -98,6 +98,13 @@ const Profile = () => {
 
   // Tab state
   const [activeTab, setActiveTab] = useState("settings");
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location && (location as any).state && (location as any).state.openTab) {
+      setActiveTab((location as any).state.openTab);
+    }
+  }, [location]);
   
   // Heavy data states (loads on demand)
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
