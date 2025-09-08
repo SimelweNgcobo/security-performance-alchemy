@@ -159,7 +159,7 @@ export default function AdminPanel() {
 
   const checkAdminAccess = async () => {
     try {
-      const DEV_BYPASS_ADMIN_GUARD = true;
+      const DEV_BYPASS_ADMIN_GUARD = false;
       if (DEV_BYPASS_ADMIN_GUARD) {
         setIsAdmin(true);
         setLoading(false);
@@ -169,7 +169,7 @@ export default function AdminPanel() {
 
       if (!user) {
         toast.error("Please log in to access the admin panel");
-        navigate("/auth");
+        navigate("/admin-auth");
         return;
       }
 
@@ -182,15 +182,8 @@ export default function AdminPanel() {
         .single();
 
       if (error || !adminUser) {
-        // For development purposes, allow access if user email matches admin pattern
-        if (user.email === 'mq.ngcobo@myfuze.co.za' || user.email === 'ceo@rebookedsolutions.co.za') {
-          console.log("Dev access granted for admin user");
-          setIsAdmin(true);
-          return;
-        }
-
         toast.error("Access denied. Admin privileges required.");
-        navigate("/auth");
+        navigate("/admin-auth");
         return;
       }
 
@@ -198,7 +191,7 @@ export default function AdminPanel() {
     } catch (error) {
       console.error("Error checking admin access:", error);
       toast.error("Error verifying admin access");
-      navigate("/auth");
+      navigate("/admin-auth");
     } finally {
       setLoading(false);
     }
