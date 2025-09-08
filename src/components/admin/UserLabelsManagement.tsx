@@ -32,6 +32,7 @@ interface UserLabel {
   updated_at: string;
   users?: {
     email?: string;
+    phone?: string;
   };
 }
 
