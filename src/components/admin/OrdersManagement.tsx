@@ -365,7 +365,7 @@ export function OrdersManagement() {
                           View Details
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
+                      <DialogContent className="max-w-md sm:max-w-lg md:max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl">
                         <DialogHeader>
                           <DialogTitle>Order Details - {selectedOrder?.order_number}</DialogTitle>
                           <DialogDescription>
@@ -424,8 +424,8 @@ export function OrdersManagement() {
                                     return (
                                       <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                          <label className="font-medium text-blue-700">Bottle Size:</label>
-                                          <p className="text-lg font-semibold">{bulkDetails?.bottle_size}</p>
+                                           <label className="font-medium text-blue-700">Part Size:</label>
+                                           <p className="text-lg font-semibold">{bulkDetails?.bottle_size}</p>
                                         </div>
                                         <div>
                                           <label className="font-medium text-blue-700">Quantity:</label>

@@ -114,7 +114,7 @@ const Layout2Hero = () => {
 
       {/* Our Story Modal */}
       <Dialog open={showOurStory} onOpenChange={setShowOurStory}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-xs sm:max-w-md md:max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center mb-4">Our Story</DialogTitle>
           </DialogHeader>

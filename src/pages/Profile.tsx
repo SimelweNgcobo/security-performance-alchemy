@@ -959,7 +959,7 @@ const Profile = () => {
 
                         const desc = labelDescription.trim() || undefined;
 
-                        const saved = await userLabelsService.saveLabel(user.id, labelName || 'Custom Label', designData, desc, false);
+                        const saved = await userLabelsService.saveLabel(user.id, labelName || 'Custom Label', designData as any, desc, false);
                         if (saved) {
                           toast.success('Label submitted successfully');
                           setLabelFile(null);

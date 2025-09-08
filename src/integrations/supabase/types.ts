@@ -199,6 +199,51 @@ export type Database = {
           },
         ]
       }
+      contact_submissions: {
+        Row: {
+          admin_notes: string | null
+          created_at: string | null
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          message: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string | null
+          subject: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string | null
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          message: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          message?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       customer_profiles: {
         Row: {
           address: string | null
@@ -312,6 +357,13 @@ export type Database = {
           order_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "delivery_assignments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "delivery_assignments_order_id_fkey"
             columns: ["order_id"]
@@ -516,6 +568,13 @@ export type Database = {
             foreignKeyName: "invoices_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "admin_orders_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -547,6 +606,13 @@ export type Database = {
           order_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "order_activities_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_activities_order_id_fkey"
             columns: ["order_id"]
@@ -592,6 +658,13 @@ export type Database = {
             foreignKeyName: "order_items_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "admin_orders_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -600,6 +673,51 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_status_history: {
+        Row: {
+          admin_notes: string | null
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          new_status: string | null
+          old_status: string | null
+          order_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          order_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -652,6 +770,13 @@ export type Database = {
             foreignKeyName: "order_tracking_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "admin_orders_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_tracking_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -659,6 +784,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          admin_notes: string | null
           created_at: string | null
           customer_id: string | null
           delivery_address: string | null
@@ -669,13 +795,16 @@ export type Database = {
           metadata: Json | null
           notes: string | null
           order_number: string
+          payment_reference: string | null
           payment_status: string
+          shipping_address: string | null
           status: string
           total_amount: number
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string | null
           customer_id?: string | null
           delivery_address?: string | null
@@ -686,13 +815,16 @@ export type Database = {
           metadata?: Json | null
           notes?: string | null
           order_number: string
+          payment_reference?: string | null
           payment_status?: string
+          shipping_address?: string | null
           status?: string
           total_amount: number
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string | null
           customer_id?: string | null
           delivery_address?: string | null
@@ -703,7 +835,9 @@ export type Database = {
           metadata?: Json | null
           notes?: string | null
           order_number?: string
+          payment_reference?: string | null
           payment_status?: string
+          shipping_address?: string | null
           status?: string
           total_amount?: number
           updated_at?: string | null
@@ -761,6 +895,13 @@ export type Database = {
             foreignKeyName: "payment_transactions_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "admin_orders_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -808,6 +949,33 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          is_admin: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          is_admin?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          is_admin?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       refunds: {
         Row: {
           amount: number
@@ -840,6 +1008,13 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "refunds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "refunds_order_id_fkey"
             columns: ["order_id"]
@@ -986,7 +1161,40 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_orders_view: {
+        Row: {
+          created_at: string | null
+          customer_email: string | null
+          customer_id: string | null
+          customer_name: string | null
+          delivery_address: string | null
+          delivery_city: string | null
+          delivery_postal_code: string | null
+          delivery_status: string | null
+          id: string | null
+          item_count: number | null
+          metadata: Json | null
+          notes: string | null
+          order_items_details: Json[] | null
+          order_number: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          shipping_address: string | null
+          status: string | null
+          total_amount: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_order_activity: {
@@ -997,6 +1205,10 @@ export type Database = {
           p_order_id: string
         }
         Returns: string
+      }
+      create_bulk_order_items: {
+        Args: { p_metadata: Json; p_order_id: string }
+        Returns: undefined
       }
       create_order_with_tracking: {
         Args: {
@@ -1016,6 +1228,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_product_id_by_size: {
+        Args: { p_size: string; p_type?: string }
+        Returns: string
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -1032,15 +1248,27 @@ export type Database = {
         Returns: boolean
       }
       queue_email: {
-        Args: {
-          p_html_content?: string
-          p_scheduled_for?: string
-          p_subject: string
-          p_template_data?: Json
-          p_template_id?: string
-          p_to_email: string
-        }
+        Args:
+          | {
+              p_html_content?: string
+              p_scheduled_for?: string
+              p_subject: string
+              p_template_data?: Json
+              p_template_id?: string
+              p_to_email: string
+            }
+          | {
+              p_html_content?: string
+              p_subject: string
+              p_template_data?: Json
+              p_template_id?: string
+              p_to_email: string
+            }
         Returns: string
+      }
+      reconcile_payment_transactions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       update_order_status: {
         Args: {
