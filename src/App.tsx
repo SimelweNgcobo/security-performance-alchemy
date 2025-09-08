@@ -33,6 +33,7 @@ const Orders = lazy(() => import("./pages/Orders"));
 const BulkCheckout = lazy(() => import("./pages/BulkCheckout"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsConditions = lazy(() => import("./pages/TermsConditions"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 
 // Optimized QueryClient configuration
 const queryClient = new QueryClient({
@@ -113,6 +114,7 @@ const App = () => {
                   <Route path="/admin-panel" element={<AdminPanel />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/terms-conditions" element={<TermsConditions />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

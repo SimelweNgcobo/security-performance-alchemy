@@ -1,4 +1,3 @@
-import { Droplets } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Layout2Footer = () => {
@@ -8,12 +7,8 @@ const Layout2Footer = () => {
       behavior: 'smooth'
     });
   };
+
   const links = {
-    products: [
-      { name: "Pure Glass", href: "/products" },
-      { name: "Crystal Clear", href: "/products" },
-      { name: "Pure Sport", href: "/products" }
-    ],
     company: [
       { name: "About Us", href: "/about" },
       { name: "Sustainability", href: "/sustainability" },
@@ -38,8 +33,12 @@ const Layout2Footer = () => {
           {/* Logo and tagline */}
           <div className="space-y-4">
             <div className="flex items-center justify-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Droplets className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                <img
+                  src="https://cdn.builder.io/api/v1/image/assets%2F718ec5593282430bba673a5738fa1463%2Fb93252dcac184807a796a96ec1f14f60?format=webp&width=800"
+                  alt="MyFuze Logo"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <span className="text-2xl font-semibold text-foreground">MyFuze</span>
             </div>
@@ -48,25 +47,8 @@ const Layout2Footer = () => {
             </p>
           </div>
 
-          {/* Four-column navigation */}
-          <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-            <div className="space-y-4">
-              <h4 className="text-base font-medium text-foreground">Products</h4>
-              <ul className="space-y-3">
-                {links.products.map((link, index) => (
-                  <li key={index}>
-                    <Link
-                      to={link.href}
-                      onClick={handleLinkClick}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors font-light"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
+          {/* Three-column navigation (Products removed) */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <div className="space-y-4">
               <h4 className="text-base font-medium text-foreground">Company</h4>
               <ul className="space-y-3">
@@ -121,7 +103,7 @@ const Layout2Footer = () => {
 
           {/* Contact info */}
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground font-light">hello@myfuze.co.za</p>
+            <p className="text-sm text-muted-foreground font-light">info@myfuze.co.za</p>
             <p className="text-sm text-muted-foreground font-light">1-800-PURE-H2O</p>
           </div>
 

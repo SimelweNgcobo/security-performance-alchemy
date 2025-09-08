@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { userLabelsService, UserLabel } from "@/services/userLabels";
 import { encryptedAddressService } from "@/services/encryptedAddressService";
 import { AddressData, EncryptedAddress } from "@/utils/encryption";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,8 +43,7 @@ import {
   RotateCcw
 } from "lucide-react";
 
-// Lazy load heavy components
-const LabelEditor = lazy(() => import("@/components/LabelEditor"));
+import CustomLabelUpload from "@/components/CustomLabelUpload";
 
 interface BasicProfile {
   name: string;
@@ -114,10 +112,7 @@ const Profile = () => {
 
   // UI states
   const [saving, setSaving] = useState(false);
-  const [userLabels, setUserLabels] = useState<UserLabel[]>([]);
-  const [defaultLabel, setDefaultLabel] = useState<UserLabel | null>(null);
   const [savedShippingDetails, setSavedShippingDetails] = useState<any[]>([]);
-  const [loadingLabels, setLoadingLabels] = useState(false);
 
   // Encrypted address state
   const [encryptedAddresses, setEncryptedAddresses] = useState<EncryptedAddress[]>([]);
@@ -218,34 +213,6 @@ const Profile = () => {
     }
   }, [user]);
 
-  // Load user labels from Supabase
-  const loadUserLabels = useCallback(async () => {
-    if (!user?.id) return;
-
-    setLoadingLabels(true);
-    try {
-      const [labels, defaultLabelData] = await Promise.all([
-        userLabelsService.getUserLabels(user.id),
-        userLabelsService.getDefaultLabel(user.id)
-      ]);
-
-      setUserLabels(labels);
-      setDefaultLabel(defaultLabelData);
-
-      // If no labels exist, create a default one
-      if (labels.length === 0) {
-        const newDefaultLabel = await userLabelsService.createDefaultMyFuzeLabel(user.id);
-        if (newDefaultLabel) {
-          setUserLabels([newDefaultLabel]);
-          setDefaultLabel(newDefaultLabel);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading user labels:', error);
-    } finally {
-      setLoadingLabels(false);
-    }
-  }, [user]);
 
   // Load localStorage data and user labels
   const loadLocalStorageData = useCallback(async () => {
@@ -257,15 +224,13 @@ const Profile = () => {
         setSavedShippingDetails(JSON.parse(savedShipping));
       }
 
-      // Load user labels from Supabase instead of localStorage
-      await loadUserLabels();
 
       // Load encrypted addresses
       await loadEncryptedAddresses();
     } catch (e) {
       console.log("Error loading localStorage data:", e);
     }
-  }, [user, loadUserLabels]);
+  }, [user]);
 
   // Lazy load activity data
   const loadActivityData = useCallback(async () => {
@@ -490,14 +455,9 @@ const Profile = () => {
         case "purchases":
           loadPurchasesData();
           break;
-        case "labels":
-          if (userLabels.length === 0 && !loadingLabels) {
-            loadUserLabels();
-          }
-          break;
       }
     }, 50);
-  }, [loadActivityData, loadPurchasesData, loadUserLabels, userLabels.length, loadingLabels]);
+  }, [loadActivityData, loadPurchasesData]);
 
   // Optimistic profile update
   const updateProfile = useCallback(async () => {
@@ -614,22 +574,6 @@ const Profile = () => {
     }
   }, [navigate]);
 
-  // Label management functions
-  const handleSetDefaultLabel = useCallback(async (labelId: string) => {
-    if (!user?.id) return;
-
-    const success = await userLabelsService.setDefaultLabel(labelId, user.id);
-    if (success) {
-      await loadUserLabels(); // Refresh labels
-    }
-  }, [user, loadUserLabels]);
-
-  const handleDeleteLabel = useCallback(async (labelId: string) => {
-    const success = await userLabelsService.deleteLabel(labelId);
-    if (success) {
-      await loadUserLabels(); // Refresh labels
-    }
-  }, [loadUserLabels]);
 
   // Load encrypted addresses
   const loadEncryptedAddresses = useCallback(async () => {
@@ -813,14 +757,10 @@ const Profile = () => {
 
           {/* Profile Tabs */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Settings
-              </TabsTrigger>
-              <TabsTrigger value="labels" className="flex items-center gap-2">
-                <Tag className="w-4 h-4" />
-                Labels
               </TabsTrigger>
               <TabsTrigger value="purchases" className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4" />
@@ -836,194 +776,6 @@ const Profile = () => {
               </TabsTrigger>
             </TabsList>
 
-            {/* Labels Tab - New dedicated tab */}
-            <TabsContent value="labels" className="space-y-6">
-              {/* Quick Actions */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <Tag className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Saved Labels</h3>
-                      <p className="text-sm text-muted-foreground">{userLabels.length} designs</p>
-                    </div>
-                  </div>
-                </Card>
-                <Card className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                      <Star className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Default Label</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {defaultLabel ? defaultLabel.name : 'None set'}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-                <Card className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                      <Palette className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Designer</h3>
-                      <p className="text-sm text-muted-foreground">Create new labels</p>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Saved Labels Management */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>My Saved Labels</CardTitle>
-                      <CardDescription>
-                        Manage your custom bottle label designs for enterprise orders
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => loadUserLabels()}
-                      disabled={loadingLabels}
-                    >
-                      <RotateCcw className={`w-4 h-4 mr-2 ${loadingLabels ? 'animate-spin' : ''}`} />
-                      Refresh
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {loadingLabels ? (
-                    <div className="h-32 flex items-center justify-center">
-                      <LoadingSpinner message="Loading labels..." />
-                    </div>
-                  ) : userLabels.length > 0 ? (
-                    <div className="space-y-4">
-                      {userLabels.map((label) => (
-                        <div key={label.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                                <Tag className="w-5 h-5 text-primary" />
-                              </div>
-                              <div>
-                                <h3 className="font-medium">{label.name}</h3>
-                                <p className="text-sm text-muted-foreground">
-                                  {label.description || 'No description provided'}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {label.is_default ? (
-                                <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                                  <Star className="w-3 h-3 mr-1" />
-                                  Default
-                                </Badge>
-                              ) : (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleSetDefaultLabel(label.id)}
-                                  title="Set as default label"
-                                >
-                                  <Star className="w-4 h-4 mr-1" />
-                                  Set Default
-                                </Button>
-                              )}
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteLabel(label.id)}
-                                className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                                title="Delete this label"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <span className="font-medium">Elements:</span>
-                              <span>{label.design_data?.elements?.length || 0}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <span className="font-medium">Background:</span>
-                              <div
-                                className="w-4 h-4 rounded border border-gray-300"
-                                style={{ backgroundColor: label.design_data?.backgroundColor || '#ffffff' }}
-                                title={`Background color: ${label.design_data?.backgroundColor || '#ffffff'}`}
-                              ></div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <span className="font-medium">Size:</span>
-                              <span>{label.dimensions?.width || 264}×{label.dimensions?.height || 60}mm</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <span className="font-medium">Updated:</span>
-                              <span>{new Date(label.updated_at).toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <Tag className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">No Custom Labels Yet</h3>
-                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                        Create custom labels using the designer below. These will be available
-                        for your enterprise orders and can be set as your default branding.
-                      </p>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          // Scroll to the label designer section
-                          const designerSection = document.querySelector('[data-label-designer]');
-                          if (designerSection) {
-                            designerSection.scrollIntoView({ behavior: 'smooth' });
-                          }
-                        }}
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Your First Label
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Label Designer */}
-              <Card data-label-designer>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Palette className="w-5 h-5" />
-                    Custom Label Designer
-                  </CardTitle>
-                  <CardDescription>
-                    Create and save custom labels for your bottles. Design with text, images, and branding elements.
-                    All labels are automatically sized for water bottles (264mm × 60mm).
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Suspense fallback={
-                    <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
-                      <div className="text-center">
-                        <LoadingSpinner message="Loading Label Designer..." />
-                        <p className="text-sm text-muted-foreground mt-2">Please wait while we prepare the design tools</p>
-                      </div>
-                    </div>
-                  }>
-                    <LabelEditor onSave={loadUserLabels} />
-                  </Suspense>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             {/* Settings Tab - Default and fastest */}
             <TabsContent value="settings" className="space-y-6">
@@ -1082,75 +834,6 @@ const Profile = () => {
               </Card>
 
               {/* Saved Labels Management */}
-              <Card>
-                <CardHeader>
-                  <div>
-                    <CardTitle>My Saved Labels</CardTitle>
-                    <CardDescription>
-                      Manage your custom bottle label designs. Use the Labels tab to create new designs.
-                    </CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {loadingLabels ? (
-                    <div className="h-32 flex items-center justify-center">
-                      <LoadingSpinner message="Loading labels..." />
-                    </div>
-                  ) : userLabels.length > 0 ? (
-                    <div className="space-y-4">
-                      {userLabels.map((label) => (
-                        <div key={label.id} className="border rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-medium">{label.name}</h3>
-                              {label.is_default && (
-                                <Badge variant="default" className="bg-primary/10 text-primary">
-                                  <Star className="w-3 h-3 mr-1" />
-                                  Default
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex gap-2">
-                              {!label.is_default && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleSetDefaultLabel(label.id)}
-                                >
-                                  <Settings className="w-4 h-4 mr-1" />
-                                  Set Default
-                                </Button>
-                              )}
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteLabel(label.id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          {label.description && (
-                            <p className="text-sm text-muted-foreground mb-2">{label.description}</p>
-                          )}
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span>{label.design_data.elements?.length || 0} design elements</span>
-                            <span>Background: {label.design_data.backgroundColor || '#ffffff'}</span>
-                            <span>Updated: {new Date(label.updated_at).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Tag className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground mb-4">No custom labels created yet</p>
-                      <p className="text-sm text-muted-foreground">Switch to the Labels tab to create your first custom label design.</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
             </TabsContent>
 
             {/* Purchases Tab */}
