@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 
 import CustomLabelUpload from "@/components/CustomLabelUpload";
+import { userLabelsService } from "@/services/userLabels";
 
 interface BasicProfile {
   name: string;
