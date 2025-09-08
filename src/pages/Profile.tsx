@@ -128,7 +128,6 @@ const Profile = () => {
   const [labelPreview, setLabelPreview] = useState<string | null>(null);
   const [labelName, setLabelName] = useState<string>("Custom Label");
   const [labelDescription, setLabelDescription] = useState<string>("");
-  const [labelMoreInfo, setLabelMoreInfo] = useState<string>("");
   const [labelSubmitting, setLabelSubmitting] = useState<boolean>(false);
 
   // Encrypted address state
@@ -914,17 +913,6 @@ const Profile = () => {
                       />
                     </div>
 
-                    <div className='space-y-2'>
-                      <Label htmlFor='labelMore'>More Info</Label>
-                      <Textarea
-                        id='labelMore'
-                        value={labelMoreInfo}
-                        onChange={(e) => setLabelMoreInfo(e.target.value)}
-                        placeholder='Anything else we should know (fonts, layout, references)'
-                        rows={3}
-                      />
-                    </div>
-
                   </div>
 
                   <Button
@@ -969,7 +957,7 @@ const Profile = () => {
                           ]
                         };
 
-                        const desc = [labelDescription.trim(), labelMoreInfo.trim()].filter(Boolean).join('\n\n');
+                        const desc = labelDescription.trim() || undefined;
 
                         const saved = await userLabelsService.saveLabel(user.id, labelName || 'Custom Label', designData, desc, false);
                         if (saved) {
@@ -978,7 +966,6 @@ const Profile = () => {
                           setLabelPreview(null);
                           setLabelName('Custom Label');
                           setLabelDescription('');
-                          setLabelMoreInfo('');
                         }
                       } catch (e) {
                         console.error(e);
