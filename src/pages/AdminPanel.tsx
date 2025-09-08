@@ -253,7 +253,7 @@ export default function AdminPanel() {
         pendingOrders,
         processingOrders,
         completedOrders,
-        totalProducts: productsCount || 6,
+        totalProducts: productsCount || 0,
         totalCustomers: customersCount || 0,
         totalRevenue,
         monthlyRevenue
