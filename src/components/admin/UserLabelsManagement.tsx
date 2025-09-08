@@ -51,8 +51,7 @@ export const UserLabelsManagement = () => {
       
       const { data, error } = await supabase
         .from("user_labels")
-        .select(`
-          *
+        .select(`*
         `)
         .order("created_at", { ascending: false });
 
@@ -60,11 +59,32 @@ export const UserLabelsManagement = () => {
         throw error;
       }
 
-      setLabels(data?.map(label => ({
+      const labelsData = data || [];
+
+      // Fetch users/customers info for related user_ids in a single query
+      const userIds = Array.from(new Set(labelsData.map((l: any) => l.user_id).filter(Boolean)));
+      let customersMap: Record<string, { email?: string; phone?: string }> = {};
+      if (userIds.length > 0) {
+        const { data: customers } = await supabase
+          .from('customers')
+          .select('user_id, email, phone')
+          .in('user_id', userIds);
+        if (customers) {
+          customersMap = customers.reduce((acc: any, cur: any) => {
+            acc[cur.user_id] = { email: cur.email, phone: cur.phone };
+            return acc;
+          }, {} as Record<string, { email?: string; phone?: string }>);
+        }
+      }
+
+      setLabels(labelsData.map((label: any) => ({
         ...label,
         design_data: label.design_data || {},
         dimensions: typeof label.dimensions === 'object' ? label.dimensions as { width: number; height: number } : { width: 264, height: 60 },
-        users: { email: '' }
+        users: {
+          email: customersMap[label.user_id]?.email || label.user_id || '',
+          phone: customersMap[label.user_id]?.phone || ''
+        }
       })) || []);
     } catch (error) {
       console.error("Error loading user labels:", error);
@@ -205,10 +225,15 @@ export const UserLabelsManagement = () => {
                   {filteredLabels.map((label) => (
                     <TableRow key={label.id}>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{label.name}</div>
-                          <div className="text-sm text-muted-foreground truncate max-w-xs">
-                            {label.description || 'No description'}
+                        <div className="flex items-center gap-3">
+                          {label.design_data?.elements?.[0]?.src && (
+                            <img src={label.design_data.elements[0].src} alt={label.name} className="w-14 h-8 object-cover rounded border" />
+                          )}
+                          <div>
+                            <div className="font-medium">{label.name}</div>
+                            <div className="text-sm text-muted-foreground truncate max-w-xs">
+                              {label.description || 'No description'}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
@@ -283,8 +308,12 @@ export const UserLabelsManagement = () => {
                                           <span>{selectedLabel.description || 'None'}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                          <span className="text-muted-foreground">User:</span>
-                                          <span>{selectedLabel?.user_id}</span>
+                                          <span className="text-muted-foreground">User Email:</span>
+                                          <span>{selectedLabel?.users?.email || selectedLabel?.user_id}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">User Phone:</span>
+                                          <span>{selectedLabel?.users?.phone || '—'}</span>
                                         </div>
                                         <div className="flex justify-between">
                                           <span className="text-muted-foreground">Status:</span>

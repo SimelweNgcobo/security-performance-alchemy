@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Image, FileText, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const CustomLabelUpload = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -62,13 +63,21 @@ const CustomLabelUpload = () => {
 
     setUploading(true);
     try {
-      // TODO: Implement file upload to Supabase storage
-      // For now, just simulate upload
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Upload file to Supabase storage in 'labels' bucket under 'anonymous-uploads'
+      const filePath = `labels/anonymous-uploads/${Date.now()}_${selectedFile.name}`;
+      const { error: uploadError } = await supabase.storage.from('labels').upload(filePath, selectedFile, { upsert: false });
+      if (uploadError) throw uploadError;
+
+      const { data: publicData } = await supabase.storage.from('labels').getPublicUrl(filePath);
+      const publicUrl = (publicData as any)?.publicUrl || null;
+
       toast.success("Your custom label request has been submitted! Our design team will contact you within 24 hours.");
+      if (publicUrl) {
+        toast.success("Uploaded to: " + publicUrl);
+      }
       setSelectedFile(null);
     } catch (error) {
+      console.error('Upload failed', error);
       toast.error("Upload failed. Please try again.");
     } finally {
       setUploading(false);

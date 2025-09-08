@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { encryptedAddressService } from "@/services/encryptedAddressService";
@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -44,6 +45,7 @@ import {
 } from "lucide-react";
 
 import CustomLabelUpload from "@/components/CustomLabelUpload";
+import { userLabelsService } from "@/services/userLabels";
 
 interface BasicProfile {
   name: string;
@@ -96,6 +98,13 @@ const Profile = () => {
 
   // Tab state
   const [activeTab, setActiveTab] = useState("settings");
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location && (location as any).state && (location as any).state.openTab) {
+      setActiveTab((location as any).state.openTab);
+    }
+  }, [location]);
   
   // Heavy data states (loads on demand)
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
@@ -113,6 +122,13 @@ const Profile = () => {
   // UI states
   const [saving, setSaving] = useState(false);
   const [savedShippingDetails, setSavedShippingDetails] = useState<any[]>([]);
+
+  // Label submission state
+  const [labelFile, setLabelFile] = useState<File | null>(null);
+  const [labelPreview, setLabelPreview] = useState<string | null>(null);
+  const [labelName, setLabelName] = useState<string>("Custom Label");
+  const [labelDescription, setLabelDescription] = useState<string>("");
+  const [labelSubmitting, setLabelSubmitting] = useState<boolean>(false);
 
   // Encrypted address state
   const [encryptedAddresses, setEncryptedAddresses] = useState<EncryptedAddress[]>([]);
@@ -757,7 +773,7 @@ const Profile = () => {
 
           {/* Profile Tabs */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Settings
@@ -773,6 +789,10 @@ const Profile = () => {
               <TabsTrigger value="delivery" className="flex items-center gap-2">
                 <Package className="w-4 h-4" />
                 Delivery
+              </TabsTrigger>
+              <TabsTrigger value="labels" className="flex items-center gap-2">
+                <Palette className="w-4 h-4" />
+                Labels
               </TabsTrigger>
             </TabsList>
 
@@ -834,6 +854,133 @@ const Profile = () => {
               </Card>
 
               {/* Saved Labels Management */}
+            </TabsContent>
+
+            {/* Labels Tab */}
+            <TabsContent value='labels' className='space-y-4'>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Label Submission</CardTitle>
+                  <CardDescription>
+                    Upload your logo/design and describe how you want your label. We'll save the file to Supabase storage and create a submission.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                  <div className='grid gap-4'>
+                    <div className='space-y-2'>
+                      <Label htmlFor='labelName'>Label Name</Label>
+                      <Input
+                        id='labelName'
+                        value={labelName}
+                        onChange={(e) => setLabelName(e.target.value)}
+                        placeholder='e.g. Company Event Label'
+                      />
+                    </div>
+
+                    <div className='space-y-2'>
+                      <Label htmlFor='labelFile'>Upload Logo/Design</Label>
+                      <Input
+                        id='labelFile'
+                        type='file'
+                        accept='image/*'
+                        onChange={(e) => {
+                          const f = e.target.files?.[0] || null;
+                          setLabelFile(f);
+                          if (f) {
+                            const reader = new FileReader();
+                            reader.onload = () => setLabelPreview(reader.result as string);
+                            reader.readAsDataURL(f);
+                          } else {
+                            setLabelPreview(null);
+                          }
+                        }}
+                      />
+                      {labelPreview && (
+                        <div className='mt-2'>
+                          <img src={labelPreview} alt='Preview' className='h-24 rounded border' />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className='space-y-2'>
+                      <Label htmlFor='labelDesc'>Description</Label>
+                      <Textarea
+                        id='labelDesc'
+                        value={labelDescription}
+                        onChange={(e) => setLabelDescription(e.target.value)}
+                        placeholder='Describe the style, colors, text, etc.'
+                        rows={3}
+                      />
+                    </div>
+
+                  </div>
+
+                  <Button
+                    className='w-full'
+                    disabled={labelSubmitting}
+                    onClick={async () => {
+                      if (!user) { toast.error('Please sign in to submit a label'); return; }
+                      if (!labelFile) { toast.error('Please upload a logo/design image'); return; }
+                      try {
+                        setLabelSubmitting(true);
+
+                        // Upload to Supabase storage
+                        const filePath = 'labels/' + user.id + '/' + Date.now() + '_' + labelFile.name;
+                        const { error: uploadError } = await supabase.storage
+                          .from('labels')
+                          .upload(filePath, labelFile, { upsert: false });
+
+                        if (uploadError) {
+                          console.error('Upload error', uploadError);
+                          toast.error('Failed to upload file');
+                          setLabelSubmitting(false);
+                          return;
+                        }
+
+                        // Get public URL
+                        const { data: publicData } = await supabase.storage.from('labels').getPublicUrl(filePath);
+                        const publicUrl = (publicData as any)?.publicUrl || '';
+
+                        // Build design data referencing the uploaded file
+                        const designData = {
+                          backgroundColor: '#ffffff',
+                          elements: [
+                            {
+                              id: 'img-' + Date.now(),
+                              type: 'image',
+                              src: publicUrl,
+                              x: 0,
+                              y: 0,
+                              width: 264 * 3.78,
+                              height: 60 * 3.78
+                            }
+                          ]
+                        };
+
+                        const desc = labelDescription.trim() || undefined;
+
+                        const saved = await userLabelsService.saveLabel(user.id, labelName || 'Custom Label', designData, desc, false);
+                        if (saved) {
+                          toast.success('Label submitted successfully');
+                          setLabelFile(null);
+                          setLabelPreview(null);
+                          setLabelName('Custom Label');
+                          setLabelDescription('');
+                        }
+                      } catch (e) {
+                        console.error(e);
+                        toast.error('Failed to submit label');
+                      } finally {
+                        setLabelSubmitting(false);
+                      }
+                    }}
+                  >
+                    {labelSubmitting ? 'Submitting...' : 'Submit Label'}
+                  </Button>
+
+                </CardContent>
+              </Card>
+
             </TabsContent>
 
             {/* Purchases Tab */}
@@ -990,7 +1137,7 @@ const Profile = () => {
                     <div className="space-y-4">
                       {encryptedAddresses.map((address) => (
                         <div key={address.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex items-center justify-between mb-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                                 <Truck className="w-5 h-5 text-primary" />

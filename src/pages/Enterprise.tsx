@@ -253,7 +253,7 @@ const Enterprise = () => {
 
 
           {/* Custom Label Design Section - moved under quote request */}
-          <div className="mb-8">
+          <div className="mb-8 hidden">
             {/* Profile Redirect Card - Made thinner */}
             <Card className="max-w-4xl mx-auto">
               <CardHeader className="text-center py-3">
