@@ -51,8 +51,7 @@ export const UserLabelsManagement = () => {
       
       const { data, error } = await supabase
         .from("user_labels")
-        .select(`
-          *
+        .select(`*
         `)
         .order("created_at", { ascending: false });
 
@@ -60,11 +59,32 @@ export const UserLabelsManagement = () => {
         throw error;
       }
 
-      setLabels(data?.map(label => ({
+      const labelsData = data || [];
+
+      // Fetch users/customers info for related user_ids in a single query
+      const userIds = Array.from(new Set(labelsData.map((l: any) => l.user_id).filter(Boolean)));
+      let customersMap: Record<string, { email?: string; phone?: string }> = {};
+      if (userIds.length > 0) {
+        const { data: customers } = await supabase
+          .from('customers')
+          .select('user_id, email, phone')
+          .in('user_id', userIds);
+        if (customers) {
+          customersMap = customers.reduce((acc: any, cur: any) => {
+            acc[cur.user_id] = { email: cur.email, phone: cur.phone };
+            return acc;
+          }, {} as Record<string, { email?: string; phone?: string }>);
+        }
+      }
+
+      setLabels(labelsData.map((label: any) => ({
         ...label,
         design_data: label.design_data || {},
         dimensions: typeof label.dimensions === 'object' ? label.dimensions as { width: number; height: number } : { width: 264, height: 60 },
-        users: { email: '' }
+        users: {
+          email: customersMap[label.user_id]?.email || label.user_id || '',
+          phone: customersMap[label.user_id]?.phone || ''
+        }
       })) || []);
     } catch (error) {
       console.error("Error loading user labels:", error);
