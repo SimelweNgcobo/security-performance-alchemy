@@ -116,6 +116,14 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [savedShippingDetails, setSavedShippingDetails] = useState<any[]>([]);
 
+  // Label submission state
+  const [labelFile, setLabelFile] = useState<File | null>(null);
+  const [labelPreview, setLabelPreview] = useState<string | null>(null);
+  const [labelName, setLabelName] = useState<string>("Custom Label");
+  const [labelDescription, setLabelDescription] = useState<string>("");
+  const [labelMoreInfo, setLabelMoreInfo] = useState<string>("");
+  const [labelSubmitting, setLabelSubmitting] = useState<boolean>(false);
+
   // Encrypted address state
   const [encryptedAddresses, setEncryptedAddresses] = useState<EncryptedAddress[]>([]);
   const [defaultAddress, setDefaultAddress] = useState<EncryptedAddress | null>(null);
