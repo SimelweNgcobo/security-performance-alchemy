@@ -995,7 +995,7 @@ const Profile = () => {
                     <div className="space-y-4">
                       {encryptedAddresses.map((address) => (
                         <div key={address.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex items-center justify-between mb-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                                 <Truck className="w-5 h-5 text-primary" />
