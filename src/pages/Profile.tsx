@@ -775,6 +775,10 @@ const Profile = () => {
                 <Package className="w-4 h-4" />
                 Delivery
               </TabsTrigger>
+              <TabsTrigger value="labels" className="flex items-center gap-2">
+                <Palette className="w-4 h-4" />
+                Labels
+              </TabsTrigger>
             </TabsList>
 
 
