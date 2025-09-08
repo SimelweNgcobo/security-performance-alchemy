@@ -225,10 +225,15 @@ export const UserLabelsManagement = () => {
                   {filteredLabels.map((label) => (
                     <TableRow key={label.id}>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{label.name}</div>
-                          <div className="text-sm text-muted-foreground truncate max-w-xs">
-                            {label.description || 'No description'}
+                        <div className="flex items-center gap-3">
+                          {label.design_data?.elements?.[0]?.src && (
+                            <img src={label.design_data.elements[0].src} alt={label.name} className="w-14 h-8 object-cover rounded border" />
+                          )}
+                          <div>
+                            <div className="font-medium">{label.name}</div>
+                            <div className="text-sm text-muted-foreground truncate max-w-xs">
+                              {label.description || 'No description'}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
