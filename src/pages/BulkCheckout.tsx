@@ -123,6 +123,37 @@ const BulkCheckout = () => {
   const [userLabels, setUserLabels] = useState<UserLabel[]>([]);
   const [selectedLabelId, setSelectedLabelId] = useState<string | null>(null);
   const [loadingLabels, setLoadingLabels] = useState(false);
+
+  // Map bottle sizes to provided image assets
+  const bottleImageMap: Record<string, string> = {
+    "330ml": "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2Fef427b44c1a34f8992521b5e72f4afb7?format=webp&width=800",
+    "500ml": "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2F359b1dbaf0f741ef8c9bf8fbbc408d38?format=webp&width=800",
+    "750ml": "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2Fb5f2f3e7f0664adfba248d30f63ef4dd?format=webp&width=800",
+    "1L":   "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2F7edfb2c701ca43cda1ce60f63b797c43?format=webp&width=800",
+    "1.5L": "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2F7edfb2c701ca43cda1ce60f63b797c43?format=webp&width=800",
+    "5L":   "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2Fd1b9f9e75c334e3390c95f54c8cfa37b?format=webp&width=800",
+  };
+
+  const getBottleImage = (size: BottleSize | string) => {
+    let normalized = String(size || '').toLowerCase().trim();
+    // collapse spaces and convert 'litre' -> 'l'
+    normalized = normalized.replace(/\s+/g, '').replace(/litre/g, 'l');
+
+    // ml values (e.g., '330ml')
+    if (/^\d+ml$/.test(normalized)) {
+      return bottleImageMap[normalized] || bottleImageMap['500ml'];
+    }
+
+    // litre values (e.g., '1.5l' or '1l') -> convert to '1.5L' or '1L'
+    if (/^\d+(?:\.\d+)?l$/.test(normalized)) {
+      const key = normalized.replace('l', 'L');
+      return bottleImageMap[key] || bottleImageMap['500ml'];
+    }
+
+    // Fallback: try direct lookup, otherwise return 500ml as default
+    return bottleImageMap[String(size)] || bottleImageMap['500ml'];
+  };
+
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: "",
     company: "",
@@ -874,8 +905,8 @@ const BulkCheckout = () => {
           <Card className="border-slate-200 shadow-sm overflow-hidden">
             <div className="aspect-[4/3] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
               <img
-                src="https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg"
-                alt="Premium Water Bottles"
+                src={getBottleImage(selectedSize)}
+                alt={`${selectedSize} bottle`}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -1116,7 +1147,7 @@ const BulkCheckout = () => {
               <h4 className="font-medium text-amber-900 mb-2 text-sm lg:text-base">Delivery Information</h4>
               <div className="space-y-1 text-xs lg:text-sm text-amber-800">
                 <p>• Processing time: 1-2 business days</p>
-                <p>• Delivery time: 3-5 business days</p>
+                <p>�� Delivery time: 3-5 business days</p>
                 <p>• Free delivery for orders over R1,000</p>
                 <p>• Signature required upon delivery</p>
               </div>
@@ -1167,11 +1198,11 @@ const BulkCheckout = () => {
             <CardContent className="space-y-4 lg:space-y-6">
               {cartItems.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 lg:gap-4 p-3 lg:p-4 bg-slate-50 rounded-lg">
-                  <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 overflow-hidden">
                     {item.hasCustomLabel ? (
                       <Palette className="h-6 w-6 lg:h-8 lg:w-8 text-primary" />
                     ) : (
-                      <Package className="h-6 w-6 lg:h-8 lg:w-8 text-slate-600" />
+                      <img src={getBottleImage(item.size)} alt={`${item.size} bottle`} className="w-full h-full object-contain p-1" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
