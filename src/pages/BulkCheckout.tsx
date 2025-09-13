@@ -907,7 +907,7 @@ const BulkCheckout = () => {
               <img
                 src={getBottleImage(selectedSize)}
                 alt={`${selectedSize} bottle`}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
             <CardContent className="p-3 lg:p-4">
@@ -1147,7 +1147,7 @@ const BulkCheckout = () => {
               <h4 className="font-medium text-amber-900 mb-2 text-sm lg:text-base">Delivery Information</h4>
               <div className="space-y-1 text-xs lg:text-sm text-amber-800">
                 <p>• Processing time: 1-2 business days</p>
-                <p>• Delivery time: 3-5 business days</p>
+                <p>�� Delivery time: 3-5 business days</p>
                 <p>• Free delivery for orders over R1,000</p>
                 <p>• Signature required upon delivery</p>
               </div>
