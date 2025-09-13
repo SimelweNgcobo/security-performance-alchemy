@@ -1187,11 +1187,11 @@ const BulkCheckout = () => {
             <CardContent className="space-y-4 lg:space-y-6">
               {cartItems.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 lg:gap-4 p-3 lg:p-4 bg-slate-50 rounded-lg">
-                  <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 overflow-hidden">
                     {item.hasCustomLabel ? (
                       <Palette className="h-6 w-6 lg:h-8 lg:w-8 text-primary" />
                     ) : (
-                      <Package className="h-6 w-6 lg:h-8 lg:w-8 text-slate-600" />
+                      <img src={getBottleImage(item.size)} alt={`${item.size} bottle`} className="w-full h-full object-contain p-1" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
