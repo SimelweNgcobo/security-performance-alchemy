@@ -135,12 +135,23 @@ const BulkCheckout = () => {
   };
 
   const getBottleImage = (size: BottleSize | string) => {
-    // Normalize common variations
-    const normalized = String(size).replace(/\s+litre/i, (m) => {
-      // convert '1.5 litre' or '1 litre' to '1.5L' / '1L'
-      return m.toLowerCase().includes('1.5') ? '1.5L' : '1L';
-    });
-    return bottleImageMap[normalized] || bottleImageMap['500ml'];
+    let normalized = String(size || '').toLowerCase().trim();
+    // collapse spaces and convert 'litre' -> 'l'
+    normalized = normalized.replace(/\s+/g, '').replace(/litre/g, 'l');
+
+    // ml values (e.g., '330ml')
+    if (/^\d+ml$/.test(normalized)) {
+      return bottleImageMap[normalized] || bottleImageMap['500ml'];
+    }
+
+    // litre values (e.g., '1.5l' or '1l') -> convert to '1.5L' or '1L'
+    if (/^\d+(?:\.\d+)?l$/.test(normalized)) {
+      const key = normalized.replace('l', 'L');
+      return bottleImageMap[key] || bottleImageMap['500ml'];
+    }
+
+    // Fallback: try direct lookup, otherwise return 500ml as default
+    return bottleImageMap[String(size)] || bottleImageMap['500ml'];
   };
 
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
