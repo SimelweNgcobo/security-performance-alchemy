@@ -107,36 +107,12 @@ const Layout2Products = () => {
                 <div className="relative overflow-hidden">
 
                   {/* Triangle Arrangement of Bottles */}
-                  <div className="aspect-[4/3] sm:aspect-[4/4] bg-gradient-to-br from-primary/5 to-primary/10 relative flex items-center justify-center p-4 sm:p-6">
-                    {/* Center Bottle (Main) */}
-                    <div className="relative z-10 w-16 sm:w-20 lg:w-24 h-20 sm:h-24 lg:h-28 rounded-lg overflow-hidden border-2 border-white shadow-lg">
-                      <img
-                        src={product.image}
-                        alt={`${product.name} center`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                    </div>
-
-                    {/* Left Bottle (Faded) */}
-                    <div className="absolute left-4 sm:left-6 lg:left-8 top-1/2 -translate-y-1/2 w-12 sm:w-16 lg:w-18 h-16 sm:h-20 lg:h-22 rounded-lg overflow-hidden border border-white shadow-md opacity-60 transform -rotate-12">
-                      <img
-                        src={product.image}
-                        alt={`${product.name} left`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                    </div>
-
-                    {/* Right Bottle (Faded) */}
-                    <div className="absolute right-4 sm:right-6 lg:right-8 top-1/2 -translate-y-1/2 w-12 sm:w-16 lg:w-18 h-16 sm:h-20 lg:h-22 rounded-lg overflow-hidden border border-white shadow-md opacity-60 transform rotate-12">
-                      <img
-                        src={product.image}
-                        alt={`${product.name} right`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                    </div>
-
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="aspect-[4/3] sm:aspect-[4/4] relative overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
                   </div>
                 </div>
 
