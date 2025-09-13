@@ -123,6 +123,26 @@ const BulkCheckout = () => {
   const [userLabels, setUserLabels] = useState<UserLabel[]>([]);
   const [selectedLabelId, setSelectedLabelId] = useState<string | null>(null);
   const [loadingLabels, setLoadingLabels] = useState(false);
+
+  // Map bottle sizes to provided image assets
+  const bottleImageMap: Record<string, string> = {
+    "330ml": "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2Fef427b44c1a34f8992521b5e72f4afb7?format=webp&width=800",
+    "500ml": "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2F359b1dbaf0f741ef8c9bf8fbbc408d38?format=webp&width=800",
+    "750ml": "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2Fb5f2f3e7f0664adfba248d30f63ef4dd?format=webp&width=800",
+    "1L":   "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2F7edfb2c701ca43cda1ce60f63b797c43?format=webp&width=800",
+    "1.5L": "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2F7edfb2c701ca43cda1ce60f63b797c43?format=webp&width=800",
+    "5L":   "https://cdn.builder.io/api/v1/image/assets%2F65e5d002f1cb4407b922bea7904a7c95%2Fd1b9f9e75c334e3390c95f54c8cfa37b?format=webp&width=800",
+  };
+
+  const getBottleImage = (size: BottleSize | string) => {
+    // Normalize common variations
+    const normalized = String(size).replace(/\s+litre/i, (m) => {
+      // convert '1.5 litre' or '1 litre' to '1.5L' / '1L'
+      return m.toLowerCase().includes('1.5') ? '1.5L' : '1L';
+    });
+    return bottleImageMap[normalized] || bottleImageMap['500ml'];
+  };
+
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: "",
     company: "",
