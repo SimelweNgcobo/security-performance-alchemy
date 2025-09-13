@@ -874,9 +874,9 @@ const BulkCheckout = () => {
           <Card className="border-slate-200 shadow-sm overflow-hidden">
             <div className="aspect-[4/3] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
               <img
-                src="https://images.pexels.com/photos/4068324/pexels-photo-4068324.jpeg"
-                alt="Premium Water Bottles"
-                className="w-full h-full object-cover"
+                src={getBottleImage(selectedSize)}
+                alt={`${selectedSize} bottle`}
+                className="w-full h-full object-contain"
               />
             </div>
             <CardContent className="p-3 lg:p-4">
