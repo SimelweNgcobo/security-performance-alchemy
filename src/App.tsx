@@ -12,6 +12,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import SmartLoadingSpinner from "@/components/SmartLoadingSpinner";
 import { pagePreloader } from "@/utils/preloader";
 import { loadingStateManager } from "@/utils/loadingStateManager";
+import EmailVerificationHandler from "@/components/EmailVerificationHandler";
 
 // Lazy load all pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -89,6 +90,7 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <NavigationTracker />
+              <EmailVerificationHandler />
               <Suspense fallback={<PageLoadingFallback />}>
                 <Routes>
                   <Route path="/" element={<Index />} />

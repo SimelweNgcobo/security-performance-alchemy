@@ -31,7 +31,7 @@ const Layout2Hero = () => {
                   MyFuze
                 </span>
                 <span className="block text-3xl md:text-4xl lg:text-5xl mt-4 text-muted-foreground font-extralight">
-                  Pure Refreshments
+                  Pure Refreshment
                 </span>
               </h1>
 

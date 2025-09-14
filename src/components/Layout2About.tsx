@@ -45,7 +45,7 @@ const Layout2About = () => {
               MyFuze Beverages
             </h2>
             <div className="text-2xl md:text-3xl text-primary font-light mt-2 tracking-wide">
-              Pure Refreshment Company
+              Pure Refreshment
             </div>
           </div>
           <div className="w-32 h-px bg-gradient-to-r from-transparent via-primary to-transparent mx-auto"></div>
