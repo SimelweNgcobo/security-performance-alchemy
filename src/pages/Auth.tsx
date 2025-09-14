@@ -48,11 +48,12 @@ export default function Auth() {
             toast.error('Email verification failed. Please try again.');
           } else if (data.user) {
             // User is now automatically signed in after verification
-            toast.success('🎉 Welcome to MyFuze! Your account has been verified and you are now signed in.');
-            // Redirect to profile page
-            setTimeout(() => {
-              navigate('/profile');
-            }, 1500);
+            const alreadyShown = sessionStorage.getItem('welcome_after_signup_shown');
+            if (!alreadyShown) {
+              toast.success('🎉 Welcome to MyFuze! Your account has been verified and you are now signed in.');
+              sessionStorage.setItem('welcome_after_signup_shown', '1');
+            }
+            navigate('/profile', { replace: true });
           }
         } catch (error) {
           console.error('Email verification exception:', error);
@@ -63,7 +64,11 @@ export default function Auth() {
         setTimeout(async () => {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
-            toast.success('🎉 Welcome to MyFuze! Your account has been verified and you are now signed in.');
+            const alreadyShown = sessionStorage.getItem('welcome_after_signup_shown');
+            if (!alreadyShown) {
+              toast.success('🎉 Welcome to MyFuze! Your account has been verified and you are now signed in.');
+              sessionStorage.setItem('welcome_after_signup_shown', '1');
+            }
             navigate('/profile', { replace: true });
           }
         }, 0);

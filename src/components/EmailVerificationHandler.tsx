@@ -10,12 +10,11 @@ const EmailVerificationHandler = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const token = searchParams.get("token");
+    const token = searchParams.get("token_hash") || searchParams.get("token");
     const type = searchParams.get("type");
 
     const handle = async () => {
-      // Avoid duplicate handling on the dedicated Auth page which already processes this
-      if (location.pathname === "/auth") return;
+      // Process verification on all routes, with a duplicate guard via sessionStorage
 
       // Case 1: Supabase verification link with token/type
       if (token && type) {
@@ -29,7 +28,11 @@ const EmailVerificationHandler = () => {
             console.error("Email verification error:", error);
             toast.error("Email verification failed. Please try again.");
           } else if (data.user) {
-            toast.success("🎉 Welcome to MyFuze! Your account has been verified and you are now signed in.");
+            const alreadyShown = sessionStorage.getItem("welcome_after_signup_shown");
+            if (!alreadyShown) {
+              toast.success("🎉 Welcome to MyFuze! Your account has been verified and you are now signed in.");
+              sessionStorage.setItem("welcome_after_signup_shown", "1");
+            }
             navigate("/profile", { replace: true });
           }
         } catch (err) {
