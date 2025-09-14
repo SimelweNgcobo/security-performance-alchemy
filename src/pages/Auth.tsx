@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 export default function Auth() {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,6 +28,40 @@ export default function Auth() {
     fullName: "",
     phone: ""
   });
+
+  // Handle email verification on component mount
+  useEffect(() => {
+    const handleEmailVerification = async () => {
+      const token = searchParams.get('token');
+      const type = searchParams.get('type');
+      const verified = searchParams.get('verified');
+      
+      if (token && type) {
+        try {
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: type as any,
+          });
+          
+          if (error) {
+            console.error('Email verification error:', error);
+            toast.error('Email verification failed. Please try again.');
+          } else {
+            toast.success('Email verified successfully! You can now sign in.');
+            // Clear URL parameters and redirect to clean auth page
+            navigate('/auth', { replace: true });
+          }
+        } catch (error) {
+          console.error('Email verification exception:', error);
+          toast.error('Email verification failed. Please try again.');
+        }
+      } else if (verified === 'true') {
+        toast.success('Please check your email and click the verification link to complete signup.');
+      }
+    };
+
+    handleEmailVerification();
+  }, [searchParams, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
