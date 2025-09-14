@@ -46,10 +46,13 @@ export default function Auth() {
           if (error) {
             console.error('Email verification error:', error);
             toast.error('Email verification failed. Please try again.');
-          } else {
-            toast.success('Email verified successfully! You can now sign in.');
-            // Clear URL parameters and redirect to clean auth page
-            navigate('/auth', { replace: true });
+          } else if (data.user) {
+            // User is now automatically signed in after verification
+            toast.success('🎉 Welcome to MyFuze! Your account has been verified and you are now signed in.');
+            // Redirect to profile page
+            setTimeout(() => {
+              navigate('/profile');
+            }, 1500);
           }
         } catch (error) {
           console.error('Email verification exception:', error);
