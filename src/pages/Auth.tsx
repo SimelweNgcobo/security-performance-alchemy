@@ -32,7 +32,7 @@ export default function Auth() {
   // Handle email verification on component mount
   useEffect(() => {
     const handleEmailVerification = async () => {
-      const token = searchParams.get('token');
+      const token = searchParams.get('token_hash') || searchParams.get('token');
       const type = searchParams.get('type');
       const verified = searchParams.get('verified');
       
@@ -58,6 +58,15 @@ export default function Auth() {
           console.error('Email verification exception:', error);
           toast.error('Email verification failed. Please try again.');
         }
+      } else if (window.location.hash && window.location.hash.includes('type=signup')) {
+        // Hash-based redirect from Supabase (contains access_token). Session should already be set.
+        setTimeout(async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            toast.success('🎉 Welcome to MyFuze! Your account has been verified and you are now signed in.');
+            navigate('/profile', { replace: true });
+          }
+        }, 0);
       } else if (verified === 'true') {
         toast.success('Please check your email and click the verification link to complete signup.');
       }
